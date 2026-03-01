@@ -14,7 +14,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Push to AmarBallot (Excluding Workflows)
+      - name: Push to Orbit_SaaS (Excluding Workflows)
         env:
           SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
           # Captures the exact commit message from the source push event
