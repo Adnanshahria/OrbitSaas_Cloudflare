@@ -194,51 +194,49 @@ export function Home() {
                   transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: baseDelay + 0.3 }}
                   className="flex sm:hidden flex-col items-center w-full max-w-[95%] mx-auto mb-4 -mt-4 font-playfair italic font-bold text-[14px] tracking-wide relative"
                 >
-                  {/* Fusion Glow Effect (behind intersection) */}
+                  {/* Fusion Glow Effect (behind intersection) - Moved down to overlap */}
                   <motion.div
                     initial={{ opacity: 0, scale: 0 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: baseDelay + 0.8, duration: 0.8 }}
                     viewport={{ once: true }}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-10 bg-gradient-to-r from-emerald-500/40 to-amber-500/40 blur-xl z-[8] mix-blend-screen pointer-events-none"
+                    className="absolute top-[20px] left-[52%] -translate-x-1/2 w-48 h-10 bg-gradient-to-r from-emerald-500/60 to-amber-500/60 blur-xl z-[8] mix-blend-screen pointer-events-none"
                   />
 
-                  {/* Row 1 — slightly left, skewed parallelogram */}
+                  {/* Row 1 — slightly left, pill shaped box */}
                   <motion.div
-                    initial={{ opacity: 0, x: -80, skewX: -24 }}
-                    animate={{ opacity: 1, x: -40, skewX: -24 }}
+                    initial={{ opacity: 0.2, x: -75 }}
+                    animate={{ opacity: 1, x: -40 }}
                     transition={{ type: "spring", stiffness: 120, damping: 15, delay: baseDelay + 0.4 }}
                     viewport={{ once: true }}
-                    className="relative z-10 flex items-center justify-center gap-2 px-10 py-2 backdrop-blur-md shadow-lg"
+                    className="relative z-[9] flex items-center justify-center gap-2 px-4 py-1.5 backdrop-blur-md shadow-lg rounded-full"
                     style={{
                       background: 'rgba(16, 185, 129, 0.12)',
                       border: '1.5px solid rgba(16, 185, 129, 0.6)',
                       color: taglineColor,
-                      borderRadius: '0px',
                     }}
                   >
-                    <div style={{ transform: 'skewX(24deg)' }} className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 text-sm">
                       <span className="w-2 h-2 rounded-full animate-pulse bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)] shrink-0" />
                       <span>{line1}</span>
                     </div>
                   </motion.div>
-                  {/* Row 2 — slightly right, skewed parallelogram, overlapping row 1 */}
+                  {/* Row 2 — slightly right, pill shaped box */}
                   {line2 && (
                     <motion.div
-                      initial={{ opacity: 0, x: 80, skewX: -24 }}
-                      animate={{ opacity: 1, x: 40, skewX: -24 }}
+                      initial={{ opacity: 0, x: 65 }}
+                      animate={{ opacity: 1, x: 40 }}
                       transition={{ type: "spring", stiffness: 120, damping: 15, delay: baseDelay + 0.6 }}
                       viewport={{ once: true }}
-                      className="relative z-[5] flex items-center justify-center gap-2 px-10 py-2 backdrop-blur-md shadow-lg"
+                      className="relative z-[5] flex items-center justify-center gap-2 px-6 py-1.5 backdrop-blur-md shadow-lg rounded-full"
                       style={{
-                        marginTop: '-0px',
+                        marginTop: '0px',
                         background: 'rgba(245, 158, 11, 0.12)',
                         border: '1.5px solid rgba(245, 158, 11, 0.6)',
                         color: '#f59e0b',
-                        borderRadius: '0px',
                       }}
                     >
-                      <div style={{ transform: 'skewX(24deg)' }} className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 text-sm">
                         <span>{line2}</span>
                       </div>
                     </motion.div>
