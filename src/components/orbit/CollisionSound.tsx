@@ -9,13 +9,23 @@ import { useRef, useEffect, useCallback, useState } from 'react';
  * AudioContext is lazily created and unlocked on first user interaction.
  */
 export function useCollisionSound() {
-    const audioCtxRef = useRef<AudioContext | null>(null);
-    const audioUnlockedRef = useRef(false);
+    const audioPoolRef = useRef<HTMLAudioElement[]>([]);
     const mutedRef = useRef(false);
+    const poolIndexRef = useRef(0);
 
-    // Load mute preference
+    // Load mute preference and pre-create audio pool
     useEffect(() => {
         mutedRef.current = localStorage.getItem('orbit_sound_muted') === 'true';
+
+        // Pre-create a small pool of Audio objects for overlapping playback
+        const pool: HTMLAudioElement[] = [];
+        for (let i = 0; i < 3; i++) {
+            const audio = new Audio('/boom.mp3');
+            audio.volume = 0.4;
+            audio.preload = 'auto';
+            pool.push(audio);
+        }
+        audioPoolRef.current = pool;
     }, []);
 
     // Listen for mute toggle events from other components
@@ -27,85 +37,20 @@ export function useCollisionSound() {
         return () => window.removeEventListener('orbit-sound-toggle', handler);
     }, []);
 
-    // Unlock AudioContext on first user interaction (required by browsers)
-    useEffect(() => {
-        const unlock = () => {
-            if (audioUnlockedRef.current) return;
-            if (!audioCtxRef.current) {
-                audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-            }
-            if (audioCtxRef.current.state === 'suspended') {
-                audioCtxRef.current.resume();
-            }
-            audioUnlockedRef.current = true;
-        };
-        window.addEventListener('click', unlock, { once: true });
-        window.addEventListener('touchstart', unlock, { once: true });
-        window.addEventListener('keydown', unlock, { once: true });
-        return () => {
-            window.removeEventListener('click', unlock);
-            window.removeEventListener('touchstart', unlock);
-            window.removeEventListener('keydown', unlock);
-        };
-    }, []);
-
     const playBoom = useCallback(() => {
         if (mutedRef.current) return;
 
         try {
-            if (!audioCtxRef.current) {
-                audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-            }
-            const ctx = audioCtxRef.current;
-            if (ctx.state === 'suspended') { ctx.resume(); }
-            const now = ctx.currentTime;
+            const pool = audioPoolRef.current;
+            if (pool.length === 0) return;
 
-            // "DHU" — punchy sine attack, fast pitch drop like a bass kick drum
-            const kick = ctx.createOscillator();
-            kick.type = 'sine';
-            kick.frequency.setValueAtTime(500, now);
-            kick.frequency.exponentialRampToValueAtTime(55, now + 0.12);
+            // Round-robin through the pool so overlapping collisions still play
+            const audio = pool[poolIndexRef.current % pool.length];
+            poolIndexRef.current++;
 
-            const kickGain = ctx.createGain();
-            kickGain.gain.setValueAtTime(0.9, now);
-            kickGain.gain.setValueAtTime(0.7, now + 0.02);
-            kickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-
-            kick.connect(kickGain);
-            kickGain.connect(ctx.destination);
-            kick.start(now);
-            kick.stop(now + 0.55);
-
-            // "RUM" — resonant body, slightly delayed, lower & sustained
-            const body = ctx.createOscillator();
-            body.type = 'sine';
-            body.frequency.setValueAtTime(180, now + 0.03);
-            body.frequency.exponentialRampToValueAtTime(70, now + 0.25);
-
-            const bodyGain = ctx.createGain();
-            bodyGain.gain.setValueAtTime(0.001, now);
-            bodyGain.gain.linearRampToValueAtTime(0.6, now + 0.04);
-            bodyGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-
-            body.connect(bodyGain);
-            bodyGain.connect(ctx.destination);
-            body.start(now);
-            body.stop(now + 0.65);
-
-            // Thud click — the initial "hit" transient
-            const bufLen = Math.floor(ctx.sampleRate * 0.02);
-            const clickBuf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
-            const cd = clickBuf.getChannelData(0);
-            for (let i = 0; i < bufLen; i++) {
-                cd[i] = (Math.random() * 2 - 1) * (1 - i / bufLen);
-            }
-            const clickSrc = ctx.createBufferSource();
-            clickSrc.buffer = clickBuf;
-            const clickGain = ctx.createGain();
-            clickGain.gain.setValueAtTime(0.35, now);
-            clickSrc.connect(clickGain);
-            clickGain.connect(ctx.destination);
-            clickSrc.start(now);
+            audio.currentTime = 0;
+            audio.volume = 0.35 + Math.random() * 0.15; // Slight variation
+            audio.play().catch(() => { });
         } catch {
             // Silently fail
         }
