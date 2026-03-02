@@ -486,7 +486,7 @@ export function Home() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[90] bg-background/60 backdrop-blur-md sm:hidden"
+            className="fixed inset-0 z-[250] bg-background/60 backdrop-blur-md sm:hidden"
             onClick={() => {
               if (!email) setIsNewsletterFocused(false);
               // Small hack to blur the input & hide keyboard when backdrop is clicked
@@ -504,18 +504,20 @@ export function Home() {
         <motion.div
           ref={mobileEmailBarRef}
           layout
-          initial={false}
+          initial={{ opacity: 0, y: 30, scale: 0.9 }}
           animate={{
+            opacity: isCtaOpen ? 0 : 1,
+            y: 0,
+            scale: 1,
             width: isNewsletterFocused ? 'calc(100% - 32px)' : '140px',
             right: isNewsletterFocused ? '16px' : '80px',
             bottom: isNewsletterFocused ? '120px' : '100px',
           }}
           transition={{ type: 'spring', stiffness: 500, damping: 40 }}
-          className={`fixed left-4 z-[100] sm:hidden ${isCtaOpen ? 'pointer-events-none' : ''}`}
+          className={`fixed left-4 z-[260] sm:hidden ${isCtaOpen ? 'pointer-events-none' : ''}`}
           style={{
-            opacity: isCtaOpen ? 0 : 1,
             visibility: isCtaOpen ? 'hidden' : 'visible',
-            transition: 'opacity 0.4s ease, visibility 0.4s',
+            pointerEvents: isCtaOpen ? 'none' : 'auto',
           }}
         >
           <form

@@ -924,6 +924,9 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
 
       {/* Toggle button - hide on mobile when chat is open since we have a new close button */}
       <motion.button
+        initial={{ opacity: 0, scale: 0.5, y: 30 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.3 }}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setOpen(!open)}
