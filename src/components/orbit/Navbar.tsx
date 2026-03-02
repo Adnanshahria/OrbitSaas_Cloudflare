@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Globe, Home, Layers, MessageSquare, Trophy, Users, Phone, FolderOpen, ChevronDown, MessageCircle, Mail, Star } from 'lucide-react';
+import { Menu, X, Globe, Home, Layers, MessageSquare, Trophy, Users, Phone, FolderOpen, ChevronDown, MessageCircle, Mail, Star, Volume2, VolumeX } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useLang } from '@/contexts/LanguageContext';
 import orbitLogo from '@/assets/orbit-logo.png';
@@ -30,6 +30,16 @@ export function Navbar() {
   const [showNavbarCTA, setShowNavbarCTA] = useState(false);
   const [isNavCtaOpen, setIsNavCtaOpen] = useState(false);
   const navCtaRef = useRef<HTMLDivElement>(null);
+  const [isSoundMuted, setIsSoundMuted] = useState(
+    () => localStorage.getItem('orbit_sound_muted') === 'true'
+  );
+
+  const toggleSound = () => {
+    const next = !isSoundMuted;
+    setIsSoundMuted(next);
+    localStorage.setItem('orbit_sound_muted', String(next));
+    window.dispatchEvent(new Event('orbit-sound-toggle'));
+  };
 
   // Close navbar CTA dropdown on outside click
   useEffect(() => {
@@ -281,6 +291,10 @@ export function Navbar() {
               <button onClick={toggleLang} className="bg-[#12121a] border border-[#2a2a3e] px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-foreground hover:bg-[#1a1a2e] gentle-animation flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium cursor-pointer shrink-0">
                 <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 {lang === 'en' ? 'বাং' : 'EN'}
+              </button>
+
+              <button onClick={toggleSound} title={isSoundMuted ? 'Sound OFF' : 'Sound ON'} className="bg-[#12121a] border border-[#2a2a3e] p-1.5 sm:p-2 rounded-full text-foreground hover:bg-[#1a1a2e] gentle-animation flex items-center justify-center cursor-pointer shrink-0">
+                {isSoundMuted ? <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" /> : <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
               </button>
             </div>
           </div>

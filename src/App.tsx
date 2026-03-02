@@ -41,7 +41,6 @@ const AdminReviews = lazy(() => import('./pages/admin/AdminReviews'));
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
 const ProjectsPage = lazy(() => import('./pages/ProjectsPage'));
 const Chatbot = lazy(() => import('./components/orbit/Chatbot').then(m => ({ default: m.Chatbot })));
-const SoundToggle = lazy(() => import('./components/orbit/CollisionSound').then(m => ({ default: m.SoundToggle })));
 const LeadMagnetPopup = lazy(() => import('./components/orbit/LeadMagnetPopup').then(m => ({ default: m.LeadMagnetPopup })));
 import { GlobalBackground } from './components/orbit/GlobalBackground';
 
@@ -149,7 +148,6 @@ function PublicSite() {
         {showChatbot && (
           <Suspense fallback={null}>
             <Chatbot />
-            <SoundToggle />
           </Suspense>
         )}
       </div>

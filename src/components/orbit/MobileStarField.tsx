@@ -191,6 +191,8 @@ export function MobileStarField() {
     const burstTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
     const ICON_COLORS = ['#10b981', '#14b8a6', '#f59e0b', '#34d399', '#a78bfa'];
     const { playBoom } = useCollisionSound();
+    const playBoomRef = useRef(playBoom);
+    playBoomRef.current = playBoom;
 
     const createBurst = (container: HTMLElement, cx: number, cy: number, particleColors: string[], flashColor: string, count: number, spread: number) => {
         const flash = document.createElement('div');
@@ -308,7 +310,7 @@ export function MobileStarField() {
             setTimeout(() => {
                 const fireColors = ['#ff6b00', '#ff4500', '#ff8c00', '#ffd700', '#ff3300', '#ffaa00', color1, color2];
                 createBurst(container, cx, cy, fireColors, '#ff6b00', 14, 80);
-                playBoom();
+                playBoomRef.current();
                 // Earthquake screen shake
                 document.body.classList.remove('collision-shake');
                 void document.body.offsetWidth; // force reflow to restart animation
@@ -344,7 +346,7 @@ export function MobileStarField() {
             createIncomingComet(container, cx + Math.cos(r2) * dist, cy + Math.sin(r2) * dist * 0.6, cx, cy, iconColor, approachDur, icon);
             setTimeout(() => {
                 createBurst(container, cx, cy, [iconColor, '#ffffff', iconColor + 'cc'], iconColor, 10, 60);
-                playBoom();
+                playBoomRef.current();
                 // Earthquake screen shake
                 document.body.classList.remove('collision-shake');
                 void document.body.offsetWidth;

@@ -1,13 +1,12 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 
 /**
- * useCollisionSound — plays boom.mp3 on comet collision.
+ * useCollisionSound — synthesized "dhurum" impact sound via Web Audio API.
  *
  * Returns `playBoom()` function. Sound respects user's mute preference
  * stored in localStorage ('orbit_sound_muted').
  *
- * Also dispatches 'orbit-collision' events so the SoundToggle can
- * appear after 3 collisions.
+ * AudioContext is lazily created and unlocked on first user interaction.
  */
 export function useCollisionSound() {
     const audioPoolRef = useRef<HTMLAudioElement[]>([]);
@@ -38,9 +37,12 @@ export function useCollisionSound() {
         return () => window.removeEventListener('orbit-sound-toggle', handler);
     }, []);
 
+    const collisionCountRef = useRef(0);
+
     const playBoom = useCallback(() => {
-        // Notify SoundToggle about the collision (always, even if muted)
-        window.dispatchEvent(new Event('orbit-collision'));
+        // Track collision count and notify SoundToggle (always, even when muted)
+        collisionCountRef.current++;
+        window.dispatchEvent(new CustomEvent('orbit-collision', { detail: collisionCountRef.current }));
 
         if (mutedRef.current) return;
 
@@ -65,20 +67,19 @@ export function useCollisionSound() {
 
 /**
  * SoundToggle — small floating mute/unmute button.
- * Only appears after 3 comet collisions have occurred.
+ * Shows a speaker icon on mobile (bottom-left corner).
  */
 export function SoundToggle() {
     const [muted, setMuted] = useState(
         () => localStorage.getItem('orbit_sound_muted') === 'true'
     );
     const [visible, setVisible] = useState(false);
-    const collisionCountRef = useRef(0);
 
-    // Listen for collision events and show after 3
+    // Show only after 3 collisions
     useEffect(() => {
-        const handler = () => {
-            collisionCountRef.current++;
-            if (collisionCountRef.current >= 3 && !visible) {
+        const handler = (e: Event) => {
+            const count = (e as CustomEvent).detail;
+            if (count >= 3 && !visible) {
                 setVisible(true);
             }
         };
@@ -93,15 +94,18 @@ export function SoundToggle() {
         window.dispatchEvent(new Event('orbit-sound-toggle'));
     };
 
-    if (!visible) return null;
-
     return (
         <button
             onClick={toggle}
             aria-label={muted ? 'Unmute sounds' : 'Mute sounds'}
-            className="fixed bottom-[10dvh] left-4 z-[100] md:bottom-6 w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all duration-200 cursor-pointer sm:hidden animate-fadeIn"
+            className="fixed bottom-[10dvh] left-4 z-[100] md:bottom-6 w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all duration-500 cursor-pointer sm:hidden"
             title={muted ? 'Sound OFF' : 'Sound ON'}
-            style={{ animation: 'fadeIn 0.5s ease-out' }}
+            style={{
+                opacity: visible ? 1 : 0,
+                pointerEvents: visible ? 'auto' : 'none',
+                transform: visible ? 'scale(1)' : 'scale(0.5)',
+                transition: 'opacity 0.5s ease, transform 0.4s ease',
+            }}
         >
             {muted ? (
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
