@@ -40,6 +40,8 @@ export function Navbar() {
     return false; // Sound ON by default
   });
 
+  const [isSounding, setIsSounding] = useState(false);
+
   // Initialize volume to 15% for new visitors & clear stale mute preference
   useEffect(() => {
     if (localStorage.getItem('orbit_sound_volume') === null) {
@@ -54,6 +56,24 @@ export function Navbar() {
       window.dispatchEvent(new Event('orbit-sound-toggle'));
     }
   }, []);
+
+  // Listen for collision events to briefly light up the sound icon
+  useEffect(() => {
+    let timeoutId: number;
+    const handleCollision = () => {
+      // Only light up if sound is ON and we are near the top (where hero sound plays)
+      if (!isSoundMuted && window.scrollY < window.innerHeight * 0.8) {
+        setIsSounding(true);
+        clearTimeout(timeoutId);
+        timeoutId = window.setTimeout(() => setIsSounding(false), 400);
+      }
+    };
+    window.addEventListener('orbit-collision', handleCollision);
+    return () => {
+      window.removeEventListener('orbit-collision', handleCollision);
+      clearTimeout(timeoutId);
+    };
+  }, [isSoundMuted]);
 
   const toggleSound = () => {
     const next = !isSoundMuted;
@@ -323,7 +343,14 @@ export function Navbar() {
                 {lang === 'en' ? 'বাং' : 'EN'}
               </button>
 
-              <button onClick={toggleSound} title={isSoundMuted ? 'Sound OFF' : 'Sound ON'} className="bg-[#12121a] border border-[#2a2a3e] p-1.5 sm:p-2 rounded-full text-foreground hover:bg-[#1a1a2e] gentle-animation flex items-center justify-center cursor-pointer shrink-0">
+              <button
+                onClick={toggleSound}
+                title={isSoundMuted ? 'Sound OFF' : 'Sound ON'}
+                className={`border p-1.5 sm:p-2 rounded-full flex items-center justify-center cursor-pointer shrink-0 transition-all duration-300 ${isSounding
+                  ? 'bg-amber-400/20 border-amber-400/50 shadow-[0_0_15px_rgba(251,191,36,0.5)] scale-110 text-amber-400'
+                  : 'bg-[#12121a] border-[#2a2a3e] hover:bg-[#1a1a2e] text-foreground scale-100'
+                  }`}
+              >
                 {isSoundMuted ? <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" /> : <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
               </button>
             </div>
