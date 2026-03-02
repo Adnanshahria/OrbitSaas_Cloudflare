@@ -311,11 +311,11 @@ export function MobileStarField() {
                 const fireColors = ['#ff6b00', '#ff4500', '#ff8c00', '#ffd700', '#ff3300', '#ffaa00', color1, color2];
                 createBurst(container, cx, cy, fireColors, '#ff6b00', 14, 80);
                 playBoomRef.current();
-                // Earthquake screen shake
-                document.body.classList.remove('collision-shake');
-                void document.body.offsetWidth; // force reflow to restart animation
-                document.body.classList.add('collision-shake');
-                setTimeout(() => document.body.classList.remove('collision-shake'), 450);
+                // Collision vignette flash — overlay, no transforms on content
+                const flash = document.createElement('div');
+                flash.className = 'collision-shake';
+                document.body.appendChild(flash);
+                setTimeout(() => flash.remove(), 500);
                 for (let i = 0; i < 6; i++) {
                     const eAngle = Math.random() * 360;
                     const eDist = 20 + Math.random() * 40;
@@ -347,11 +347,11 @@ export function MobileStarField() {
             setTimeout(() => {
                 createBurst(container, cx, cy, [iconColor, '#ffffff', iconColor + 'cc'], iconColor, 10, 60);
                 playBoomRef.current();
-                // Earthquake screen shake
-                document.body.classList.remove('collision-shake');
-                void document.body.offsetWidth;
-                document.body.classList.add('collision-shake');
-                setTimeout(() => document.body.classList.remove('collision-shake'), 450);
+                // Collision vignette flash — overlay, no transforms on content
+                const flash = document.createElement('div');
+                flash.className = 'collision-shake';
+                document.body.appendChild(flash);
+                setTimeout(() => flash.remove(), 500);
             }, approachDur * 1000);
         }
         burstTimeoutRef.current = setTimeout(spawnCollision, 6000);
