@@ -10,9 +10,9 @@ import {
 
 // All content section keys used by the admin panel
 const ALL_SECTIONS = [
-    'hero', 'services', 'techStack', 'whyUs', 'projects',
-    'leadership', 'contact', 'footer', 'chatbot', 'links',
-    'navbar', 'seo'
+    'hero', 'stats', 'services', 'techStack', 'whyUs', 'projects',
+    'leadership', 'reviews', 'contact', 'footer', 'chatbot', 'links',
+    'nav', 'seo'
 ];
 
 export default function AdminBackup() {
@@ -32,7 +32,7 @@ export default function AdminBackup() {
     const [error, setError] = useState('');
 
     // ─── Download Backup ───
-    const handleDownload = () => {
+    const handleDownload = async () => {
         try {
             const backup = {
                 _meta: {
@@ -45,13 +45,38 @@ export default function AdminBackup() {
             };
 
             const json = JSON.stringify(backup, null, 2);
+            const now = new Date();
+            const date = now.toISOString().split('T')[0];
+            const time = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+            const fileName = `Orbit_SaaS_Backup_${date}_${time}.json`;
+
+            // Use File System Access API for reliable filename
+            if ('showSaveFilePicker' in window) {
+                try {
+                    const handle = await (window as any).showSaveFilePicker({
+                        suggestedName: fileName,
+                        types: [{
+                            description: 'JSON File',
+                            accept: { 'application/json': ['.json'] },
+                        }],
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(json);
+                    await writable.close();
+                    toast.success('Backup saved successfully!');
+                    return;
+                } catch (pickerErr: any) {
+                    // User cancelled the dialog
+                    if (pickerErr?.name === 'AbortError') return;
+                }
+            }
+
+            // Fallback for browsers without File System Access API
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-
-            const date = new Date().toISOString().split('T')[0];
             const a = document.createElement('a');
             a.href = url;
-            a.download = `orbit-backup-${date}.json`;
+            a.download = fileName;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -239,7 +264,7 @@ export default function AdminBackup() {
                             Download Backup
                         </h3>
                         <p className="text-sm text-muted-foreground mt-1 mb-4">
-                            Export all content (both English & বাংলা) as a single JSON file. This includes every section: Hero, Services, Tech Stack, Why Us, Projects, Leadership, Contact, Footer, Chatbot, Links, Navbar, and SEO.
+                            Export all content (both English & বাংলা) as a single JSON file. This includes every section: Hero, Stats, Services, Tech Stack, Why Us, Projects, Leadership, Reviews, Contact, Footer, Chatbot, Links, Navbar, and SEO.
                         </p>
                         <button
                             onClick={handleDownload}
