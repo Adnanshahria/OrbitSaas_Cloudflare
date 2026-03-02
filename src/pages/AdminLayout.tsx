@@ -21,6 +21,7 @@ const navItems = [
     { label: 'Reviews', path: '/admin/reviews', icon: Star },
     { label: 'Contact', path: '/admin/contact', icon: Phone },
     { label: 'Footer', path: '/admin/footer', icon: FileText },
+    { label: 'Legal Pages', path: '/admin/legal', icon: Shield },
     { label: 'Chatbot', path: '/admin/chatbot', icon: MessageCircle },
     { label: 'Links', path: '/admin/links', icon: LinkIcon },
     { label: 'Navbar', path: '/admin/navbar', icon: Globe },

@@ -38,6 +38,7 @@ const AdminSEO = lazy(() => import('./pages/admin/AdminSEO'));
 const AdminBackup = lazy(() => import('./pages/admin/AdminBackup'));
 const AdminStats = lazy(() => import('./pages/admin/AdminStats'));
 const AdminReviews = lazy(() => import('./pages/admin/AdminReviews'));
+const AdminLegal = lazy(() => import('./pages/admin/AdminLegal'));
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
 const ProjectsPage = lazy(() => import('./pages/ProjectsPage'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
@@ -218,6 +219,7 @@ export default function App() {
                     <Route path="seo" element={<AdminSEO />} />
                     <Route path="leads" element={<AdminLeads />} />
                     <Route path="backup" element={<AdminBackup />} />
+                    <Route path="legal" element={<AdminLegal />} />
 
                   </Route>
                 </Routes>

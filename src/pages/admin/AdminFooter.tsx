@@ -89,6 +89,10 @@ export default function AdminFooter() {
     });
     const [socials, setSocials] = useState<SocialLink[]>(DEFAULT_SOCIALS);
     const [quickLinks, setQuickLinks] = useState<QuickLink[]>([]);
+    const [legalLinks, setLegalLinks] = useState<QuickLink[]>([
+        { label: 'Privacy Policy', url: '/privacy' },
+        { label: 'Terms of Service', url: '/terms' },
+    ]);
 
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -130,6 +134,12 @@ export default function AdminFooter() {
         // Quick links (shared, read from EN)
         setQuickLinks(enF.quickLinks || []);
 
+        // Legal links (shared, read from EN)
+        setLegalLinks(enF.legalLinks || [
+            { label: 'Privacy Policy', url: '/privacy' },
+            { label: 'Terms of Service', url: '/terms' },
+        ]);
+
         // Prefer EN socials, fallback to BN, then defaults
         const rawSocials: SocialLink[] = enF.socials || bnF.socials || [];
         if (rawSocials.length > 0) {
@@ -158,8 +168,8 @@ export default function AdminFooter() {
                 email: sectionInfo.en.email,
                 phone: sectionInfo.en.phone,
                 location: sectionInfo.en.location,
-                madeWith: sectionInfo.en.madeWith,
                 quickLinks,
+                legalLinks,
                 socials,
             });
 
@@ -170,8 +180,8 @@ export default function AdminFooter() {
                 email: sectionInfo.bn.email,
                 phone: sectionInfo.bn.phone,
                 location: sectionInfo.bn.location,
-                madeWith: sectionInfo.bn.madeWith,
                 quickLinks,
+                legalLinks,
                 socials,
             });
 
@@ -207,6 +217,12 @@ export default function AdminFooter() {
     const removeQuickLink = (idx: number) => setQuickLinks(quickLinks.filter((_, i) => i !== idx));
     const updateQuickLink = (idx: number, field: keyof QuickLink, value: string) => {
         setQuickLinks(quickLinks.map((l, i) => (i === idx ? { ...l, [field]: value } : l)));
+    };
+
+    const addLegalLink = () => setLegalLinks([...legalLinks, { label: '', url: '' }]);
+    const removeLegalLink = (idx: number) => setLegalLinks(legalLinks.filter((_, i) => i !== idx));
+    const updateLegalLink = (idx: number, field: keyof QuickLink, value: string) => {
+        setLegalLinks(legalLinks.map((l, i) => (i === idx ? { ...l, [field]: value } : l)));
     };
 
     if (loading) {
@@ -255,14 +271,6 @@ export default function AdminFooter() {
                         }
                         lang="en"
                     />
-                    <TextField
-                        label="Made With Text"
-                        value={sectionInfo.en.madeWith}
-                        onChange={(v) =>
-                            setSectionInfo({ ...sectionInfo, en: { ...sectionInfo.en, madeWith: v } })
-                        }
-                        lang="en"
-                    />
                 </div>
                 <div className="space-y-4">
                     <h3 className="font-semibold text-primary">🇧🇩 বাংলা</h3>
@@ -287,14 +295,6 @@ export default function AdminFooter() {
                         value={sectionInfo.bn.rights}
                         onChange={(v) =>
                             setSectionInfo({ ...sectionInfo, bn: { ...sectionInfo.bn, rights: v } })
-                        }
-                        lang="bn"
-                    />
-                    <TextField
-                        label="মেইড উইথ (Made With)"
-                        value={sectionInfo.bn.madeWith}
-                        onChange={(v) =>
-                            setSectionInfo({ ...sectionInfo, bn: { ...sectionInfo.bn, madeWith: v } })
                         }
                         lang="bn"
                     />
@@ -411,6 +411,58 @@ export default function AdminFooter() {
                 )}
             </div>
 
+            {/* ─── Legal Links (Shared) ─── */}
+            <div className="bg-card rounded-xl p-6 border border-border">
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 className="font-semibold text-foreground flex items-center gap-2">⚖️ Legal Links</h3>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Links shown under the "Legal" column in the footer. Use routes like <code className="text-primary">/privacy</code> or <code className="text-primary">/terms</code>.
+                        </p>
+                    </div>
+                    <button
+                        onClick={addLegalLink}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity cursor-pointer"
+                    >
+                        <Plus className="w-3.5 h-3.5" /> Add Link
+                    </button>
+                </div>
+
+                {legalLinks.length === 0 ? (
+                    <p className="text-sm text-muted-foreground/60 italic py-4 text-center">
+                        No legal links yet. Click "Add Link" to get started.
+                    </p>
+                ) : (
+                    <div className="space-y-2">
+                        {legalLinks.map((link, idx) => (
+                            <div key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-secondary/30">
+                                <input
+                                    type="text"
+                                    placeholder="Label (e.g. Privacy Policy)"
+                                    value={link.label}
+                                    onChange={(e) => updateLegalLink(idx, 'label', e.target.value)}
+                                    className="flex-1 bg-background rounded-lg px-3 py-2 text-sm text-foreground outline-none border border-border placeholder:text-muted-foreground/50"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="URL (e.g. /privacy)"
+                                    value={link.url}
+                                    onChange={(e) => updateLegalLink(idx, 'url', e.target.value)}
+                                    className="flex-1 bg-background rounded-lg px-3 py-2 text-sm text-foreground outline-none border border-border placeholder:text-muted-foreground/50"
+                                />
+                                <button
+                                    onClick={() => removeLegalLink(idx)}
+                                    className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+                                    title="Remove link"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
             {/* ─── Social Media Links ─── */}
             <div className="bg-card rounded-xl p-6 border border-border">
                 <h3 className="font-semibold text-foreground mb-1">Social Media Links</h3>
@@ -473,6 +525,7 @@ export default function AdminFooter() {
                             location: sectionInfo.en.location,
                             madeWith: sectionInfo.en.madeWith,
                             quickLinks,
+                            legalLinks,
                             socials,
                         },
                         bn: {
@@ -484,6 +537,7 @@ export default function AdminFooter() {
                             location: sectionInfo.bn.location,
                             madeWith: sectionInfo.bn.madeWith,
                             quickLinks,
+                            legalLinks,
                             socials,
                         },
                     }}
@@ -513,6 +567,7 @@ export default function AdminFooter() {
                             },
                         });
                         if (parsed.en.quickLinks) setQuickLinks(parsed.en.quickLinks);
+                        if (parsed.en.legalLinks) setLegalLinks(parsed.en.legalLinks);
                         if (parsed.en.socials) setSocials(parsed.en.socials);
                         else if (parsed.bn.socials) setSocials(parsed.bn.socials);
                     }}

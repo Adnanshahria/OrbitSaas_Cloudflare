@@ -12,7 +12,7 @@ import {
 const ALL_SECTIONS = [
     'hero', 'stats', 'services', 'techStack', 'whyUs', 'projects',
     'leadership', 'reviews', 'contact', 'footer', 'chatbot', 'links',
-    'nav', 'seo'
+    'nav', 'seo', 'privacy', 'terms'
 ];
 
 export default function AdminBackup() {

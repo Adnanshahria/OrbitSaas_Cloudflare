@@ -36,6 +36,11 @@ export function OrbitFooter() {
   const location = footer.location || '';
   const madeWith = footer.madeWith || '';
 
+  const quickLinks: { label: string; url: string }[] = footer.quickLinks || [];
+  const legalLinks: { label: string; url: string }[] = footer.legalLinks || [
+    { label: 'Privacy Policy', url: '/privacy' },
+    { label: 'Terms of Service', url: '/terms' },
+  ];
   // Pull service names from content
   const serviceItems: { title: string }[] = (t.services as any)?.items || [];
   // Pull why-us reasons from content
@@ -63,10 +68,10 @@ export function OrbitFooter() {
         <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-6 sm:p-12">
 
           {/* ─── Main Grid ─── */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-12 gap-5 md:gap-5 items-start">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-[8fr_7fr_9fr] gap-5 md:gap-5 items-start">
 
             {/* ── Col 1: Brand + Contact Info (full width on mobile) ── */}
-            <div className="col-span-2 sm:col-span-2 md:col-span-4 space-y-4 rounded-2xl border border-border/40 p-6">
+            <div className="col-span-2 sm:col-span-2 md:col-span-1 flex flex-col md:h-[340px] space-y-4 rounded-2xl border border-border/40 p-6">
               {/* Brand */}
               <div className="flex items-center gap-3">
                 <div className="relative">
@@ -118,12 +123,19 @@ export function OrbitFooter() {
                   )}
                 </div>
               )}
+
+              {/* ── Copyright Pill (Now inside Col 1) ── */}
+              <div className="pt-4 mt-auto">
+                <div className="inline-flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-3 text-muted-foreground/60 text-xs sm:text-sm rounded-full border border-border/40 px-5 py-2.5 w-full sm:w-auto">
+                  <span>{footer.rights}</span>
+                </div>
+              </div>
             </div>
 
             {/* ── Col 2: Services ── */}
             {serviceItems.length > 0 && (
-              <div className="col-span-1 md:col-span-3 rounded-2xl border border-border/40 p-6">
-                <h4 className="inline-block text-xs font-semibold text-foreground uppercase tracking-wider mb-3 px-3 py-1 rounded-full border border-primary/30 bg-primary/5">
+              <div className="col-span-1 md:col-span-1 flex flex-col md:h-[280px] rounded-2xl border border-border/40 p-6">
+                <h4 className="w-fit text-xs font-semibold text-foreground uppercase tracking-wider mb-3 px-3 py-1 rounded-full border border-primary/30 bg-primary/5">
                   Services
                 </h4>
                 <ul className="space-y-2">
@@ -141,85 +153,81 @@ export function OrbitFooter() {
               </div>
             )}
 
-            {/* ── Col 3: Why Us ── */}
-            {whyUsItems.length > 0 && (
-              <div className="col-span-1 md:col-span-3 rounded-2xl border border-border/40 p-6">
-                <h4 className="inline-block text-xs font-semibold text-foreground uppercase tracking-wider mb-3 px-3 py-1 rounded-full border border-primary/30 bg-primary/5">
-                  Why Us
-                </h4>
-                <ul className="space-y-2">
-                  {whyUsItems.map((item, idx) => (
-                    <li key={idx}>
-                      <a
-                        href="#why-us"
-                        className="text-sm text-muted-foreground/70 hover:text-primary transition-colors"
-                      >
-                        {item.title}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {/* ── Right Column Group (Why Us + Legal) ── */}
+            {(whyUsItems.length > 0 || legalLinks.length > 0) && (
+              <div className="col-span-1 md:col-span-1 flex flex-col md:grid md:grid-cols-[5fr_4fr] gap-5">
+                {/* ── Col 3: Why Us ── */}
+                {whyUsItems.length > 0 && (
+                  <div className="col-span-1 md:col-span-1 flex flex-col md:h-[220px] rounded-2xl border border-border/40 p-6">
+                    <h4 className="w-fit text-xs font-semibold text-foreground uppercase tracking-wider mb-3 px-3 py-1 rounded-full border border-primary/30 bg-primary/5">
+                      Why Us
+                    </h4>
+                    <ul className="space-y-2">
+                      {whyUsItems.map((item, idx) => (
+                        <li key={idx}>
+                          <a
+                            href="#why-us"
+                            className="text-sm text-muted-foreground/70 hover:text-primary transition-colors"
+                          >
+                            {item.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-            {/* ── Col 4: Legal ── */}
-            <div className="col-span-1 md:col-span-2 rounded-2xl border border-border/40 p-6">
-              <h4 className="inline-block text-xs font-semibold text-foreground uppercase tracking-wider mb-3 px-3 py-1 rounded-full border border-primary/30 bg-primary/5">
-                Legal
-              </h4>
-              <ul className="space-y-2">
-                <li>
-                  <Link to="/privacy" className="text-sm text-muted-foreground/70 hover:text-primary transition-colors">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/terms" className="text-sm text-muted-foreground/70 hover:text-primary transition-colors">
-                    Terms of Service
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
+                {/* ── Col 4: Legal ── */}
+                {legalLinks.length > 0 && (
+                  <div className="col-span-1 md:col-span-1 flex flex-col md:h-[160px] rounded-2xl border border-border/40 p-6">
+                    <h4 className="w-fit text-xs font-semibold text-foreground uppercase tracking-wider mb-3 px-3 py-1 rounded-full border border-primary/30 bg-primary/5">
+                      Legal
+                    </h4>
+                    <ul className="space-y-2">
+                      {legalLinks.map((link, idx) => (
+                        <li key={idx}>
+                          {link.url.startsWith('/') ? (
+                            <Link to={link.url} className="text-sm text-muted-foreground/70 hover:text-primary transition-colors">
+                              {link.label}
+                            </Link>
+                          ) : (
+                            <a href={link.url} className="text-sm text-muted-foreground/70 hover:text-primary transition-colors">
+                              {link.label}
+                            </a>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-          {/* ─── Bottom Bar ─── */}
-          <div className="mt-8">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              {/* Copyright + Made With — pill border */}
-              <div className="inline-flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-3 text-muted-foreground/60 text-xs sm:text-sm rounded-full border border-border/40 px-5 py-2.5">
-                <span>{footer.rights}</span>
-                {madeWith && (
-                  <>
-                    <span className="text-border/60 select-none">·</span>
-                    <span>{madeWith}</span>
-                  </>
+                {/* ── Social Icons (at bottom, aligned with copyright level) ── */}
+                {socials.length > 0 && (
+                  <div className="col-span-1 md:col-span-2 flex items-center justify-center md:justify-end mt-auto pt-10">
+                    <div className="flex flex-wrap items-center gap-2.5 p-2 rounded-2xl border border-border/40 bg-card/20 backdrop-blur-sm">
+                      {socials.map((social: any) => {
+                        const Icon = PLATFORM_ICONS[social.platform];
+                        if (!Icon) return null;
+                        return (
+                          <a
+                            key={social.platform}
+                            href={social.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={social.platform}
+                            className="group relative w-9 h-9 rounded-xl bg-secondary/60 hover:bg-primary/10 border border-border/80 hover:border-primary/50 flex items-center justify-center text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-0.5"
+                          >
+                            <div className="absolute inset-0 rounded-xl bg-primary/20 opacity-0 group-hover:opacity-100 blur transition-opacity duration-300 pointer-events-none" />
+                            <Icon className="relative w-4 h-4 z-10" strokeWidth={1.8} />
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
               </div>
-
-              {/* Social Icons */}
-              {socials.length > 0 && (
-                <div className="flex items-center gap-2.5">
-                  {socials.map((social: any) => {
-                    const Icon = PLATFORM_ICONS[social.platform];
-                    if (!Icon) return null;
-                    return (
-                      <a
-                        key={social.platform}
-                        href={social.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={social.platform}
-                        className="group relative w-9 h-9 rounded-xl bg-secondary/60 hover:bg-primary/10 border border-border/80 hover:border-primary/50 flex items-center justify-center text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-0.5"
-                      >
-                        <div className="absolute inset-0 rounded-xl bg-primary/20 opacity-0 group-hover:opacity-100 blur transition-opacity duration-300 pointer-events-none" />
-                        <Icon className="relative w-4 h-4 z-10" strokeWidth={1.8} />
-                      </a>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
+            )}
+          </div> {/* End of Main Grid */}
         </div>
       </div>
     </footer>
