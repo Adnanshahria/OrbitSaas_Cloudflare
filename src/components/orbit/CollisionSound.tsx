@@ -18,6 +18,7 @@ export function useCollisionSound() {
 
     // Load mute preference and pre-create audio pool
     useEffect(() => {
+        // Explicitly check for 'true' string. If not 'true' (e.g. null on first visit), it stays false (unmuted)
         mutedRef.current = localStorage.getItem('orbit_sound_muted') === 'true';
 
         // Read volume (0-100 scale), default to 15% if not set
@@ -71,13 +72,13 @@ export function useCollisionSound() {
 
         if (mutedRef.current) return;
 
-        // Only play sound when user is in the hero section
+        // Only play when user is actively in the hero section (Home page)
         const hero = document.getElementById('hero');
-        if (hero) {
-            const rect = hero.getBoundingClientRect();
-            const ratio = Math.max(0, Math.min(1, -rect.top / (rect.height || 1)));
-            if (ratio >= 0.15) return; // user has scrolled past hero
-        }
+        if (!hero) return; // Not on the Home page (or hero hasn't rendered)
+
+        const rect = hero.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, -rect.top / (rect.height || 1)));
+        if (ratio >= 0.15) return; // user has scrolled past hero
 
         try {
             const pool = audioPoolRef.current;

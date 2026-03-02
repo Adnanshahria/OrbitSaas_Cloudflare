@@ -40,10 +40,18 @@ export function Navbar() {
     return false; // Sound ON by default
   });
 
-  // Initialize volume to 15% for new visitors
+  // Initialize volume to 15% for new visitors & clear stale mute preference
   useEffect(() => {
     if (localStorage.getItem('orbit_sound_volume') === null) {
       localStorage.setItem('orbit_sound_volume', '15');
+    }
+    // One-time migration: reset old admin-set mute preference
+    // (admin controls removed — hardcoded to sound ON)
+    if (localStorage.getItem('orbit_sound_migrated_v2') === null) {
+      localStorage.setItem('orbit_sound_muted', 'false');
+      localStorage.setItem('orbit_sound_migrated_v2', '1');
+      setIsSoundMuted(false);
+      window.dispatchEvent(new Event('orbit-sound-toggle'));
     }
   }, []);
 
