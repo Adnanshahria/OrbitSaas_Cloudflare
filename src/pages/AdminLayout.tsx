@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -31,17 +31,21 @@ const navItems = [
 ];
 
 // Progress toast renderer
-function ProgressToast({ progress, label, color }: { progress: number; label: string; color: string }) {
+function ProgressToast({ progress, label, color, doneMessage }: { progress: number; label: string; color: string; doneMessage?: string }) {
     const pct = Math.round(progress);
+    const isDone = pct >= 100;
     return (
         <div className="flex flex-col gap-2 w-full">
             <div className="flex items-center justify-between text-sm">
-                <span className="font-medium text-foreground">{label}</span>
+                <span className="font-medium text-foreground flex items-center gap-1.5">
+                    {isDone && <CheckCircle2 className="w-3.5 h-3.5 shrink-0" style={{ color }} />}
+                    {isDone && doneMessage ? doneMessage : label}
+                </span>
                 <span className="text-muted-foreground font-mono text-xs">{pct}%</span>
             </div>
             <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
                 <div
-                    className="h-full rounded-full transition-all duration-300 ease-out"
+                    className="h-full rounded-full transition-all duration-500 ease-out"
                     style={{
                         width: `${pct}%`,
                         background: `linear-gradient(90deg, ${color}, ${color}dd)`,
@@ -58,41 +62,54 @@ export default function AdminLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [publishing, setPublishing] = useState(false);
     const [deleting, setDeleting] = useState(false);
-    const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    // Read NDJSON stream and update toast with real progress
+    const readProgressStream = useCallback(async (
+        response: Response,
+        toastId: string | number,
+        color: string,
+        fallbackLabel: string,
+    ) => {
+        const reader = response.body?.getReader();
+        if (!reader) return null;
 
-    // Simulate progress: fast at first, slows toward 90%, stops there until done
-    const startProgress = useCallback((toastId: string | number, label: string, color: string) => {
-        let progress = 0;
-        const update = () => {
-            // Accelerate to ~85%, then crawl
-            const remaining = 90 - progress;
-            const increment = Math.max(0.3, remaining * 0.08);
-            progress = Math.min(90, progress + increment);
-            toast.custom(
-                () => <ProgressToast progress={progress} label={label} color={color} />,
-                { id: toastId, duration: Infinity }
-            );
-        };
-        progressRef.current = setInterval(update, 200);
-        // Initial render
-        toast.custom(
-            () => <ProgressToast progress={0} label={label} color={color} />,
-            { id: toastId, duration: Infinity }
-        );
-        return toastId;
-    }, []);
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let lastData: any = null;
 
-    const stopProgress = useCallback(() => {
-        if (progressRef.current) {
-            clearInterval(progressRef.current);
-            progressRef.current = null;
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || ''; // keep incomplete line in buffer
+
+            for (const line of lines) {
+                if (!line.trim()) continue;
+                try {
+                    const data = JSON.parse(line);
+                    lastData = data;
+                    const isDone = data.progress >= 100;
+                    const doneMsg = isDone ? data.status : undefined;
+                    toast.custom(
+                        () => <ProgressToast progress={data.progress} label={data.status || fallbackLabel} color={color} doneMessage={doneMsg} />,
+                        { id: toastId, duration: isDone ? 4000 : Infinity }
+                    );
+                } catch {
+                    // skip bad lines
+                }
+            }
         }
+
+        return lastData;
     }, []);
 
     const handlePublishCache = async () => {
         setPublishing(true);
-        const toastId = toast.custom(() => null, { duration: Infinity });
-        startProgress(toastId, 'Publishing cache...', '#10b981');
+        const toastId = toast.custom(
+            () => <ProgressToast progress={0} label="Connecting..." color="#10b981" />,
+            { duration: Infinity }
+        );
         try {
             const token = localStorage.getItem('admin_token');
             const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -100,8 +117,6 @@ export default function AdminLayout() {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
             });
-
-            stopProgress();
 
             if (res.status === 401) {
                 toast.custom(
@@ -119,30 +134,9 @@ export default function AdminLayout() {
 
             if (!res.ok) throw new Error('Cache publish failed');
 
-            // Complete to 100%
-            toast.custom(
-                () => <ProgressToast progress={100} label="Publishing cache..." color="#10b981" />,
-                { id: toastId, duration: 600 }
-            );
-
-            const data = await res.json();
-            const imgInfo = data.imagesWarmed != null ? ` · ${data.imagesWarmed}/${data.imagesFound} images warmed` : '';
-
-            setTimeout(() => {
-                toast.custom(
-                    () => (
-                        <div className="flex items-center gap-2 text-sm">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                            <span className="text-foreground">
-                                Cache published!{imgInfo} {data.cachedAt ? new Date(data.cachedAt).toLocaleTimeString() : ''}
-                            </span>
-                        </div>
-                    ),
-                    { id: toastId, duration: 5000 }
-                );
-            }, 700);
+            // Read the NDJSON stream — toast updates happen inside
+            await readProgressStream(res, toastId, '#10b981', 'Publishing cache...');
         } catch (err) {
-            stopProgress();
             console.error(err);
             toast.custom(
                 () => (
@@ -161,8 +155,10 @@ export default function AdminLayout() {
     const handleDeleteCache = async () => {
         if (!confirm('Are you sure you want to delete all cached content? The site will fall back to live DB queries until republished.')) return;
         setDeleting(true);
-        const toastId = toast.custom(() => null, { duration: Infinity });
-        startProgress(toastId, 'Deleting cache...', '#f59e0b');
+        const toastId = toast.custom(
+            () => <ProgressToast progress={0} label="Connecting..." color="#f59e0b" />,
+            { duration: Infinity }
+        );
         try {
             const token = localStorage.getItem('admin_token');
             const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -170,8 +166,6 @@ export default function AdminLayout() {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
             });
-
-            stopProgress();
 
             if (res.status === 401) {
                 toast.custom(
@@ -189,29 +183,8 @@ export default function AdminLayout() {
 
             if (!res.ok) throw new Error('Cache delete failed');
 
-            // Complete to 100%
-            toast.custom(
-                () => <ProgressToast progress={100} label="Deleting cache..." color="#f59e0b" />,
-                { id: toastId, duration: 600 }
-            );
-
-            const data = await res.json();
-
-            setTimeout(() => {
-                toast.custom(
-                    () => (
-                        <div className="flex items-center gap-2 text-sm">
-                            <CheckCircle2 className="w-4 h-4 text-amber-500 shrink-0" />
-                            <span className="text-foreground">
-                                Cache cleared! {data.clearedAt ? new Date(data.clearedAt).toLocaleTimeString() : ''}
-                            </span>
-                        </div>
-                    ),
-                    { id: toastId, duration: 5000 }
-                );
-            }, 700);
+            await readProgressStream(res, toastId, '#f59e0b', 'Deleting cache...');
         } catch (err) {
-            stopProgress();
             console.error(err);
             toast.custom(
                 () => (
