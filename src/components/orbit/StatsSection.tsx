@@ -40,8 +40,19 @@ export function StatsSection() {
     const { content } = useContent();
     const { lang } = useLang();
     const ref = useRef(null);
-    // Simple inView check — no scroll listener needed
     const inView = useInView(ref, { margin: '-10px' });
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    // Show only when user starts scrolling
+    useEffect(() => {
+        const onScroll = () => {
+            if (window.scrollY > 200) {
+                setIsScrolled(true);
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
 
     const enStats = (content.en as any).stats;
     const bnStats = (content.bn as any).stats;
@@ -54,8 +65,10 @@ export function StatsSection() {
             label: lang === 'bn' ? BN_LABELS[i] : d.label,
         }));
 
+    const show = isScrolled && inView;
+
     return (
-        <div ref={ref} className="py-3 sm:py-6 px-4 sm:px-6 lg:px-8 relative z-[100]">
+        <div ref={ref} className={`py-3 sm:py-6 px-4 sm:px-6 lg:px-8 relative z-[100] transition-all duration-700 ease-out ${isScrolled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6 pointer-events-none'}`}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 max-w-4xl mx-auto">
                 {items.map((stat: any, i: number) => (
                     <motion.div
@@ -75,7 +88,7 @@ export function StatsSection() {
                         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-emerald-500/5 to-amber-500/5 pointer-events-none" />
                         <div className="relative z-10">
                             <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground font-poppins tabular-nums">
-                                <AnimatedCounter target={Number(stat.value) || 0} active={inView} />
+                                <AnimatedCounter target={Number(stat.value) || 0} active={show} />
                                 <span className="text-primary">{stat.suffix || '+'}</span>
                             </span>
                             <p className="text-[9px] sm:text-[11px] font-semibold tracking-wider opacity-70 uppercase text-muted-foreground mt-1">
