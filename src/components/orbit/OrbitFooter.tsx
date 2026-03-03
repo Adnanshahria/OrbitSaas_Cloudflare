@@ -154,7 +154,7 @@ export function OrbitFooter() {
                     <li key={idx} className="flex flex-col space-y-2">
                       <a
                         href="#services"
-                        className="text-sm text-muted-foreground/70 hover:text-primary transition-colors"
+                        className="text-[13px] sm:text-sm text-muted-foreground/70 hover:text-primary transition-colors"
                       >
                         {item.title}
                       </a>
@@ -182,7 +182,7 @@ export function OrbitFooter() {
                           <li key={idx} className="flex flex-col space-y-2">
                             <a
                               href="#why-us"
-                              className="text-sm text-muted-foreground/70 hover:text-primary transition-colors"
+                              className="text-[13px] sm:text-sm text-muted-foreground/70 hover:text-primary transition-colors"
                             >
                               {item.title}
                             </a>
@@ -205,11 +205,11 @@ export function OrbitFooter() {
                         {legalLinks.map((link, idx) => (
                           <li key={idx} className="flex flex-col space-y-2">
                             {link.url.startsWith('/') ? (
-                              <Link to={link.url} className="text-sm text-muted-foreground/70 hover:text-primary transition-colors">
+                              <Link to={link.url} className="text-[13px] sm:text-sm text-muted-foreground/70 hover:text-primary transition-colors">
                                 {link.label}
                               </Link>
                             ) : (
-                              <a href={link.url} className="text-sm text-muted-foreground/70 hover:text-primary transition-colors">
+                              <a href={link.url} className="text-[13px] sm:text-sm text-muted-foreground/70 hover:text-primary transition-colors">
                                 {link.label}
                               </a>
                             )}
