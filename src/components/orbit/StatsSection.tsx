@@ -55,31 +55,30 @@ export function StatsSection() {
         }));
 
     return (
-        <div ref={ref} className="py-6 sm:py-10 px-4 sm:px-6 lg:px-8 relative z-[100]">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto">
+        <div ref={ref} className="py-3 sm:py-6 px-4 sm:px-6 lg:px-8 relative z-[100]">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 max-w-4xl mx-auto">
                 {items.map((stat: any, i: number) => (
                     <motion.div
                         key={i}
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={inView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 20, scale: 0.95 }}
                         transition={{ duration: 0.5, ease: 'easeOut', delay: i * 0.1 }}
-                        className="rounded-2xl px-4 py-5 sm:px-5 sm:py-6 border border-transparent text-center relative overflow-hidden group hover:scale-[1.03] transition-transform duration-300"
+                        className="rounded-xl px-3 py-3 sm:px-4 sm:py-4 border border-transparent text-center relative overflow-hidden group hover:scale-[1.03] transition-transform duration-300"
                         style={{
                             background: 'linear-gradient(#0a0a12, #0a0a12) padding-box, linear-gradient(135deg, #10b981, #f59e0b, #10b981) border-box',
                             borderWidth: '1px',
                             borderStyle: 'solid',
                             borderColor: 'transparent',
-                            boxShadow: '0 0 20px rgba(16, 185, 129, 0.06), 0 0 40px rgba(245, 158, 11, 0.03)',
+                            boxShadow: '0 0 15px rgba(16, 185, 129, 0.05)',
                         }}
                     >
-                        {/* Subtle glow on hover */}
                         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-emerald-500/5 to-amber-500/5 pointer-events-none" />
                         <div className="relative z-10">
-                            <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground font-poppins tabular-nums">
+                            <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground font-poppins tabular-nums">
                                 <AnimatedCounter target={Number(stat.value) || 0} active={inView} />
                                 <span className="text-primary">{stat.suffix || '+'}</span>
                             </span>
-                            <p className="text-[10px] sm:text-xs font-semibold tracking-wider opacity-70 uppercase text-muted-foreground mt-1.5">
+                            <p className="text-[9px] sm:text-[11px] font-semibold tracking-wider opacity-70 uppercase text-muted-foreground mt-1">
                                 {stat.label}
                             </p>
                         </div>
