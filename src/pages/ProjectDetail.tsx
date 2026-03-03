@@ -112,21 +112,45 @@ function ImageGallery({ images, title, onLightboxChange }: { images: string[]; t
                     )}
                 </div>
 
-                {/* Dots Indicator (Moved outside the image overlay) */}
+                {/* Premium Navigation & Dots Indicator */}
                 {images.length > 1 && (
-                    <div className="flex justify-center gap-2 mt-4 relative z-10 p-2">
-                        {images.map((_, idx) => (
-                            <button
-                                key={idx}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDirection(idx > currentIndex ? 1 : -1);
-                                    setCurrentIndex(idx);
-                                }}
-                                className={`w-2 h-2 rounded-full transition-all ${idx === currentIndex ? 'bg-primary w-4' : 'bg-white/30 hover:bg-white/60'
-                                    }`}
-                            />
-                        ))}
+                    <div className="flex justify-center items-center gap-2 sm:gap-6 mt-8 relative z-10 px-4">
+                        {/* Premium Backward Button */}
+                        <motion.button
+                            onClick={(e) => { e.stopPropagation(); paginate(-1); }}
+                            whileHover={{ scale: 1.1, backgroundColor: '#16A34A' }}
+                            whileTap={{ scale: 0.95 }}
+                            className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#22C55E] text-white shadow-[0_4px_12px_rgba(34,197,94,0.3)] hover:shadow-[#22C55E]/50 transition-shadow shrink-0"
+                        >
+                            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                        </motion.button>
+
+                        <div className="flex justify-center flex-wrap gap-2 max-w-[60%] sm:max-w-none">
+                            {images.map((_, idx) => (
+                                <motion.button
+                                    key={idx}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDirection(idx > currentIndex ? 1 : -1);
+                                        setCurrentIndex(idx);
+                                    }}
+                                    className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all duration-300 shrink-0 ${idx === currentIndex
+                                        ? 'bg-[#FFD700] w-5 sm:w-6 shadow-[0_0_12px_rgba(255,215,0,0.8)]'
+                                        : 'bg-white/20 hover:bg-white/40'
+                                        }`}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Premium Forward Button */}
+                        <motion.button
+                            onClick={(e) => { e.stopPropagation(); paginate(1); }}
+                            whileHover={{ scale: 1.1, backgroundColor: '#16A34A' }}
+                            whileTap={{ scale: 0.95 }}
+                            className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#22C55E] text-white shadow-[0_4px_12px_rgba(34,197,94,0.3)] hover:shadow-[#22C55E]/50 transition-shadow shrink-0"
+                        >
+                            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                        </motion.button>
                     </div>
                 )}
             </motion.div>
@@ -153,13 +177,13 @@ function ImageGallery({ images, title, onLightboxChange }: { images: string[]; t
                             <>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); paginate(-1); }}
-                                    className="absolute left-4 md:left-8 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors opacity-100 sm:opacity-70 sm:hover:opacity-100"
+                                    className="absolute left-4 md:left-8 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors hidden sm:block opacity-100 sm:opacity-70 sm:hover:opacity-100"
                                 >
                                     <ChevronLeft className="w-10 h-10" />
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); paginate(1); }}
-                                    className="absolute right-4 md:right-8 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors opacity-100 sm:opacity-70 sm:hover:opacity-100"
+                                    className="absolute right-4 md:right-8 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors hidden sm:block opacity-100 sm:opacity-70 sm:hover:opacity-100"
                                 >
                                     <ChevronRight className="w-10 h-10" />
                                 </button>
@@ -182,8 +206,30 @@ function ImageGallery({ images, title, onLightboxChange }: { images: string[]; t
                             onClick={(e) => e.stopPropagation()}
                         />
 
-                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/70 text-base font-medium bg-black/40 px-6 py-2 rounded-full backdrop-blur-md">
-                            {currentIndex + 1} / {images.length}
+                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 group">
+                            {/* Premium Golden Gradient Border Wrapper */}
+                            <div className="relative p-[1.5px] rounded-full bg-gradient-to-r from-[#FFD700]/50 via-white/20 to-[#FFD700]/50 shadow-[0_0_20px_rgba(255,215,0,0.2)]">
+                                <div className="flex items-center gap-4 text-white font-medium bg-[#0A0A0B]/90 px-4 py-2 rounded-full backdrop-blur-xl">
+                                    {/* Mobile specific navigation inside indicator row */}
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); paginate(-1); }}
+                                        className="flex sm:hidden p-2 -ml-1 bg-[#22C55E] hover:bg-[#16A34A] text-white rounded-full transition-colors shadow-sm"
+                                    >
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </button>
+
+                                    <span className="text-base min-w-[3.5rem] text-center tracking-wider tabular-nums font-semibold">
+                                        {currentIndex + 1} <span className="text-[#FFD700] mx-0.5">/</span> {images.length}
+                                    </span>
+
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); paginate(1); }}
+                                        className="flex sm:hidden p-2 -mr-1 bg-[#22C55E] hover:bg-[#16A34A] text-white rounded-full transition-colors shadow-sm"
+                                    >
+                                        <ChevronRight className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
                 )}
