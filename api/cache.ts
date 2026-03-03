@@ -2,6 +2,46 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import db from './lib/db.js';
 import { setCorsHeaders } from './lib/cors.js';
 
+// Extract all image URLs from content data recursively
+function extractImageUrls(obj: unknown, urls: Set<string> = new Set()): Set<string> {
+    if (!obj) return urls;
+    if (typeof obj === 'string') {
+        // Match common image URL patterns
+        if (/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg|avif)/i.test(obj) ||
+            /i\.ibb\.co|i\.imgbb\.com|image\.ibb\.co/i.test(obj)) {
+            urls.add(obj);
+        }
+        return urls;
+    }
+    if (Array.isArray(obj)) {
+        for (const item of obj) extractImageUrls(item, urls);
+        return urls;
+    }
+    if (typeof obj === 'object') {
+        for (const value of Object.values(obj as Record<string, unknown>)) {
+            extractImageUrls(value, urls);
+        }
+    }
+    return urls;
+}
+
+// Pre-warm images by sending HEAD requests (best-effort, non-blocking)
+async function warmImages(imageUrls: string[]): Promise<number> {
+    let warmed = 0;
+    // Process in batches of 10 to avoid overwhelming
+    const batchSize = 10;
+    for (let i = 0; i < imageUrls.length; i += batchSize) {
+        const batch = imageUrls.slice(i, i + batchSize);
+        const results = await Promise.allSettled(
+            batch.map(url =>
+                fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(5000) })
+                    .then(res => { if (res.ok) warmed++; })
+            )
+        );
+    }
+    return warmed;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // CORS
     setCorsHeaders(req, res);
@@ -26,7 +66,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             });
         }
 
-        // POST: Build and save cache
+        // POST: Build and save cache + warm images
         if (req.method === 'POST') {
             const { isAuthorized } = await import('./lib/auth.js');
             if (!isAuthorized(req)) {
@@ -42,8 +82,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 )
             `);
 
-            // 2. Build cache for each language
+            // 2. Build cache for each language and collect all image URLs
             const languages = ['en', 'bn'];
+            const allImageUrls = new Set<string>();
+
             for (const lang of languages) {
                 // Fetch all sections for this language
                 const result = await db.execute({
@@ -54,7 +96,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 // Assemble into a single JSON object
                 const content: Record<string, unknown> = {};
                 for (const row of result.rows) {
-                    content[row.section as string] = JSON.parse(row.data as string);
+                    const parsed = JSON.parse(row.data as string);
+                    content[row.section as string] = parsed;
+                    // Extract image URLs from this section
+                    extractImageUrls(parsed, allImageUrls);
                 }
 
                 // Save the assembled blob
@@ -66,17 +111,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 });
             }
 
-            // Invalidate all AI gists so chatbot regenerates fresh summaries
+            // 3. Invalidate all AI gists so chatbot regenerates fresh summaries
             try {
                 await db.execute('DELETE FROM kb_gist');
             } catch {
                 // kb_gist table might not exist — skip
             }
 
+            // 4. Pre-warm images (best effort)
+            const imageUrls = Array.from(allImageUrls);
+            let imagesWarmed = 0;
+            try {
+                imagesWarmed = await warmImages(imageUrls);
+            } catch {
+                // Image warming is best-effort
+            }
+
+            // 5. Warm the CDN cache by hitting the content endpoints
+            try {
+                const baseUrl = `https://${req.headers.host}`;
+                await Promise.allSettled(
+                    languages.map(lang =>
+                        fetch(`${baseUrl}/api/content?lang=${lang}`, {
+                            method: 'GET',
+                            signal: AbortSignal.timeout(5000),
+                        })
+                    )
+                );
+            } catch {
+                // CDN warming is best-effort
+            }
+
             return res.status(200).json({
                 success: true,
                 message: 'Cache published successfully',
                 cachedAt: new Date().toISOString(),
+                imagesFound: imageUrls.length,
+                imagesWarmed,
             });
         }
 

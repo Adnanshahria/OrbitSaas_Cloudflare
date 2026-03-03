@@ -57,7 +57,8 @@ export default function AdminLayout() {
             if (!res.ok) throw new Error('Cache publish failed');
 
             const data = await res.json();
-            toast.success(`Cache published! ${data.cachedAt ? new Date(data.cachedAt).toLocaleTimeString() : ''}`, { id: toastId });
+            const imgInfo = data.imagesWarmed != null ? ` · ${data.imagesWarmed}/${data.imagesFound} images warmed` : '';
+            toast.success(`Cache published!${imgInfo} ${data.cachedAt ? new Date(data.cachedAt).toLocaleTimeString() : ''}`, { id: toastId });
         } catch (err) {
             console.error(err);
             toast.error('Failed to publish cache', { id: toastId });

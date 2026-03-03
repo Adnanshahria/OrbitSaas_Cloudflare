@@ -82,7 +82,20 @@
             "headers": [
                 {
                     "key": "CDN-Cache-Control",
-                    "value": "public, s-maxage=60, stale-while-revalidate=120"
+                    "value": "public, s-maxage=60, stale-while-revalidate=300"
+                }
+            ]
+        },
+        {
+            "source": "/api/img-proxy",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=86400, s-maxage=31536000, immutable"
+                },
+                {
+                    "key": "CDN-Cache-Control",
+                    "value": "public, s-maxage=31536000, immutable"
                 }
             ]
         }
