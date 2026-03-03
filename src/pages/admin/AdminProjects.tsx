@@ -203,7 +203,7 @@ const DEFAULT_PROJECT: UnifiedProject = {
 
 // --- Project Editor Component (Handles Tabs) ---
 
-function ProjectEditor({ item, update, categories: availableCategories }: { item: UnifiedProject; update: (i: UnifiedProject) => void; categories: string[] }) {
+function ProjectEditor({ item, update, categories: availableCategories, onSave }: { item: UnifiedProject; update: (i: UnifiedProject) => void; categories: string[]; onSave?: () => void }) {
     const [tab, setTab] = useState<'en' | 'bn'>('en');
     const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set());
     const [jsonDescOpen, setJsonDescOpen] = useState(false);
@@ -773,6 +773,14 @@ function ProjectEditor({ item, update, categories: availableCategories }: { item
                                                             title="Remove section"
                                                         ><Trash2 className="w-3.5 h-3.5" /></button>
                                                     )}
+                                                    {onSave && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={onSave}
+                                                            className="p-1 px-2 rounded bg-primary/10 text-primary hover:bg-primary/20 text-[10px] font-bold uppercase transition-all"
+                                                            title="Save changes"
+                                                        >Save</button>
+                                                    )}
                                                 </div>
                                             </div>
                                             {!isCollapsed && (
@@ -1150,8 +1158,9 @@ export default function AdminProjects() {
                     newItem={DEFAULT_PROJECT}
                     addLabel="Add New Project"
                     getItemLabel={(item) => item.en.title || item.bn.title || ''}
+                    onSave={handleSave}
                     renderItem={(item, _i, update) => (
-                        <ProjectEditor item={item} update={update} categories={categories} />
+                        <ProjectEditor item={item} update={update} categories={categories} onSave={handleSave} />
                     )}
                 />
             </div>

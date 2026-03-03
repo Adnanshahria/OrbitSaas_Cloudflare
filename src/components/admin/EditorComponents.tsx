@@ -337,6 +337,7 @@ export function ItemListEditor<T extends Record<string, unknown>>({
     newItem,
     addLabel = 'Add Item',
     getItemLabel,
+    onSave,
 }: {
     items: T[];
     setItems: (items: T[]) => void;
@@ -344,6 +345,7 @@ export function ItemListEditor<T extends Record<string, unknown>>({
     newItem: T;
     addLabel?: string;
     getItemLabel?: (item: T, index: number) => string;
+    onSave?: () => void;
 }) {
     // Track which items are expanded (by index) — start all collapsed
     const [expanded, setExpanded] = useState<Set<number>>(new Set());
@@ -485,6 +487,16 @@ export function ItemListEditor<T extends Record<string, unknown>>({
                                 <div className="overflow-hidden">
                                     <div className="px-4 pb-4 pt-1 space-y-3 border-t border-border/50">
                                         {renderItem(item, i, (updated) => updateItem(i, updated))}
+                                        {onSave && isExpanded && (
+                                            <div className="flex justify-end pt-2 border-t border-border/30 mt-4">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); onSave(); }}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-all cursor-pointer"
+                                                >
+                                                    <Save className="w-3.5 h-3.5" /> Save Item Changes
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
