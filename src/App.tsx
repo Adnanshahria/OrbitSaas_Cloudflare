@@ -73,7 +73,7 @@ function PublicSite() {
     }
 
     const API_BASE = import.meta.env.VITE_API_URL || '';
-    fetch(`${API_BASE}/api/visitors`, {
+    fetch(`${API_BASE}/api/leads?action=visitors`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ session_id: sessionId })

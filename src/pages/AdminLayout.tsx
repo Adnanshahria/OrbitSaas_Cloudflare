@@ -113,7 +113,7 @@ export default function AdminLayout() {
         try {
             const token = localStorage.getItem('admin_token');
             const API_BASE = import.meta.env.VITE_API_URL || '';
-            const res = await fetch(`${API_BASE}/api/cache`, {
+            const res = await fetch(`${API_BASE}/api/admin?action=cache`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -162,7 +162,7 @@ export default function AdminLayout() {
         try {
             const token = localStorage.getItem('admin_token');
             const API_BASE = import.meta.env.VITE_API_URL || '';
-            const res = await fetch(`${API_BASE}/api/cache`, {
+            const res = await fetch(`${API_BASE}/api/admin?action=cache`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
             });

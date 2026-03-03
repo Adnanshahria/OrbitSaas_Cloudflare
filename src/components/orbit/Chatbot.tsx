@@ -321,7 +321,7 @@ export function Chatbot() {
 
         // Update the lead with the AI-generated summary
         const API_BASE = import.meta.env.VITE_API_URL || '';
-        await fetch(`${API_BASE}/api/submit-lead`, {
+        await fetch(`${API_BASE}/api/leads?action=submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -362,7 +362,7 @@ export function Chatbot() {
         : 'General Inquiry';
 
       const API_BASE = import.meta.env.VITE_API_URL || '';
-      const res = await fetch(`${API_BASE}/api/submit-lead`, {
+      const res = await fetch(`${API_BASE}/api/leads?action=submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -486,7 +486,7 @@ export function Chatbot() {
           .join('\n\n');
 
         const API_BASE = import.meta.env.VITE_API_URL || '';
-        fetch(`${API_BASE}/api/submit-lead`, {
+        fetch(`${API_BASE}/api/leads?action=submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -528,7 +528,7 @@ export function Chatbot() {
 
       const API_BASE = import.meta.env.VITE_API_URL || '';
       try {
-        const ctxRes = await fetch(`${API_BASE}/api/chatbot-context?lang=${chatLang}`);
+        const ctxRes = await fetch(`${API_BASE}/api/ai?action=context&lang=${chatLang}`);
         if (ctxRes.ok) {
           const ctxData = await ctxRes.json();
           knowledgeBase = ctxData.knowledgeBase || '';

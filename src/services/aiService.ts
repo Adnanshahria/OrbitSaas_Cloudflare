@@ -8,7 +8,7 @@ export const sendToGroq = async (messages: ChatMessage[]) => {
     const API_BASE = import.meta.env.VITE_API_URL || '';
 
     try {
-        const response = await fetch(`${API_BASE}/api/chat`, {
+        const response = await fetch(`${API_BASE}/api/ai?action=chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

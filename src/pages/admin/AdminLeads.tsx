@@ -27,10 +27,10 @@ export default function AdminLeads() {
             const API_BASE = import.meta.env.VITE_API_URL || '';
 
             const [leadsRes, visitorsRes] = await Promise.all([
-                fetch(`${API_BASE}/api/leads`, {
+                fetch(`${API_BASE}/api/leads?action=list`, {
                     headers: { Authorization: `Bearer ${token}` }
                 }),
-                fetch(`${API_BASE}/api/visitors`, {
+                fetch(`${API_BASE}/api/leads?action=visitors`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
             ]);
@@ -62,7 +62,7 @@ export default function AdminLeads() {
         try {
             const token = localStorage.getItem('admin_token');
             const API_BASE = import.meta.env.VITE_API_URL || '';
-            const res = await fetch(`${API_BASE}/api/leads?id=${id}`, {
+            const res = await fetch(`${API_BASE}/api/leads?action=list&id=${id}`, {
                 method: 'DELETE',
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -73,7 +73,7 @@ export default function AdminLeads() {
                 setLeads(leads.filter(l => l.id !== id));
 
                 // Trigger Vercel cache rebuild so chatbot AI context stays fresh
-                fetch(`${API_BASE}/api/cache`, {
+                fetch(`${API_BASE}/api/admin?action=cache`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
