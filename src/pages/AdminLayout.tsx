@@ -301,7 +301,7 @@ export default function AdminLayout() {
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="p-4 sm:p-6 lg:p-8 max-w-4xl"
+                    className="p-4 sm:p-6 lg:p-8 max-w-[1200px] mx-auto w-full"
                 >
                     <Outlet />
                 </motion.div>

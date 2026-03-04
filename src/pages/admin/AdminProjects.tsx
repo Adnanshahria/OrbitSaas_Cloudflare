@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SectionHeader, SaveButton, TextField, ErrorAlert, ItemListEditor, LangToggle, JsonPanel } from '@/components/admin/EditorComponents';
-import { Upload, Trash2, X, Plus, Layers, Settings2, ChevronDown, HelpCircle, Search } from 'lucide-react';
+import { Upload, Trash2, X, Plus, Layers, Settings2, ChevronDown, HelpCircle, Search, GripVertical, Link2, ArrowUp, ArrowDown } from 'lucide-react';
 import { RichTextEditor } from '@/components/admin/RichTextEditor';
 import { useContent } from '@/contexts/ContentContext';
 import { uploadToImgBB } from '@/lib/imgbb';
@@ -11,6 +11,8 @@ import { uploadToImgBB } from '@/lib/imgbb';
 
 function MultiImageUpload({ images, onChange, title }: { images: string[]; onChange: (imgs: string[]) => void; title: string; }) {
     const [uploading, setUploading] = useState(false);
+    const [imageUrl, setImageUrl] = useState('');
+    const containerRef = useRef<HTMLDivElement>(null);
 
     const handleFiles = async (files: FileList) => {
         const imageFiles = Array.from(files).filter((f) => f.type.startsWith('image/'));
@@ -49,48 +51,61 @@ function MultiImageUpload({ images, onChange, title }: { images: string[]; onCha
         onChange(updated);
     };
 
-    // Paste handler
-    useEffect(() => {
-        const handlePaste = async (e: ClipboardEvent) => {
-            const items = e.clipboardData?.items;
-            if (!items) return;
+    const addImageUrl = () => {
+        const url = imageUrl.trim();
+        if (!url) return;
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            toast.error('Please enter a valid URL starting with http:// or https://');
+            return;
+        }
+        onChange([...images, url]);
+        setImageUrl('');
+        toast.success('Image URL added!');
+    };
 
-            const imageFiles: File[] = [];
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    const blob = items[i].getAsFile();
-                    if (blob) imageFiles.push(blob);
-                }
+    // Scoped paste handler — only triggers when this specific container is focused
+    const handlePaste = useCallback(async (e: React.ClipboardEvent) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        const imageFiles: File[] = [];
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const blob = items[i].getAsFile();
+                if (blob) imageFiles.push(blob);
             }
+        }
 
-            if (imageFiles.length > 0) {
-                if (document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement) return;
-
-                setUploading(true);
-                const toastId = toast.loading(`Uploading pasted image...`);
-                try {
-                    const newUrls: string[] = [];
-                    for (const file of imageFiles) {
-                        const url = await uploadToImgBB(file);
-                        newUrls.push(url);
-                    }
-                    onChange([...images, ...newUrls]);
-                    toast.success('Image uploaded!', { id: toastId });
-                } catch (err) {
-                    console.error(err);
-                    toast.error('Upload failed', { id: toastId });
-                } finally {
-                    setUploading(false);
+        if (imageFiles.length > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            setUploading(true);
+            const toastId = toast.loading(`Uploading pasted image...`);
+            try {
+                const newUrls: string[] = [];
+                for (const file of imageFiles) {
+                    const url = await uploadToImgBB(file);
+                    newUrls.push(url);
                 }
+                onChange([...images, ...newUrls]);
+                toast.success('Image uploaded!', { id: toastId });
+            } catch (err) {
+                console.error(err);
+                toast.error('Upload failed', { id: toastId });
+            } finally {
+                setUploading(false);
             }
-        };
-        window.addEventListener('paste', handlePaste);
-        return () => window.removeEventListener('paste', handlePaste);
+        }
     }, [images, onChange]);
 
 
     return (
-        <div className="outline-none">
+        <div
+            ref={containerRef}
+            tabIndex={0}
+            onPaste={handlePaste}
+            className="outline-none focus:ring-2 focus:ring-primary/20 rounded-lg p-1 -m-1 transition-shadow"
+        >
             <label className="text-sm font-medium text-foreground mb-1.5 block">
                 {title} <span className="text-xs font-normal text-muted-foreground ml-2">({images.length} — first is cover)</span>
             </label>
@@ -109,13 +124,39 @@ function MultiImageUpload({ images, onChange, title }: { images: string[]; onCha
                     ))}
                 </div>
             )}
-            <label className="w-full max-w-xs h-24 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors">
-                <div className="flex flex-col items-center gap-1 text-muted-foreground">
-                    <Upload className="w-5 h-5" />
-                    <span className="text-xs">{uploading ? 'Uploading...' : 'Click to Upload to Cloud or Paste'}</span>
+            <div className="flex flex-col sm:flex-row gap-3">
+                <label className="flex-1 max-w-xs h-24 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors">
+                    <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                        <Upload className="w-5 h-5" />
+                        <span className="text-xs">{uploading ? 'Uploading...' : 'Click to Upload'}</span>
+                    </div>
+                    <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && handleFiles(e.target.files)} />
+                </label>
+                <div className="flex-1 max-w-sm">
+                    <div className="flex items-center gap-2">
+                        <div className="relative flex-1">
+                            <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <input
+                                type="text"
+                                value={imageUrl}
+                                onChange={e => setImageUrl(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addImageUrl(); } }}
+                                placeholder="Paste image URL..."
+                                className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:ring-2 focus:ring-primary/30"
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            onClick={addImageUrl}
+                            disabled={!imageUrl.trim()}
+                            className="px-3 py-2.5 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 text-xs font-semibold transition-colors disabled:opacity-40 cursor-pointer"
+                        >
+                            <Plus className="w-4 h-4" />
+                        </button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1.5 ml-1">Or click this area and press Ctrl+V to paste an image from clipboard</p>
                 </div>
-                <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && handleFiles(e.target.files)} />
-            </label>
+            </div>
         </div>
     );
 }
@@ -206,6 +247,10 @@ const DEFAULT_PROJECT: UnifiedProject = {
 function ProjectEditor({ item, update, categories: availableCategories, onSave }: { item: UnifiedProject; update: (i: UnifiedProject) => void; categories: string[]; onSave?: () => void }) {
     const [tab, setTab] = useState<'en' | 'bn'>('en');
     const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set());
+    const [imagesExpanded, setImagesExpanded] = useState(false);
+    const [seoExpanded, setSeoExpanded] = useState(false);
+    const [seoHelpOpen, setSeoHelpOpen] = useState(false);
+    const [htmlParserOpen, setHtmlParserOpen] = useState(false);
     const [jsonDescOpen, setJsonDescOpen] = useState(false);
     const [jsonDescHelp, setJsonDescHelp] = useState(false);
     const [jsonDescText, setJsonDescText] = useState('');
@@ -243,18 +288,8 @@ function ProjectEditor({ item, update, categories: availableCategories, onSave }
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     🌍 Shared Settings (Applies to both languages)
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <TextField label="Project ID (Slug for URL)" value={item.id || ''} onChange={v => update({ ...item, id: v.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-') })} />
-                    <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-foreground block">Display Order</label>
-                        <input
-                            type="number"
-                            value={item.order || 0}
-                            onChange={e => update({ ...item, order: parseInt(e.target.value) || 0 })}
-                            className="w-full bg-secondary rounded-lg px-4 py-2.5 text-sm text-foreground outline-none border border-border"
-                            min={0}
-                        />
-                    </div>
                     <div className="space-y-1.5 sm:col-span-1">
                         <label className="text-sm font-medium text-foreground block">Categories</label>
                         <div className="flex flex-wrap gap-1.5 p-2.5 bg-secondary rounded-lg border border-border min-h-[42px]">
@@ -302,336 +337,373 @@ function ProjectEditor({ item, update, categories: availableCategories, onSave }
                     <TextField label="Live Link" value={item.link || ''} onChange={v => update({ ...item, link: v })} />
                     <TextField label="Video Preview URL" value={item.videoPreview || ''} onChange={v => update({ ...item, videoPreview: v })} />
                 </div>
+            </div>
 
-                <MultiImageUpload
-                    images={item.images}
-                    onChange={imgs => {
-                        // Clean up hoverImages: remove any indices that are out of bounds
-                        const validHover = (item.hoverImages || []).filter(idx => idx < imgs.length);
-                        update({ ...item, images: imgs, hoverImages: validHover });
-                    }}
-                    title="Project Images"
-                />
-
-                {/* Hover Images Selector */}
-                {item.images.length > 1 && (
-                    <div>
-                        <label className="text-sm font-medium text-foreground mb-1.5 block">
-                            Hover Preview Images
-                            <span className="text-xs font-normal text-muted-foreground ml-2">
-                                (Click to toggle — selected images cycle on card hover every 2s)
+            <div className="bg-secondary/30 rounded-xl border border-border overflow-hidden">
+                <button
+                    type="button"
+                    onClick={() => setImagesExpanded(!imagesExpanded)}
+                    className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors"
+                >
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-foreground">🖼️ Project Images & Hover Preview</span>
+                        {item.images?.length > 0 && (
+                            <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-bold">
+                                {item.images.length} added
                             </span>
-                        </label>
-                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                            {item.images.map((img, i) => {
-                                if (i === 0) return null; // Skip cover image
-                                const isSelected = (item.hoverImages || []).includes(i);
-                                return (
-                                    <button
-                                        key={i}
-                                        type="button"
-                                        onClick={() => {
-                                            const current = item.hoverImages || [];
-                                            const updated = isSelected
-                                                ? current.filter(idx => idx !== i)
-                                                : [...current, i];
-                                            update({ ...item, hoverImages: updated });
-                                        }}
-                                        className={`relative rounded-lg overflow-hidden border-2 transition-all ${isSelected
-                                            ? 'border-primary ring-2 ring-primary/30 scale-[1.02]'
-                                            : 'border-border/50 opacity-60 hover:opacity-100 hover:border-border'
-                                            }`}
-                                    >
-                                        <img src={img} alt="" className="w-full h-20 object-cover" />
-                                        {isSelected && (
-                                            <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                                                <span className="text-[10px] font-bold text-white">
-                                                    {(item.hoverImages || []).indexOf(i) + 1}
-                                                </span>
-                                            </div>
-                                        )}
-                                        <div className="absolute bottom-0 inset-x-0 bg-black/60 text-center py-0.5">
-                                            <span className="text-[9px] text-white/80 font-medium">
-                                                {isSelected ? 'Selected' : 'Click to add'}
-                                            </span>
-                                        </div>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                        {(item.hoverImages || []).length > 0 && (
-                            <p className="text-[11px] text-muted-foreground mt-1.5">
-                                {(item.hoverImages || []).length} image{(item.hoverImages || []).length !== 1 ? 's' : ''} will cycle on hover
-                            </p>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                        <span className="text-xs font-medium">{imagesExpanded ? 'Collapse' : 'Expand'}</span>
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${imagesExpanded ? 'rotate-180' : ''}`} />
+                    </div>
+                </button>
+
+                {imagesExpanded && (
+                    <div className="p-4 pt-0 border-t border-border/50 space-y-4">
+                        <MultiImageUpload
+                            images={item.images}
+                            onChange={imgs => {
+                                // Clean up hoverImages: remove any indices that are out of bounds
+                                const validHover = (item.hoverImages || []).filter(idx => idx < imgs.length);
+                                update({ ...item, images: imgs, hoverImages: validHover });
+                            }}
+                            title=""
+                        />
+
+                        {/* Hover Images Selector */}
+                        {item.images.length > 1 && (
+                            <div>
+                                <label className="text-sm font-medium text-foreground mb-1.5 block">
+                                    Hover Preview Images
+                                    <span className="text-xs font-normal text-muted-foreground ml-2">
+                                        (Click to toggle — selected images cycle on card hover every 2s)
+                                    </span>
+                                </label>
+                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                                    {item.images.map((img, i) => {
+                                        if (i === 0) return null; // Skip cover image
+                                        const isSelected = (item.hoverImages || []).includes(i);
+                                        return (
+                                            <button
+                                                key={i}
+                                                type="button"
+                                                onClick={() => {
+                                                    const current = item.hoverImages || [];
+                                                    const updated = isSelected
+                                                        ? current.filter(idx => idx !== i)
+                                                        : [...current, i];
+                                                    update({ ...item, hoverImages: updated });
+                                                }}
+                                                className={`relative rounded-lg overflow-hidden border-2 transition-all ${isSelected
+                                                    ? 'border-primary ring-2 ring-primary/30 scale-[1.02]'
+                                                    : 'border-border/50 opacity-60 hover:opacity-100 hover:border-border'
+                                                    }`}
+                                            >
+                                                <img src={img} alt="" className="w-full h-20 object-cover" />
+                                                {isSelected && (
+                                                    <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                                                        <span className="text-[10px] font-bold text-white">
+                                                            {(item.hoverImages || []).indexOf(i) + 1}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                <div className="absolute bottom-0 inset-x-0 bg-black/60 text-center py-0.5">
+                                                    <span className="text-[9px] text-white/80 font-medium">
+                                                        {isSelected ? 'Selected' : 'Click to add'}
+                                                    </span>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                {(item.hoverImages || []).length > 0 && (
+                                    <p className="text-[11px] text-muted-foreground mt-1.5">
+                                        {(item.hoverImages || []).length} image{(item.hoverImages || []).length !== 1 ? 's' : ''} will cycle on hover
+                                    </p>
+                                )}
+                            </div>
                         )}
                     </div>
                 )}
+            </div>
 
-                <TagsInput
-                    tags={item.tags || []}
-                    onChange={t => update({ ...item, tags: t })}
-                />
+            <TagsInput
+                tags={item.tags || []}
+                onChange={t => update({ ...item, tags: t })}
+            />
 
-                {/* Shared SEO Section */}
-                {(() => {
-                    const [seoHelpOpen, setSeoHelpOpen] = useState(false);
-                    return (
-                        <div className="mt-4 p-4 rounded-lg bg-secondary/30 border border-border">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2">
-                                    <h4 className="text-sm font-bold text-foreground">🔍 Shared SEO Settings</h4>
-                                    <div className="relative">
-                                        <button
-                                            type="button"
-                                            onClick={() => setSeoHelpOpen(!seoHelpOpen)}
-                                            className="p-1.5 rounded-lg bg-secondary hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
-                                            title="Show SEO format guide"
-                                        >
-                                            <HelpCircle className="w-4 h-4" />
-                                        </button>
-                                        {seoHelpOpen && (
-                                            <div className="absolute left-0 top-full mt-2 w-[400px] p-4 rounded-xl bg-background border border-border shadow-2xl z-50">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <h4 className="text-sm font-bold text-foreground">SEO Input Guide</h4>
-                                                    <button onClick={() => setSeoHelpOpen(false)} className="text-muted-foreground hover:text-foreground">
-                                                        <X className="w-3.5 h-3.5" />
-                                                    </button>
-                                                </div>
-                                                <div className="space-y-3 text-[11px] text-muted-foreground leading-relaxed">
-                                                    <div>
-                                                        <p className="font-bold text-foreground mb-1">✏️ Manual Input:</p>
-                                                        <ul className="list-disc ml-4 space-y-1">
-                                                            <li><strong>Meta Title</strong> — Under 60 characters. E.g: <code className="bg-secondary px-1 py-0.5 rounded text-primary">My Project | Orbit SaaS</code></li>
-                                                            <li><strong>Meta Description</strong> — Under 160 characters. Summarize the project in 1-2 sentences.</li>
-                                                            <li><strong>Keywords</strong> — Type a keyword and press Enter to add. Add 5-10 relevant terms.</li>
-                                                        </ul>
-                                                    </div>
-                                                    <div className="border-t border-border pt-3">
-                                                        <p className="font-bold text-foreground mb-1">📋 HTML Parser (Optional):</p>
-                                                        <p>Paste HTML meta tags into the textarea below and click <span className="text-primary font-bold">Analyze</span>. Supported tags:</p>
-                                                        <ul className="list-disc ml-4 mt-1 space-y-0.5">
-                                                            <li><code className="bg-secondary px-1 py-0.5 rounded">&lt;title&gt;...&lt;/title&gt;</code></li>
-                                                            <li><code className="bg-secondary px-1 py-0.5 rounded">meta name="description"</code></li>
-                                                            <li><code className="bg-secondary px-1 py-0.5 rounded">meta name="keywords"</code></li>
-                                                        </ul>
-                                                    </div>
-                                                    <div className="border-t border-border pt-3">
-                                                        <p className="font-bold text-foreground mb-1">🔎 Result Preview:</p>
-                                                        <pre className="bg-secondary/50 rounded-lg p-2 text-[10px] font-mono overflow-auto whitespace-pre">{`<title>Your Meta Title</title>
+            {/* Shared SEO Section */}
+            <div className="rounded-xl border border-border bg-secondary/30 overflow-hidden mt-4">
+                <button
+                    type="button"
+                    onClick={() => setSeoExpanded(!seoExpanded)}
+                    className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors"
+                >
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-foreground">🔍 Shared SEO Settings</span>
+                        {(item.seo?.title || item.seo?.keywords?.length > 0) && (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-500 text-[10px] font-bold">
+                                Configured
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                        <span className="text-xs font-medium">{seoExpanded ? 'Collapse' : 'Expand'}</span>
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${seoExpanded ? 'rotate-180' : ''}`} />
+                    </div>
+                </button>
+
+                {seoExpanded && (
+                    <div className="p-4 pt-0 border-t border-border/50">
+                        <div className="flex items-center justify-end mb-3">
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setSeoHelpOpen(!seoHelpOpen)}
+                                    className="p-1.5 rounded-lg bg-secondary hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors cursor-pointer flex items-center gap-1.5"
+                                    title="Show SEO format guide"
+                                >
+                                    <HelpCircle className="w-4 h-4" />
+                                    <span className="text-xs">Help</span>
+                                </button>
+                                {seoHelpOpen && (
+                                    <div className="absolute right-0 top-full mt-2 w-[400px] p-4 rounded-xl bg-background border border-border shadow-2xl z-50">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <h4 className="text-sm font-bold text-foreground">SEO Input Guide</h4>
+                                            <button onClick={() => setSeoHelpOpen(false)} className="text-muted-foreground hover:text-foreground">
+                                                <X className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                        <div className="space-y-3 text-[11px] text-muted-foreground leading-relaxed">
+                                            <div>
+                                                <p className="font-bold text-foreground mb-1">✏️ Manual Input:</p>
+                                                <ul className="list-disc ml-4 space-y-1">
+                                                    <li><strong>Meta Title</strong> — Under 60 characters. E.g: <code className="bg-secondary px-1 py-0.5 rounded text-primary">My Project | Orbit SaaS</code></li>
+                                                    <li><strong>Meta Description</strong> — Under 160 characters. Summarize the project in 1-2 sentences.</li>
+                                                    <li><strong>Keywords</strong> — Type a keyword and press Enter to add. Add 5-10 relevant terms.</li>
+                                                </ul>
+                                            </div>
+                                            <div className="border-t border-border pt-3">
+                                                <p className="font-bold text-foreground mb-1">📋 HTML Parser (Optional):</p>
+                                                <p>Paste HTML meta tags into the textarea below and click <span className="text-primary font-bold">Analyze</span>. Supported tags:</p>
+                                                <ul className="list-disc ml-4 mt-1 space-y-0.5">
+                                                    <li><code className="bg-secondary px-1 py-0.5 rounded">&lt;title&gt;...&lt;/title&gt;</code></li>
+                                                    <li><code className="bg-secondary px-1 py-0.5 rounded">meta name="description"</code></li>
+                                                    <li><code className="bg-secondary px-1 py-0.5 rounded">meta name="keywords"</code></li>
+                                                </ul>
+                                            </div>
+                                            <div className="border-t border-border pt-3">
+                                                <p className="font-bold text-foreground mb-1">🔎 Result Preview:</p>
+                                                <pre className="bg-secondary/50 rounded-lg p-2 text-[10px] font-mono overflow-auto whitespace-pre">{`<title>Your Meta Title</title>
 <meta name="description" content="Your description...">
 <meta name="keywords" content="keyword1, keyword2, ...">`}</pre>
-                                                        <p className="text-primary font-medium mt-1">These tags appear in Google search results and social shares.</p>
-                                                    </div>
-                                                </div>
+                                                <p className="text-primary font-medium mt-1">These tags appear in Google search results and social shares.</p>
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
+                        </div>
 
-                            {/* Manual Input Fields — Primary */}
-                            <div className="space-y-3 mb-4">
-                                <TextField label="Meta Title" value={item.seo?.title || ''} onChange={v => updateSeo('title', v)} lang="en" />
-                                <TextField label="Meta Description" value={item.seo?.description || ''} onChange={v => updateSeo('description', v)} multiline lang="en" />
-                                <TagsInput tags={item.seo?.keywords || []} onChange={t => updateSeo('keywords', t)} />
-                            </div>
+                        {/* Manual Input Fields — Primary */}
+                        <div className="space-y-3 mb-4">
+                            <TextField label="Meta Title" value={item.seo?.title || ''} onChange={v => updateSeo('title', v)} lang="en" />
+                            <TextField label="Meta Description" value={item.seo?.description || ''} onChange={v => updateSeo('description', v)} multiline lang="en" />
+                            <TagsInput tags={item.seo?.keywords || []} onChange={t => updateSeo('keywords', t)} />
+                        </div>
 
-                            {/* HTML Parser — Optional, Collapsible */}
-                            {(() => {
-                                const [htmlParserOpen, setHtmlParserOpen] = useState(false);
-                                return (
-                                    <div className="rounded-lg border border-border/50 overflow-hidden">
+                        {/* HTML Parser — Optional, Collapsible */}
+                        <div className="rounded-lg border border-border/50 overflow-hidden">
+                            <button
+                                type="button"
+                                onClick={() => setHtmlParserOpen(!htmlParserOpen)}
+                                className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-secondary/30 transition-colors cursor-pointer text-left"
+                            >
+                                <span className="text-xs font-medium text-muted-foreground">📋 Import from HTML <span className="text-[10px] opacity-60">(optional)</span></span>
+                                <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${htmlParserOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {htmlParserOpen && (
+                                <div className="px-4 pb-4 pt-2 border-t border-border/50">
+                                    <p className="text-[10px] text-muted-foreground mb-2">Paste HTML meta tags and click Analyze to auto-fill the fields above.</p>
+                                    <div className="flex gap-2">
+                                        <textarea
+                                            id="seo-html-input"
+                                            className="flex-1 bg-background/50 rounded-lg px-3 py-2 text-xs font-mono text-muted-foreground border border-border/50 outline-none resize-y"
+                                            rows={3}
+                                            placeholder={'<title>My Project</title>\n<meta name="description" content="...">\n<meta name="keywords" content="a, b, c">'}
+                                        />
                                         <button
                                             type="button"
-                                            onClick={() => setHtmlParserOpen(!htmlParserOpen)}
-                                            className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-secondary/30 transition-colors cursor-pointer text-left"
+                                            onClick={() => {
+                                                const input = document.getElementById('seo-html-input') as HTMLTextAreaElement;
+                                                const val = input?.value || '';
+                                                if (!val.trim()) {
+                                                    toast.error('Please paste some HTML meta tags first');
+                                                    return;
+                                                }
+
+                                                const titleMatch = val.match(/<title>(.*?)<\/title>/i) || val.match(/meta\s+name=["']title["']\s+content=["'](.*?)["']/i);
+                                                const descMatch = val.match(/meta\s+name=["']description["']\s+content=["'](.*?)["']/i) || val.match(/meta\s+property=["']og:description["']\s+content=["'](.*?)["']/i);
+                                                const keyMatch = val.match(/meta\s+name=["']keywords["']\s+content=["'](.*?)["']/i);
+
+                                                const title = titleMatch ? titleMatch[1] : '';
+                                                const description = descMatch ? descMatch[1] : '';
+                                                const keywords = keyMatch ? keyMatch[1].split(',').map(s => s.trim()) : [];
+
+                                                if (title || description || keywords.length > 0) {
+                                                    update({
+                                                        ...item,
+                                                        seo: {
+                                                            title: title || item.seo.title,
+                                                            description: description || item.seo.description,
+                                                            keywords: keywords.length > 0 ? keywords : item.seo.keywords
+                                                        }
+                                                    });
+                                                    toast.success('SEO tags analyzed and applied!');
+                                                    input.value = '';
+                                                } else {
+                                                    toast.error('Could not detect valid SEO tags. Check your HTML format.');
+                                                }
+                                            }}
+                                            className="px-4 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all flex flex-col items-center justify-center gap-1 group whitespace-nowrap"
                                         >
-                                            <span className="text-xs font-medium text-muted-foreground">📋 Import from HTML <span className="text-[10px] opacity-60">(optional)</span></span>
-                                            <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${htmlParserOpen ? 'rotate-180' : ''}`} />
+                                            <Search className="w-4 h-4" />
+                                            <span className="text-[10px] font-bold uppercase tracking-wider">Analyze</span>
                                         </button>
-                                        {htmlParserOpen && (
-                                            <div className="px-4 pb-4 pt-2 border-t border-border/50">
-                                                <p className="text-[10px] text-muted-foreground mb-2">Paste HTML meta tags and click Analyze to auto-fill the fields above.</p>
-                                                <div className="flex gap-2">
-                                                    <textarea
-                                                        id="seo-html-input"
-                                                        className="flex-1 bg-background/50 rounded-lg px-3 py-2 text-xs font-mono text-muted-foreground border border-border/50 outline-none resize-y"
-                                                        rows={3}
-                                                        placeholder={'<title>My Project</title>\n<meta name="description" content="...">\n<meta name="keywords" content="a, b, c">'}
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const input = document.getElementById('seo-html-input') as HTMLTextAreaElement;
-                                                            const val = input?.value || '';
-                                                            if (!val.trim()) {
-                                                                toast.error('Please paste some HTML meta tags first');
-                                                                return;
-                                                            }
-
-                                                            const titleMatch = val.match(/<title>(.*?)<\/title>/i) || val.match(/meta\s+name=["']title["']\s+content=["'](.*?)["']/i);
-                                                            const descMatch = val.match(/meta\s+name=["']description["']\s+content=["'](.*?)["']/i) || val.match(/meta\s+property=["']og:description["']\s+content=["'](.*?)["']/i);
-                                                            const keyMatch = val.match(/meta\s+name=["']keywords["']\s+content=["'](.*?)["']/i);
-
-                                                            const title = titleMatch ? titleMatch[1] : '';
-                                                            const description = descMatch ? descMatch[1] : '';
-                                                            const keywords = keyMatch ? keyMatch[1].split(',').map(s => s.trim()) : [];
-
-                                                            if (title || description || keywords.length > 0) {
-                                                                update({
-                                                                    ...item,
-                                                                    seo: {
-                                                                        title: title || item.seo.title,
-                                                                        description: description || item.seo.description,
-                                                                        keywords: keywords.length > 0 ? keywords : item.seo.keywords
-                                                                    }
-                                                                });
-                                                                toast.success('SEO tags analyzed and applied!');
-                                                                input.value = '';
-                                                            } else {
-                                                                toast.error('Could not detect valid SEO tags. Check your HTML format.');
-                                                            }
-                                                        }}
-                                                        className="px-4 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all flex flex-col items-center justify-center gap-1 group whitespace-nowrap"
-                                                    >
-                                                        <Search className="w-4 h-4" />
-                                                        <span className="text-[10px] font-bold uppercase tracking-wider">Analyze</span>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
                                     </div>
-                                );
-                            })()}
+                                </div>
+                            )}
                         </div>
-                    );
-                })()}
+                    </div>
+                )}
             </div>
 
             {/* JSON Description Import */}
-            {(() => {
+            {
+                (() => {
 
-                const joinParagraphs = (paras: { heading: string; body: string; color: string }[]) => {
-                    return paras.map(p => {
-                        if (!p.heading?.trim()) return p.body || '<p><br></p>';
-                        const colorAttr = p.color ? ` data-color="${p.color}"` : '';
-                        return `<h3${colorAttr}>${p.heading.trim()}</h3>` + (p.body || '<p><br></p>');
-                    }).join('<hr>');
-                };
+                    const joinParagraphs = (paras: { heading: string; body: string; color: string }[]) => {
+                        return paras.map(p => {
+                            if (!p.heading?.trim()) return p.body || '<p><br></p>';
+                            const colorAttr = p.color ? ` data-color="${p.color}"` : '';
+                            return `<h3${colorAttr}>${p.heading.trim()}</h3>` + (p.body || '<p><br></p>');
+                        }).join('<hr>');
+                    };
 
-                const handleParse = () => {
-                    setJsonDescError('');
-                    try {
-                        const parsed = JSON.parse(jsonDescText);
+                    const handleParse = () => {
+                        setJsonDescError('');
+                        try {
+                            const parsed = JSON.parse(jsonDescText);
 
-                        // Support both formats:
-                        // Format 1: { "en": [...], "bn": [...] }
-                        // Format 2: { "en": { "title": "...", "sections": [...] }, "bn": { ... } }
-                        const getTitle = (langObj: any) => {
-                            if (typeof langObj?.title === 'string') return langObj.title;
-                            return null;
-                        };
-
-                        const getSections = (langObj: any) => {
-                            if (Array.isArray(langObj)) return langObj;
-                            if (Array.isArray(langObj?.sections)) return langObj.sections;
-                            return null;
-                        };
-
-                        const enSections = getSections(parsed.en);
-                        const bnSections = getSections(parsed.bn);
-
-                        if (!enSections && !bnSections) {
-                            setJsonDescError('JSON must have "en" and/or "bn" with sections array. Click (?) for format.');
-                            return;
-                        }
-
-                        let updatedItem = { ...item };
-
-                        // Update EN title + description
-                        if (enSections) {
-                            const enTitle = getTitle(parsed.en);
-                            const enParas = enSections.map((s: any) => ({
-                                heading: s.title || '',
-                                body: typeof s.description === 'string' ? (s.description.startsWith('<') ? s.description : `<p>${s.description}</p>`) : '<p><br></p>',
-                                color: ''
-                            }));
-                            updatedItem = {
-                                ...updatedItem,
-                                en: {
-                                    ...updatedItem.en,
-                                    ...(enTitle ? { title: enTitle } : {}),
-                                    description: joinParagraphs(enParas)
-                                }
+                            // Support both formats:
+                            // Format 1: { "en": [...], "bn": [...] }
+                            // Format 2: { "en": { "title": "...", "sections": [...] }, "bn": { ... } }
+                            const getTitle = (langObj: any) => {
+                                if (typeof langObj?.title === 'string') return langObj.title;
+                                return null;
                             };
-                        }
 
-                        // Update BN title + description
-                        if (bnSections) {
-                            const bnTitle = getTitle(parsed.bn);
-                            const bnParas = bnSections.map((s: any) => ({
-                                heading: s.title || '',
-                                body: typeof s.description === 'string' ? (s.description.startsWith('<') ? s.description : `<p>${s.description}</p>`) : '<p><br></p>',
-                                color: ''
-                            }));
-                            updatedItem = {
-                                ...updatedItem,
-                                bn: {
-                                    ...updatedItem.bn,
-                                    ...(bnTitle ? { title: bnTitle } : {}),
-                                    description: joinParagraphs(bnParas)
-                                }
+                            const getSections = (langObj: any) => {
+                                if (Array.isArray(langObj)) return langObj;
+                                if (Array.isArray(langObj?.sections)) return langObj.sections;
+                                return null;
                             };
+
+                            const enSections = getSections(parsed.en);
+                            const bnSections = getSections(parsed.bn);
+
+                            if (!enSections && !bnSections) {
+                                setJsonDescError('JSON must have "en" and/or "bn" with sections array. Click (?) for format.');
+                                return;
+                            }
+
+                            let updatedItem = { ...item };
+
+                            // Update EN title + description
+                            if (enSections) {
+                                const enTitle = getTitle(parsed.en);
+                                const enParas = enSections.map((s: any) => ({
+                                    heading: s.title || '',
+                                    body: typeof s.description === 'string' ? (s.description.startsWith('<') ? s.description : `<p>${s.description}</p>`) : '<p><br></p>',
+                                    color: ''
+                                }));
+                                updatedItem = {
+                                    ...updatedItem,
+                                    en: {
+                                        ...updatedItem.en,
+                                        ...(enTitle ? { title: enTitle } : {}),
+                                        description: joinParagraphs(enParas)
+                                    }
+                                };
+                            }
+
+                            // Update BN title + description
+                            if (bnSections) {
+                                const bnTitle = getTitle(parsed.bn);
+                                const bnParas = bnSections.map((s: any) => ({
+                                    heading: s.title || '',
+                                    body: typeof s.description === 'string' ? (s.description.startsWith('<') ? s.description : `<p>${s.description}</p>`) : '<p><br></p>',
+                                    color: ''
+                                }));
+                                updatedItem = {
+                                    ...updatedItem,
+                                    bn: {
+                                        ...updatedItem.bn,
+                                        ...(bnTitle ? { title: bnTitle } : {}),
+                                        description: joinParagraphs(bnParas)
+                                    }
+                                };
+                            }
+
+                            update(updatedItem);
+                            toast.success(`Description imported! ${enSections ? enSections.length + ' EN' : ''}${enSections && bnSections ? ' + ' : ''}${bnSections ? bnSections.length + ' BN' : ''} sections. Click "Save Changes" to persist.`);
+                            setJsonDescText('');
+                            setJsonDescOpen(false);
+                        } catch (err: any) {
+                            setJsonDescError(`Invalid JSON: ${err.message}`);
                         }
+                    };
 
-                        update(updatedItem);
-                        toast.success(`Description imported! ${enSections ? enSections.length + ' EN' : ''}${enSections && bnSections ? ' + ' : ''}${bnSections ? bnSections.length + ' BN' : ''} sections. Click "Save Changes" to persist.`);
-                        setJsonDescText('');
-                        setJsonDescOpen(false);
-                    } catch (err: any) {
-                        setJsonDescError(`Invalid JSON: ${err.message}`);
-                    }
-                };
+                    return (
+                        <div className="bg-background rounded-xl border border-border overflow-hidden">
+                            <button
+                                type="button"
+                                onClick={() => setJsonDescOpen(!jsonDescOpen)}
+                                className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-secondary/30 transition-colors cursor-pointer"
+                            >
+                                <div className="flex items-center gap-2.5">
+                                    <Layers className="w-4.5 h-4.5 text-primary" />
+                                    <span className="text-sm font-semibold text-foreground">📋 JSON Description Import</span>
+                                    <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full font-medium">EN + BN</span>
+                                </div>
+                                <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${jsonDescOpen ? 'rotate-180' : ''}`} />
+                            </button>
 
-                return (
-                    <div className="bg-background rounded-xl border border-border overflow-hidden">
-                        <button
-                            type="button"
-                            onClick={() => setJsonDescOpen(!jsonDescOpen)}
-                            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-secondary/30 transition-colors cursor-pointer"
-                        >
-                            <div className="flex items-center gap-2.5">
-                                <Layers className="w-4.5 h-4.5 text-primary" />
-                                <span className="text-sm font-semibold text-foreground">📋 JSON Description Import</span>
-                                <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full font-medium">EN + BN</span>
-                            </div>
-                            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${jsonDescOpen ? 'rotate-180' : ''}`} />
-                        </button>
-
-                        {jsonDescOpen && (
-                            <div className="px-5 pb-5 space-y-3 border-t border-border pt-4">
-                                <div className="flex items-start justify-between gap-2">
-                                    <p className="text-xs text-muted-foreground leading-relaxed">
-                                        Paste a JSON object with <code className="bg-secondary px-1 py-0.5 rounded text-primary">"en"</code> and <code className="bg-secondary px-1 py-0.5 rounded text-primary">"bn"</code> keys containing section <code className="bg-secondary px-1 py-0.5 rounded text-primary">title</code> and <code className="bg-secondary px-1 py-0.5 rounded text-primary">description</code> to import for both languages at once.
-                                    </p>
-                                    <div className="relative">
-                                        <button
-                                            type="button"
-                                            onClick={() => setJsonDescHelp(!jsonDescHelp)}
-                                            className="p-1.5 rounded-lg bg-secondary hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
-                                            title="Show format guide"
-                                        >
-                                            <HelpCircle className="w-4 h-4" />
-                                        </button>
-                                        {jsonDescHelp && (
-                                            <div className="absolute right-0 top-full mt-2 w-[420px] p-4 rounded-xl bg-background border border-border shadow-2xl z-50">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <h4 className="text-sm font-bold text-foreground">JSON Format Guide</h4>
-                                                    <button onClick={() => setJsonDescHelp(false)} className="text-muted-foreground hover:text-foreground">
-                                                        <X className="w-3.5 h-3.5" />
-                                                    </button>
-                                                </div>
-                                                <pre className="text-[11px] font-mono text-muted-foreground bg-secondary/50 rounded-lg p-3 overflow-auto max-h-[320px] leading-relaxed whitespace-pre">{`{
+                            {jsonDescOpen && (
+                                <div className="px-5 pb-5 space-y-3 border-t border-border pt-4">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <p className="text-xs text-muted-foreground leading-relaxed">
+                                            Paste a JSON object with <code className="bg-secondary px-1 py-0.5 rounded text-primary">"en"</code> and <code className="bg-secondary px-1 py-0.5 rounded text-primary">"bn"</code> keys containing section <code className="bg-secondary px-1 py-0.5 rounded text-primary">title</code> and <code className="bg-secondary px-1 py-0.5 rounded text-primary">description</code> to import for both languages at once.
+                                        </p>
+                                        <div className="relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => setJsonDescHelp(!jsonDescHelp)}
+                                                className="p-1.5 rounded-lg bg-secondary hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                                                title="Show format guide"
+                                            >
+                                                <HelpCircle className="w-4 h-4" />
+                                            </button>
+                                            {jsonDescHelp && (
+                                                <div className="absolute right-0 top-full mt-2 w-[420px] p-4 rounded-xl bg-background border border-border shadow-2xl z-50">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <h4 className="text-sm font-bold text-foreground">JSON Format Guide</h4>
+                                                        <button onClick={() => setJsonDescHelp(false)} className="text-muted-foreground hover:text-foreground">
+                                                            <X className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                    <pre className="text-[11px] font-mono text-muted-foreground bg-secondary/50 rounded-lg p-3 overflow-auto max-h-[320px] leading-relaxed whitespace-pre">{`{
   "en": {
     "title": "Project Title (optional)",
     "sections": [
@@ -655,49 +727,50 @@ function ProjectEditor({ item, update, categories: availableCategories, onSave }
     ]
   }
 }`}</pre>
-                                                <div className="mt-3 space-y-1.5 text-[11px] text-muted-foreground">
-                                                    <p>• <strong>title</strong> (in sections) — Section heading displayed as a card title</p>
-                                                    <p>• <strong>description</strong> — Section body text (plain text or HTML)</p>
-                                                    <p>• <strong>title</strong> (top-level) — Sets the project title (optional)</p>
-                                                    <p className="text-primary font-medium">Each section becomes a description card on the project page.</p>
+                                                    <div className="mt-3 space-y-1.5 text-[11px] text-muted-foreground">
+                                                        <p>• <strong>title</strong> (in sections) — Section heading displayed as a card title</p>
+                                                        <p>• <strong>description</strong> — Section body text (plain text or HTML)</p>
+                                                        <p>• <strong>title</strong> (top-level) — Sets the project title (optional)</p>
+                                                        <p className="text-primary font-medium">Each section becomes a description card on the project page.</p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <textarea
+                                        value={jsonDescText}
+                                        onChange={e => { setJsonDescText(e.target.value); setJsonDescError(''); }}
+                                        placeholder='{ "en": { "title": "...", "sections": [{ "title": "...", "description": "..." }] }, "bn": { ... } }'
+                                        rows={8}
+                                        className="w-full rounded-lg bg-secondary border border-border p-3 text-xs font-mono text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y"
+                                        spellCheck={false}
+                                    />
+
+                                    {jsonDescError && (
+                                        <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-xs">
+                                            <span>⚠️ {jsonDescError}</span>
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={handleParse}
+                                            disabled={!jsonDescText.trim()}
+                                            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-all disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
+                                        >
+                                            <Layers className="w-3.5 h-3.5" />
+                                            Import Description
+                                        </button>
+                                        <span className="text-[10px] text-muted-foreground">Both EN + BN will be populated. Click "Save Changes" after.</span>
                                     </div>
                                 </div>
-
-                                <textarea
-                                    value={jsonDescText}
-                                    onChange={e => { setJsonDescText(e.target.value); setJsonDescError(''); }}
-                                    placeholder='{ "en": { "title": "...", "sections": [{ "title": "...", "description": "..." }] }, "bn": { ... } }'
-                                    rows={8}
-                                    className="w-full rounded-lg bg-secondary border border-border p-3 text-xs font-mono text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y"
-                                    spellCheck={false}
-                                />
-
-                                {jsonDescError && (
-                                    <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-xs">
-                                        <span>⚠️ {jsonDescError}</span>
-                                    </div>
-                                )}
-
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={handleParse}
-                                        disabled={!jsonDescText.trim()}
-                                        className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-all disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
-                                    >
-                                        <Layers className="w-3.5 h-3.5" />
-                                        Import Description
-                                    </button>
-                                    <span className="text-[10px] text-muted-foreground">Both EN + BN will be populated. Click "Save Changes" after.</span>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                );
-            })()}
+                            )}
+                        </div>
+                    );
+                })()
+            }
 
             {/* Language Tabs */}
             <div className="bg-background rounded-xl border border-border overflow-hidden">
@@ -916,7 +989,7 @@ function ProjectEditor({ item, update, categories: availableCategories, onSave }
                     })()}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 
@@ -1125,7 +1198,7 @@ export default function AdminProjects() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="max-w-7xl mx-auto space-y-6">
             <div className="flex items-center justify-between flex-wrap gap-3">
                 <SectionHeader title="Projects Manager (Unified)" description="Manage English and Bangla content in one place." />
                 <div className="text-xs text-muted-foreground bg-secondary px-3 py-1 rounded-full">
@@ -1139,7 +1212,7 @@ export default function AdminProjects() {
             <div className="bg-card rounded-2xl border border-border overflow-hidden">
                 <SectionHeader title="Section Title & Options" description="Configure English and Bangla titles and edit Categories for this section." />
                 <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div className="space-y-4">
                             <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> English Context
@@ -1154,63 +1227,136 @@ export default function AdminProjects() {
                             <TextField label="Section Title (BN)" value={sectionInfo.bn.title} onChange={(v) => setSectionInfo(prev => ({ ...prev, bn: { ...prev.bn, title: v } }))} />
                             <TextField label="Section Subtitle (BN)" value={sectionInfo.bn.subtitle} onChange={(v) => setSectionInfo(prev => ({ ...prev, bn: { ...prev.bn, subtitle: v } }))} />
                         </div>
-                    </div>
 
-                    {/* Manage Categories Section */}
-                    <div className="mt-8 pt-6 border-t border-border">
-                        <h3 className="font-semibold text-foreground text-sm mb-4 flex items-center gap-2">
-                            <Layers className="w-4 h-4 text-primary" /> Manage Categories
-                        </h3>
-                        <div className="flex flex-wrap gap-2 mb-4">
-                            {categories.map(cat => (
-                                <span key={cat} className="inline-flex items-center gap-1.5 bg-secondary text-foreground text-xs font-medium px-3 py-1.5 rounded-full border border-border/50">
-                                    {cat}
-                                    <button
-                                        type="button"
-                                        onClick={() => setCategories(categories.filter(c => c !== cat))}
-                                        className="text-muted-foreground hover:text-red-500 transition-colors"
-                                    >
-                                        <Trash2 className="w-3 h-3" />
-                                    </button>
-                                </span>
-                            ))}
+                        {/* Manage Categories Section */}
+                        <div className="space-y-4 lg:pl-6 lg:border-l lg:border-border">
+                            <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
+                                <Layers className="w-4 h-4 text-primary" /> Manage Categories
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                                {categories.map(cat => (
+                                    <span key={cat} className="inline-flex items-center gap-1.5 bg-secondary text-foreground text-xs font-medium px-3 py-1.5 rounded-full border border-border/50">
+                                        {cat}
+                                        <button
+                                            type="button"
+                                            onClick={() => setCategories(categories.filter(c => c !== cat))}
+                                            className="text-muted-foreground hover:text-red-500 transition-colors"
+                                        >
+                                            <Trash2 className="w-3 h-3" />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                            <div className="flex items-center gap-2 w-full pt-1">
+                                <input
+                                    type="text"
+                                    value={newCategory}
+                                    onChange={e => setNewCategory(e.target.value)}
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter' && newCategory.trim() && !categories.includes(newCategory.trim())) {
+                                            setCategories([...categories, newCategory.trim()]);
+                                            setNewCategory('');
+                                        }
+                                    }}
+                                    placeholder="Add new category..."
+                                    className="flex-1 bg-secondary rounded-lg px-4 py-2 text-sm text-foreground outline-none border border-border min-w-0"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (newCategory.trim() && !categories.includes(newCategory.trim())) {
+                                            setCategories([...categories, newCategory.trim()]);
+                                            setNewCategory('');
+                                        }
+                                    }}
+                                    className="bg-primary/20 text-primary hover:bg-primary/30 px-3 py-2 rounded-lg transition-colors flex-shrink-0"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                </button>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground leading-relaxed">Categories appear as filters on the frontend and in project editors.</p>
                         </div>
-                        <div className="flex items-center gap-2 max-w-sm">
-                            <input
-                                type="text"
-                                value={newCategory}
-                                onChange={e => setNewCategory(e.target.value)}
-                                onKeyDown={e => {
-                                    if (e.key === 'Enter' && newCategory.trim() && !categories.includes(newCategory.trim())) {
-                                        setCategories([...categories, newCategory.trim()]);
-                                        setNewCategory('');
-                                    }
-                                }}
-                                placeholder="Add new category..."
-                                className="flex-1 bg-secondary rounded-lg px-4 py-2 text-sm text-foreground outline-none border border-border"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
-                                        setCategories([...categories, newCategory.trim()]);
-                                        setNewCategory('');
-                                    }
-                                }}
-                                className="bg-primary/20 text-primary hover:bg-primary/30 px-3 py-2 rounded-lg transition-colors"
-                            >
-                                <Plus className="w-4 h-4" />
-                            </button>
-                        </div>
-                        <p className="text-[10px] text-muted-foreground mt-2">These categories will appear as filters on the frontend and in the project editor dropdown.</p>
                     </div>
                 </div>
+            </div>
+
+            {/* Reorder Projects Section */}
+            <div className="bg-card rounded-xl p-6 border border-border">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-foreground flex items-center gap-2">
+                        <GripVertical className="w-5 h-5 text-primary" /> Reorder Projects
+                    </h3>
+                    <div className="text-xs text-muted-foreground bg-secondary px-3 py-1 rounded-full">
+                        Drag or click buttons to reorder
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {projects.map((p, i) => (
+                        <div key={p.id || i} className="flex flex-col bg-secondary/50 rounded-lg overflow-hidden border border-border group">
+                            <div className="flex items-center p-2 gap-3 pb-1">
+                                <span className="text-sm font-bold text-muted-foreground w-5 text-center flex-shrink-0">{i + 1}</span>
+                                {p.images && p.images[0] ? (
+                                    <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0 bg-background border border-border">
+                                        <img src={p.images[0]} alt="" className="w-full h-full object-cover" />
+                                    </div>
+                                ) : (
+                                    <div className="w-10 h-10 rounded flex-shrink-0 bg-background border border-border flex flex-col items-center justify-center text-[8px] text-muted-foreground">
+                                        No Image
+                                    </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="text-sm font-semibold text-foreground truncate">{p.en.title || p.bn.title || 'Untitled Project'}</h4>
+                                    <span className="text-[10px] text-muted-foreground bg-background px-1.5 py-0.5 rounded border border-border truncate max-w-full inline-block mt-0.5">
+                                        {p.categories.join(', ')}
+                                    </span>
+                                </div>
+                                <div className="flex flex-col gap-0.5 ml-auto">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (i === 0) return;
+                                            const updated = [...projects];
+                                            [updated[i - 1], updated[i]] = [updated[i], updated[i - 1]];
+                                            // Update explicit order property to match new array index
+                                            const synced = updated.map((proj, idx) => ({ ...proj, order: idx }));
+                                            setProjects(synced);
+                                        }}
+                                        disabled={i === 0}
+                                        className="p-1.5 bg-background rounded border border-border hover:bg-primary hover:text-white hover:border-primary disabled:opacity-30 disabled:hover:bg-background disabled:hover:text-foreground disabled:hover:border-border transition-colors cursor-pointer"
+                                        title="Move Up"
+                                    >
+                                        <ArrowUp className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (i === projects.length - 1) return;
+                                            const updated = [...projects];
+                                            [updated[i + 1], updated[i]] = [updated[i], updated[i + 1]];
+                                            // Update explicit order property to match new array index
+                                            const synced = updated.map((proj, idx) => ({ ...proj, order: idx }));
+                                            setProjects(synced);
+                                        }}
+                                        disabled={i === projects.length - 1}
+                                        className="p-1.5 bg-background rounded border border-border hover:bg-primary hover:text-white hover:border-primary disabled:opacity-30 disabled:hover:bg-background disabled:hover:text-foreground disabled:hover:border-border transition-colors cursor-pointer"
+                                        title="Move Down"
+                                    >
+                                        <ArrowDown className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-3 italic flex items-center justify-center gap-1.5">
+                    Changes require clicking <strong>Save Changes</strong> at the bottom of the page.
+                </p>
             </div>
 
             {/* Projects List */}
             <div className="bg-card rounded-xl p-6 border border-border">
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-foreground">Projects List ({projects.length})</h3>
+                    <h3 className="font-semibold text-foreground">Projects Content Editor ({projects.length})</h3>
                 </div>
 
                 <ItemListEditor
