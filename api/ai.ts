@@ -24,7 +24,7 @@ async function handleChat(req: VercelRequest, res: VercelResponse) {
             model: 'llama-3.1-8b-instant',
             messages,
             temperature: 0.7,
-            max_tokens: 200,
+            max_tokens: 500,
         }),
     });
 

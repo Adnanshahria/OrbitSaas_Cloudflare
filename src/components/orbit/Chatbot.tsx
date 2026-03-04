@@ -597,21 +597,20 @@ SCOPE: NEVER act as general AI. Redirect off-topic to ORBIT services.
 LEADS: If user asks pricing/consultation/project start AND hasn't given email (see EMAIL STATUS), ask for email first. If already given, answer directly.
 LINKS: Provide a link ONLY if the user specifically asks to see a project, service, or contact info. Do NOT include links in every message. NEVER use generic labels like "PROJECT SHOWCASE" or "AI SERVICES". Instead, use the actual name of the project or service (e.g., [Project Name](URL)). The UI will convert these into compact buttons. NEVER fabricate URLs. If a specific URL isn't provided, just describe it without a link.
 LANG: English only. If user speaks Bangla, prepend "[SUGGEST_SWITCH]".
-STYLE: Casual+professional. HARD LIMIT: 50-80 words max. Count your words. Max 3 bullets or 1 short paragraph. NEVER exceed 80 words. If listing items, use very short bullet points (5-8 words each).
+STYLE: Casual+professional. HARD LIMIT: 80-120 words max. Count your words. Max 4 bullets or 1-2 short paragraphs. NEVER exceed 120 words. If listing items, use very short bullet points (5-10 words each).
 FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on its OWN SEPARATE NEW LINE starting with "💬". NEVER embed the follow-up inside your reply paragraph. NEVER use 🟢 or any other emoji for the follow-up — ONLY use 💬. The follow-up line MUST be separated from the main text by a newline. Phrase it AS IF THE USER IS SPEAKING TO YOU. Use "your" (referring to ORBIT), not "our". BAD: "💬 Learn more about our services" or "💬 Would you like to see our projects?" or ending a sentence with 🟢 Tell me about X. GOOD: "💬 Tell me about your pricing" or "💬 Show me your AI projects" or "💬 I want to start a project". NEVER phrase as a bot/company speaking. NEVER use "our". NEVER skip this.`
-        : `আপনি ORBIT SaaS-এর অফিসিয়াল AI প্রতিনিধি। নিয়ম:
-শুভেচ্ছা: শুধু প্রথম মেসেজে "হ্যালো! Orbit SaaS-এ স্বাগতম।" পরে আর পরিচয়/শুভেচ্ছা নয়।
-পরিচিতি: বাংলাদেশভিত্তিক, বিশ্বব্যাপী A-Z কাস্টম সফটওয়্যার। দীর্ঘ অভিজ্ঞতা।
-মূল্য: প্রজেক্টের ওজন অনুযায়ী। ঘণ্টাভিত্তিক নয়। End-to-End। ধাপ: MVP→কাস্টমাইজ→২৫/৫০/৭৫/১০০% মাইলস্টোন→প্রগ্রেস পেমেন্ট। MVP-তে প্রাথমিক ফান্ড। বার্ষিক মেইনটেন্যান্স সাবস্ক্রিপশন আছে।
-ডেলিভারি: সাধারণত ১ সপ্তাহ। ১০০% শেষে: সোর্স কোড, env ফাইল, ভিডিও টিউটোরিয়াল, ডকুমেন্টেশন।
-সেবা: সব ধরনের সফটওয়্যার তৈরি করি।
-যোগাযোগ: PM-এর সাথে টেলিগ্রাম/হোয়াটসঅ্যাপে সরাসরি। প্রতি ১০% আপডেট।
-সীমা: সাধারণ AI নয়। অপ্রাসঙ্গিক বিষয় ORBIT-এ ফেরান।
-লিড: প্রাইসিং/কনসাল্টেশন চাইলে ও ইমেইল না দিলে (EMAIL STATUS দেখুন) আগে ইমেইল চান। দিয়ে থাকলে সরাসরি উত্তর দিন।
-লিংক: শুধু knowledge base-এর URL ব্যবহার করুন। বানাবেন না। মার্কডাউন: [Text](URL)। কখনো "আমাদের ওয়েবসাইট দেখুন" বলবেন না — ইউজার এখন ওয়েবসাইটেই আছে।
-ভাষা: শুধু বাংলায়। ইংরেজি বললে "[SUGGEST_SWITCH]" দিন।
-শৈলী: ক্যাজুয়াল+পেশাদার। কঠিন সীমা: ১৪০-১৬০ শব্দ। শব্দ গুনুন। সর্বোচ্চ ৩ বুলেট বা ১ ছোট প্যারা। কখনো ৬০ শব্দের বেশি নয়।
-ফলো-আপ: প্রতিটি উত্তরে অবশ্যই শেষে আলাদা নতুন লাইনে "💬" দিয়ে ১টি পরবর্তী পদক্ষেপ দিন ইউজারের দৃষ্টিকোণ থেকে। কখনো 🟢 বা অন্য ইমোজি ব্যবহার করবেন না — শুধু 💬। প্যারাগ্রাফের ভিতরে ফলো-আপ লিখবেন না, আলাদা লাইনে লিখুন। "তোমাদের" ব্যবহার করুন (ORBIT বোঝাতে), "আমাদের" নয়। খারাপ: "💬 আমাদের সেবা সম্পর্কে জানুন"। ভালো: "💬 তোমাদের প্রাইসিং জানাও" বা "💬 তোমাদের AI প্রজেক্টগুলো দেখাও"। কখনো বটের ভাষায় লিখবেন না।`);
+        : `আপনি ORBIT SaaS-এর বন্ধুসুলভ AI সহকারী। নিয়ম:
+শুভেচ্ছা: প্রথম মেসেজে "হ্যালো! Orbit SaaS-এ স্বাগতম 😊" পরে আর পরিচয় নয়।
+পরিচিতি: বাংলাদেশভিত্তিক সফটওয়্যার কোম্পানি। ওয়েব অ্যাপ, মোবাইল অ্যাপ, AI চ্যাটবট — সব বানাই।
+মূল্য: প্রজেক্ট অনুযায়ী দাম। MVP থেকে শুরু, ধাপে ধাপে পেমেন্ট।
+ডেলিভারি: সাধারণত ১ সপ্তাহ। শেষে সোর্স কোড, টিউটোরিয়াল সব দিই।
+যোগাযোগ: টেলিগ্রাম/হোয়াটসঅ্যাপে সরাসরি কথা বলতে পারবেন।
+সীমা: শুধু ORBIT-এর বিষয়ে কথা বলুন। অন্য বিষয় হলে ORBIT-এর সেবায় ফেরান।
+লিড: প্রাইসিং জানতে চাইলে ও ইমেইল না দিলে আগে ইমেইল চান।
+লিংক: শুধু knowledge base-এর URL দিন। নতুন URL বানাবেন না।
+ভাষা: সহজ বাংলায় কথা বলুন। কঠিন/টেকনিক্যাল শব্দ এড়িয়ে চলুন। একজন সাধারণ মানুষও যেন বুঝতে পারে এমন করে লিখুন। বন্ধুর মতো কথা বলুন। ইংরেজি বললে "[SUGGEST_SWITCH]" দিন।
+শৈলী: উষ্ণ, বন্ধুসুলভ এবং সহজ। ৮০-১২০ শব্দের মধ্যে উত্তর দিন। সর্বোচ্চ ৪ বুলেট বা ১-২ ছোট প্যারা।
+ফলো-আপ: প্রতিটি উত্তরে অবশ্যই শেষে আলাদা নতুন লাইনে "💬" দিয়ে ১টি পরবর্তী পদক্ষেপ দিন ইউজারের দৃষ্টিকোণ থেকে। কখনো 🟢 বা অন্য ইমোজি ব্যবহার করবেন না — শুধু 💬। প্যারাগ্রাফের ভিতরে ফলো-আপ লিখবেন না, আলাদা লাইনে লিখুন। "তোমাদের" ব্যবহার করুন (ORBIT বোঝাতে), "আমাদের" নয়। ভালো: "💬 তোমাদের প্রাইসিং জানাও" বা "💬 তোমাদের AI প্রজেক্টগুলো দেখাও"।`);
       const systemPrompt = (adminPrompt && adminPrompt.trim()) ? adminPrompt : defaultPrompt;
 
       // 3. Email status context
@@ -635,25 +634,34 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
 
       const responseContent = await sendToGroq(conversationHistory);
 
+
       // Extract follow-up suggestions with multiple fallback strategies:
       const lines = responseContent.split('\n').filter(l => l.trim());
       const suggestionLines: string[] = [];
 
       // Common suggestion emoji pattern (AI sometimes uses these instead of 💬)
-      const suggestionEmojiPattern = /[💬🟢➡️👉✅🔹🔸💡🎯📌⭐🚀🔵🟡🟠🔴⚡]/;
+      const suggestionEmojiPattern = /[💬🟢➡️👉✅🔹🔸💡🎯📌⭐🚀🔵🟡🟠🔴⚡]/u;
 
       // Strategy 1: Lines starting with 💬 or other common suggestion emojis (ideal case)
-      const emojiLines = lines.filter(l => suggestionEmojiPattern.test(l.trim().charAt(0)) || l.trim().startsWith('💬'));
+      const emojiLines = lines.filter(l => {
+        const firstChar = [...l.trim()][0] || '';
+        return suggestionEmojiPattern.test(firstChar) || l.trim().startsWith('💬');
+      });
       suggestionLines.push(...emojiLines);
 
-      let remainingLines = lines.filter(l => !suggestionEmojiPattern.test(l.trim().charAt(0)) && !l.trim().startsWith('💬'));
+      let remainingLines = lines.filter(l => {
+        const firstChar = [...l.trim()][0] || '';
+        return !suggestionEmojiPattern.test(firstChar) && !l.trim().startsWith('💬');
+      });
+
 
       // Strategy 1b: Emoji-prefixed suggestion embedded INLINE at end of a paragraph
       // e.g. "...strategic planning and direction. 🟢 Tell me about your interest in working with him."
       if (suggestionLines.length === 0 && remainingLines.length > 0) {
         const lastLine = remainingLines[remainingLines.length - 1];
-        const inlineEmojiMatch = lastLine.match(/(.*?[.!?])\s*([💬🟢➡️👉✅🔹🔸💡🎯📌⭐🚀🔵🟡🟠🔴⚡]\s*.{5,120})$/);
+        const inlineEmojiMatch = lastLine.match(/(.*?[.!?])\s*([💬🟢➡️👉✅🔹🔸💡🎯📌⭐🚀🔵🟡🟠🔴⚡]\s*.{5,120})$/u);
         if (inlineEmojiMatch) {
+
           const beforeText = inlineEmojiMatch[1].trim();
           const suggestionText = inlineEmojiMatch[2].trim();
           suggestionLines.push(suggestionText);
@@ -667,6 +675,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
       if (suggestionLines.length === 0 && remainingLines.length > 1) {
         const lastLine = remainingLines[remainingLines.length - 1]?.trim() || '';
         if (lastLine.endsWith('?') && !lastLine.startsWith('-') && !lastLine.startsWith('•')) {
+
           suggestionLines.push(lastLine);
           remainingLines = remainingLines.slice(0, -1);
         }
@@ -684,6 +693,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
             const idx = fullText.lastIndexOf(lastQuestion);
             const cleaned = (fullText.slice(0, idx) + fullText.slice(idx + lastQuestion.length)).trim();
             if (cleaned.length > 10) {
+
               suggestionLines.push(lastQuestion);
               remainingLines = cleaned.split('\n').filter(l => l.trim());
             }
@@ -700,6 +710,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
           const beforeText = imperativeMatch[1].trim();
           const suggestionText = imperativeMatch[2].trim();
           if (beforeText.length > 10) {
+
             suggestionLines.push(suggestionText);
             remainingLines[remainingLines.length - 1] = beforeText;
             remainingLines = remainingLines.filter(l => l.trim());
@@ -709,6 +720,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
 
 
       const cleanedContent = remainingLines.join('\n').trimEnd();
+
       // Convert bot-perspective suggestions to user-perspective
       const newSuggestions = suggestionLines.map(l => {
         let s = l.replace(/^[\s💬🟢➡️👉✅🔹🔸💡🎯📌⭐🚀🔵🟡🟠🔴⚡]*/, '').trim();

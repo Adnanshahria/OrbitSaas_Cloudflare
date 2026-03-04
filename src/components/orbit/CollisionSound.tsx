@@ -49,6 +49,7 @@ async function ensureBuffer(): Promise<AudioBuffer | null> {
 export function useCollisionSound() {
     const mutedRef = useRef(false);
     const volumeRef = useRef(0.50);
+    const chatbotOpenRef = useRef(false);
 
     // Load mute preference & decode audio buffer on mount
     useEffect(() => {
@@ -95,6 +96,16 @@ export function useCollisionSound() {
         return () => window.removeEventListener('orbit-sound-toggle', handler);
     }, []);
 
+    // Suppress collision sounds when the chatbot overlay is open
+    useEffect(() => {
+        const handler = (e: Event) => {
+            const detail = (e as CustomEvent<{ isOpen: boolean }>).detail;
+            if (detail) chatbotOpenRef.current = detail.isOpen;
+        };
+        window.addEventListener('orbit-chatbot-state-change', handler);
+        return () => window.removeEventListener('orbit-chatbot-state-change', handler);
+    }, []);
+
     const collisionCountRef = useRef(0);
 
     const playSound = useCallback(() => {
@@ -129,6 +140,9 @@ export function useCollisionSound() {
         window.dispatchEvent(new CustomEvent('orbit-collision', { detail: collisionCountRef.current }));
 
         if (mutedRef.current) return;
+
+        // Suppress sounds while chatbot is open
+        if (chatbotOpenRef.current) return;
 
         // Relaxed visibility check: only skip if hero is almost entirely scrolled away
         const hero = document.getElementById('hero');
