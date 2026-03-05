@@ -57,7 +57,7 @@ export default function AdminHero() {
                     <TextField label="Tagline (Row 2 — Mobile)" value={tagline2} onChange={setTagline2} lang={lang} />
                     <TextField label="Title" value={title} onChange={setTitle} lang={lang} />
                     <TextField label="Subtitle" value={subtitle} onChange={setSubtitle} multiline lang={lang} />
-                    <p className="text-xs text-muted-foreground -mt-2 ml-1">💡 Wrap words in <code className="bg-muted px-1 rounded text-[11px]">**double asterisks**</code> to make them bold word cards</p>
+                    <p className="text-xs text-muted-foreground -mt-2 ml-1">💡 Select text → use toolbar: <code className="bg-muted px-1 rounded text-[11px]">B</code> bold, <code className="bg-muted px-1 rounded text-[11px]">Card</code> pill, or <code className="bg-muted px-1 rounded text-[11px]">B+Card</code> both</p>
                     <TextField label="CTA Button Text" value={cta} onChange={setCta} lang={lang} />
                     <TextField label="Learn More Button Text" value={learnMore} onChange={setLearnMore} lang={lang} />
                 </div>

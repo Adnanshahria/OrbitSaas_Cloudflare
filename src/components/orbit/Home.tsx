@@ -5,19 +5,21 @@ import { useLang } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 
-/** Parse **bold** markers into segments: { text, isBold }[] */
-function parseWordCards(str: string): { text: string; isBold: boolean }[] {
-  const parts: { text: string; isBold: boolean }[] = [];
-  const regex = /\*\*(.+?)\*\*/g;
+/** Parse rich markers: **bold**, [[card]], **[[bold+card]]** */
+function parseSubtitleSegments(str: string): { text: string; bold: boolean; card: boolean }[] {
+  const parts: { text: string; bold: boolean; card: boolean }[] = [];
+  const regex = /\*\*\[\[(.+?)\]\]\*\*|\*\*(.+?)\*\*|\[\[(.+?)\]\]/g;
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = regex.exec(str)) !== null) {
-    if (m.index > last) parts.push({ text: str.slice(last, m.index), isBold: false });
-    parts.push({ text: m[1], isBold: true });
+    if (m.index > last) parts.push({ text: str.slice(last, m.index), bold: false, card: false });
+    if (m[1] !== undefined) parts.push({ text: m[1], bold: true, card: true });
+    else if (m[2] !== undefined) parts.push({ text: m[2], bold: true, card: false });
+    else if (m[3] !== undefined) parts.push({ text: m[3], bold: false, card: true });
     last = m.index + m[0].length;
   }
-  if (last < str.length) parts.push({ text: str.slice(last), isBold: false });
-  return parts.length ? parts : [{ text: str, isBold: false }];
+  if (last < str.length) parts.push({ text: str.slice(last), bold: false, card: false });
+  return parts.length ? parts : [{ text: str, bold: false, card: false }];
 }
 
 /* ── Home component ───────────────────────────────────────────── */
@@ -90,9 +92,9 @@ export function Home() {
   };
 
 
-  // Parse subtitle with **bold** word-card markers
+  // Parse subtitle with rich markers
   const subtitle = t.hero.subtitle || '';
-  const subtitleSegments = useMemo(() => parseWordCards(subtitle), [subtitle]);
+  const subtitleSegments = useMemo(() => parseSubtitleSegments(subtitle), [subtitle]);
   const isLowPerf = useMemo(() => document.documentElement.classList.contains('low-perf'), []);
 
   // Always play the loading animation on every page load
@@ -339,7 +341,7 @@ export function Home() {
             </AnimatePresence>
           </div>
 
-          {/* Subtitle — word-by-word reveal with **bold** word cards */}
+          {/* Subtitle — word-by-word reveal with rich formatting */}
           <motion.p className="text-muted-foreground text-[13.5px] sm:text-base md:text-lg max-w-3xl mx-auto px-2 sm:px-0 mb-[3dvh] sm:mb-8 leading-relaxed flex flex-wrap justify-center gap-x-[0.35em] font-medium">
             {isLowPerf ? (
               <motion.span
@@ -347,26 +349,33 @@ export function Home() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4, delay: baseDelay + 0.9 }}
               >
-                {subtitleSegments.map((seg, si) =>
-                  seg.isBold
-                    ? <span key={si} className="word-card">{seg.text}</span>
-                    : <span key={si}>{seg.text}</span>
-                )}
+                {subtitleSegments.map((seg, si) => {
+                  if (!seg.bold && !seg.card) return <span key={si}>{seg.text}</span>;
+                  const cls = [
+                    seg.bold ? 'font-bold text-white' : '',
+                    seg.card ? 'word-card' : '',
+                  ].filter(Boolean).join(' ');
+                  return <span key={si} className={cls}>{seg.text}</span>;
+                })}
               </motion.span>
             ) : (
               (() => {
                 let wordIndex = 0;
                 return subtitleSegments.map((seg, si) => {
-                  if (seg.isBold) {
+                  if (seg.bold || seg.card) {
                     const delay = baseDelay + 0.9 + wordIndex * 0.04;
                     wordIndex += seg.text.split(' ').length;
+                    const cls = [
+                      seg.bold ? 'font-bold text-white' : '',
+                      seg.card ? 'word-card' : '',
+                    ].filter(Boolean).join(' ');
                     return (
                       <motion.span
                         key={`seg-${si}`}
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
-                        className="word-card"
+                        className={cls}
                       >
                         {seg.text}
                       </motion.span>

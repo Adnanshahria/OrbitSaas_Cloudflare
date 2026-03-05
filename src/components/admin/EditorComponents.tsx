@@ -220,6 +220,24 @@ export function AIEnhanceButton({
     );
 }
 
+/** Parse rich markers into segments for preview rendering */
+function parseRichSegments(str: string): { text: string; bold: boolean; card: boolean }[] {
+    const parts: { text: string; bold: boolean; card: boolean }[] = [];
+    // Order matters: match **[[...]]** first, then **...**, then [[...]]
+    const regex = /\*\*\[\[(.+?)\]\]\*\*|\*\*(.+?)\*\*|\[\[(.+?)\]\]/g;
+    let last = 0;
+    let m: RegExpExecArray | null;
+    while ((m = regex.exec(str)) !== null) {
+        if (m.index > last) parts.push({ text: str.slice(last, m.index), bold: false, card: false });
+        if (m[1] !== undefined) parts.push({ text: m[1], bold: true, card: true });
+        else if (m[2] !== undefined) parts.push({ text: m[2], bold: true, card: false });
+        else if (m[3] !== undefined) parts.push({ text: m[3], bold: false, card: true });
+        last = m.index + m[0].length;
+    }
+    if (last < str.length) parts.push({ text: str.slice(last), bold: false, card: false });
+    return parts;
+}
+
 /* ─── Text Field ─── */
 export function TextField({
     label,
@@ -237,7 +255,7 @@ export function TextField({
     const taRef = useRef<HTMLTextAreaElement>(null);
     const [selToolbar, setSelToolbar] = useState<{ top: number; left: number; start: number; end: number } | null>(null);
 
-    // Check selection on mouse-up and key-up — much more reliable than onSelect
+    // Check selection on mouse-up and key-up
     const checkSelection = useCallback(() => {
         const ta = taRef.current;
         if (!ta) return;
@@ -245,28 +263,30 @@ export function TextField({
         const end = ta.selectionEnd;
         if (start === end || start === undefined) { setSelToolbar(null); return; }
 
-        // Position toolbar above the textarea
         const rect = ta.getBoundingClientRect();
-        const top = rect.top - 44;
-        const left = rect.left + rect.width / 2;
-
-        setSelToolbar({ top, left, start, end });
+        setSelToolbar({ top: rect.top - 44, left: rect.left + rect.width / 2, start, end });
     }, []);
 
+    // Read directly from DOM to avoid stale closures
     const wrapSelection = useCallback((prefix: string, suffix: string) => {
-        if (!selToolbar) return;
+        const ta = taRef.current;
+        if (!selToolbar || !ta) return;
         const { start, end } = selToolbar;
-        const selected = value.substring(start, end);
-        const before = value.substring(0, start);
-        const after = value.substring(end);
-        // Toggle: if already wrapped, unwrap
+        const currentValue = ta.value; // Always fresh from DOM
+        const before = currentValue.substring(0, start);
+        const selected = currentValue.substring(start, end);
+        const after = currentValue.substring(end);
+        // Toggle: if already wrapped with this exact marker, unwrap
         if (before.endsWith(prefix) && after.startsWith(suffix)) {
             onChange(before.slice(0, -prefix.length) + selected + after.slice(suffix.length));
         } else {
             onChange(before + prefix + selected + suffix + after);
         }
         setSelToolbar(null);
-    }, [selToolbar, value, onChange]);
+    }, [selToolbar, onChange]);
+
+    // Check if value has any rich markers for preview
+    const hasRichMarkers = multiline && (/\*\*/.test(value) || /\[\[/.test(value));
 
     return (
         <div className="relative">
@@ -299,23 +319,51 @@ export function TextField({
                             style={{ top: selToolbar.top, left: selToolbar.left, transform: 'translateX(-50%)' }}
                             onMouseDown={e => e.preventDefault()}
                         >
+                            {/* Bold Only */}
                             <button
                                 type="button"
                                 onMouseDown={e => { e.preventDefault(); wrapSelection('**', '**'); }}
-                                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold text-white hover:bg-primary/20 transition-colors cursor-pointer"
-                                title="Bold"
+                                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold text-white hover:bg-white/10 transition-colors cursor-pointer"
+                                title="Bold Only"
                             >
                                 <span className="text-sm font-black">B</span>
                             </button>
                             <div className="w-px h-4 bg-white/10" />
+                            {/* Card Only */}
                             <button
                                 type="button"
-                                onMouseDown={e => { e.preventDefault(); wrapSelection('**', '**'); }}
-                                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-emerald-400 hover:bg-emerald-500/15 transition-colors cursor-pointer"
-                                title="Word Card"
+                                onMouseDown={e => { e.preventDefault(); wrapSelection('[[', ']]'); }}
+                                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                                title="Card Only"
                             >
                                 <span className="px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-500/10 text-[10px] font-bold">Card</span>
                             </button>
+                            <div className="w-px h-4 bg-white/10" />
+                            {/* Bold + Card */}
+                            <button
+                                type="button"
+                                onMouseDown={e => { e.preventDefault(); wrapSelection('**[[', ']]**'); }}
+                                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                                title="Bold + Card"
+                            >
+                                <span className="text-sm font-black">B</span>
+                                <span className="text-[9px]">+</span>
+                                <span className="px-1 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-[10px] font-bold">Card</span>
+                            </button>
+                        </div>
+                    )}
+                    {/* Live Preview */}
+                    {hasRichMarkers && (
+                        <div className="mt-2 px-3 py-2 rounded-lg bg-background/50 border border-border/50 text-sm text-muted-foreground leading-relaxed flex flex-wrap gap-x-[0.3em]">
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 font-bold w-full mb-1">Preview</span>
+                            {parseRichSegments(value).map((seg, i) => {
+                                if (!seg.bold && !seg.card) return <span key={i}>{seg.text}</span>;
+                                const classes = [
+                                    seg.bold ? 'font-bold text-foreground' : '',
+                                    seg.card ? 'word-card' : '',
+                                ].filter(Boolean).join(' ');
+                                return <span key={i} className={classes}>{seg.text}</span>;
+                            })}
                         </div>
                     )}
                 </div>
