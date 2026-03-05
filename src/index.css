@@ -661,6 +661,21 @@ html.low-perf .hero-dice-cube {
     text-shadow: 0 0 8px rgba(20, 184, 166, 0.3), 0 0 20px rgba(20, 184, 166, 0.1);
   }
 
+  @keyframes titleBreathGlow {
+    0%, 100% {
+      transform: scale(1);
+      text-shadow: 0px 0px 5px rgba(245, 158, 11, 0.1);
+    }
+    50% {
+      transform: scale(1.025);
+      text-shadow: 0px 0px 25px rgba(245, 158, 11, 0.6);
+    }
+  }
+
+  .animate-title-breath {
+    animation: titleBreathGlow 4.5s ease-in-out infinite;
+  }
+
   @keyframes float-gentle {
 
     0%,
@@ -844,7 +859,8 @@ html {
   }
 
   .animate-text-shimmer-orbit,
-  .animate-text-shimmer-saas {
+  .animate-text-shimmer-saas,
+  .animate-title-breath {
     animation: none !important;
   }
 }
@@ -955,4 +971,19 @@ img.no-browser-trigger {
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.5);
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+}
+
+/* ── Less visible word cards on mobile ── */
+@media (max-width: 768px) {
+  .word-card {
+    border-color: rgba(16, 185, 129, 0.15);
+    background: rgba(16, 185, 129, 0.08);
+    box-shadow: none;
+  }
+
+  .word-card-white {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: none;
+  }
 }

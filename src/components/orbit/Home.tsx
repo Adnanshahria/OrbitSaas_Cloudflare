@@ -181,7 +181,7 @@ export function Home() {
     <section
       ref={sectionRef}
       id="hero"
-      className="relative flex items-center justify-center overflow-x-hidden pt-0 pb-24 sm:pt-20 sm:pb-0"
+      className="relative flex items-center justify-center overflow-x-hidden pt-0 pb-12 sm:pt-20 sm:pb-0"
       style={{ minHeight: heroHeight }}
     >
 
@@ -213,7 +213,7 @@ export function Home() {
                   initial={{ opacity: 0, y: -12, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: baseDelay + 0.3 }}
-                  className="flex sm:hidden flex-col items-center w-full max-w-[95%] mx-auto mb-4 mt-6 font-playfair italic font-bold text-[14px] tracking-wide relative"
+                  className="flex sm:hidden flex-col items-center w-full max-w-[95%] mx-auto mb-2 mt-2 font-playfair italic font-bold text-[14px] tracking-wide relative"
                 >
                   {/* Fusion Glow Effect (behind intersection) - Moved down to overlap */}
                   <motion.div
@@ -267,7 +267,7 @@ export function Home() {
             );
           })()}
 
-          <div className="text-foreground leading-[1] mb-10 sm:mb-10 min-h-[200px] sm:min-h-[180px] flex flex-col items-center justify-center relative">
+          <div className="text-foreground leading-[1] mb-2 sm:mb-10 min-h-[140px] sm:min-h-[180px] flex flex-col items-center justify-center relative">
 
             {/* ─── Holographic Ring Portal ────────────────── */}
             <AnimatePresence>
@@ -303,7 +303,7 @@ export function Home() {
                       duration: 0.8,
                       ease: [0.25, 0.46, 0.45, 0.94],
                     }}
-                    className="text-[clamp(2.5rem,10vw,5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block will-change-transform animate-text-shimmer-orbit pb-1"
+                    className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block will-change-transform animate-text-shimmer-orbit pb-1"
                   >
                     {letter}
                   </motion.span>
@@ -316,29 +316,50 @@ export function Home() {
                   initial={{ opacity: 0, scale: 0.85, x: -6 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="text-[clamp(2.5rem,10vw,5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block ml-2 sm:ml-4 animate-text-shimmer-saas pb-1"
+                  className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block ml-2 sm:ml-4 animate-text-shimmer-saas pb-1"
                 >
                   SaaS
                 </motion.span>
               )}
             </div>
 
-            {/* Subtitle — smoothly appears after loading completes */}
-            <AnimatePresence>
+            {/* Title — word-by-word reveal with blur */}
+            <AnimatePresence mode="wait">
               {isHeroLoaded && (
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{
-                    duration: 1.2,
-                    ease: 'easeOut',
-                    delay: isFirstVisit ? 0.15 : 0.5,
-                  }}
-                  className={`block mt-6 sm:mt-12 md:mt-16 text-[1.5rem] leading-[1.2] sm:text-3xl md:text-4xl lg:text-[3rem] xl:text-5xl font-lobster tracking-normal px-1 sm:px-4 ${lang === 'bn' ? 'font-bengali' : ''}`}
+                <motion.div
+                  key={`title-${lang}`}
+                  initial={{ opacity: 0, filter: 'blur(10px)' }}
+                  animate={{ opacity: 1, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, filter: 'blur(10px)', transition: { duration: 0.3 } }}
+                  className={`animate-title-breath mt-6 sm:mt-8 md:mt-12 text-[1.5rem] leading-[1.2] sm:text-3xl md:text-4xl lg:text-[3rem] xl:text-5xl font-lobster tracking-normal px-1 sm:px-4 flex flex-wrap justify-center gap-x-[0.25em] gap-y-2 ${lang === 'bn' ? 'font-bengali font-bold' : ''}`}
                   style={{ color: titleColor }}
                 >
-                  {t.hero.title}
-                </motion.span>
+                  {isLowPerf ? (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.4, delay: 0.05 }}
+                    >
+                      {t.hero.title}
+                    </motion.span>
+                  ) : (
+                    t.hero.title.split(' ').filter(Boolean).map((word: string, wi: number) => {
+                      const delay = 0.05 + wi * 0.06;
+                      return (
+                        <motion.span
+                          key={`tw-${wi}`}
+                          layout
+                          initial={{ opacity: 0, y: 10, filter: 'blur(8px)', scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
+                          transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+                          className="inline-block align-middle"
+                        >
+                          {word}
+                        </motion.span>
+                      );
+                    })
+                  )}
+                </motion.div>
               )}
             </AnimatePresence>
           </div>
@@ -350,7 +371,7 @@ export function Home() {
               initial={{ opacity: 0, filter: 'blur(10px)' }}
               animate={{ opacity: 1, filter: 'blur(0px)' }}
               exit={{ opacity: 0, filter: 'blur(10px)', transition: { duration: 0.3 } }}
-              className="text-muted-foreground text-[14px] sm:text-base md:text-lg lg:text-xl w-full max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 mt-8 sm:mt-14 mb-[5dvh] sm:mb-16 leading-[1.6] flex flex-wrap justify-center gap-x-[0.35em] gap-y-3 font-medium tracking-wide"
+              className="text-muted-foreground text-[12.5px] sm:text-base md:text-lg lg:text-xl w-full max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 mt-2 sm:mt-10 mb-10 sm:mb-16 leading-[1.6] flex flex-wrap justify-center gap-x-[0.35em] gap-y-[0.45rem] sm:gap-y-3 font-medium tracking-wide"
             >
               {isLowPerf ? (
                 <motion.span
@@ -429,7 +450,7 @@ export function Home() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 60, damping: 16, delay: baseDelay + 1.6 }}
-            className="flex flex-row gap-4 sm:gap-10 justify-center items-center px-2 sm:px-0"
+            className="flex flex-row w-full justify-between sm:justify-center sm:w-auto gap-4 sm:gap-10 items-center px-1 sm:px-0"
           >
             {/* Relative Container for Dropdown */}
             <div className="relative w-auto sm:w-auto">
@@ -445,12 +466,12 @@ export function Home() {
                 whileHover={{ scale: 1.04, boxShadow: `0 8px 30px ${ctaGradientStart}44` }}
                 whileTap={{ scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                className="inline-flex items-center gap-1.5 px-4 sm:px-8 py-2 sm:py-2.5 rounded-full font-bold text-primary-foreground shadow-lg gentle-animation cursor-pointer justify-center text-sm sm:text-base border-[0.5px] border-amber-400/60"
+                className="inline-flex items-center gap-1.5 px-4 sm:px-8 py-1.5 sm:py-2.5 rounded-full font-bold text-primary-foreground shadow-lg gentle-animation cursor-pointer justify-center text-sm sm:text-base border-[0.5px] border-amber-400/60"
                 style={{ background: `linear-gradient(to right, ${ctaGradientStart}, ${ctaGradientEnd})` }}
               >
                 {t.hero.cta}
-                <div className="ml-1.5 flex items-center justify-center w-6 h-6 rounded-full bg-white/20 border border-white/10 shadow-inner group-hover:bg-white/30 transition-colors">
-                  <ChevronDown strokeWidth={2.5} className={`w-3.5 h-3.5 text-white transition-transform duration-300 ${isCtaOpen ? 'rotate-180' : ''}`} />
+                <div className="ml-1.5 flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white/20 border border-white/10 shadow-inner group-hover:bg-white/30 transition-colors">
+                  <ChevronDown strokeWidth={2.5} className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-white transition-transform duration-300 ${isCtaOpen ? 'rotate-180' : ''}`} />
                 </div>
               </motion.button>
 
@@ -505,7 +526,7 @@ export function Home() {
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-              className="inline-flex items-center gap-1.5 px-4 sm:px-8 py-2 sm:py-2.5 rounded-full font-bold glass-effect text-foreground cursor-pointer justify-center text-sm sm:text-base border-[0.5px] border-amber-400/60"
+              className="inline-flex items-center gap-1.5 px-4 sm:px-8 py-1.5 sm:py-2.5 rounded-full font-bold glass-effect text-foreground cursor-pointer justify-center text-sm sm:text-base border-[0.5px] border-amber-400/60"
             >
               {t.hero.learnMore}
             </motion.a>
