@@ -47,16 +47,11 @@ const Chatbot = lazy(() => import('./components/orbit/Chatbot').then(m => ({ def
 const LeadMagnetPopup = lazy(() => import('./components/orbit/LeadMagnetPopup').then(m => ({ default: m.LeadMagnetPopup })));
 import { GlobalBackground } from './components/orbit/GlobalBackground';
 
-// Low-end device detection — applies .low-perf class to <html>
+// Low-end device detection removed — canvas-based rendering is efficient for all devices
+// The .low-perf class is no longer applied or checked
 function detectLowEndDevice() {
-  const cores = navigator.hardwareConcurrency || 2;
-  const memory = (navigator as any).deviceMemory || 4;
-  const isMobile = window.innerWidth < 768;
-  const isLowEnd = cores <= 4 || memory <= 4 || isMobile;
-  if (isLowEnd) {
-    document.documentElement.classList.add('low-perf');
-  }
-  return isLowEnd;
+  // No-op: canvas starfield + dice loader are GPU-efficient
+  return false;
 }
 
 function PublicSite() {

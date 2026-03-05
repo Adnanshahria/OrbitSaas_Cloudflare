@@ -1,8 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronDown, Send, Loader2, Mail, MessageCircle } from 'lucide-react';
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useLang } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
+import { CometDiceLoaderCanvas } from './CometDiceLoaderCanvas';
 
 
 /** Parse rich markers: **bold**, [[green-card]], **[[bold+green]]**, {{white-card}}, **{{bold+white}}** */
@@ -97,11 +98,11 @@ export function Home() {
   // Parse subtitle with rich markers
   const subtitle = t.hero.subtitle || '';
   const subtitleSegments = useMemo(() => parseSubtitleSegments(subtitle), [subtitle]);
-  const isLowPerf = useMemo(() => document.documentElement.classList.contains('low-perf'), []);
+  // low-perf barrier removed — canvas is efficient enough for all devices
 
   // Always play the loading animation on every page load
   const isFirstVisit = true;
-  const baseDelay = 4.2;
+  const baseDelay = 8.5; // Stretched to fit the new 10s canvas sequence
 
   // Theme Customization: Forcing Emerald & Gold for this redesign
   const taglineColor = '#10b981'; // Emerald
@@ -113,35 +114,68 @@ export function Home() {
   const whatsappNumber = (t.contact as any).whatsapp || '';
   const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`;
 
-  // ─── Loading Sequence: Holographic Ring Portal ────────────────
+  // ─── Loading Sequence: Comet-Dice Canvas Loader ────────────────
   const letters = ['O', 'R', 'B', 'I', 'T'];
 
-  // On return visits, skip loading sequence entirely
-  const [step, setStep] = useState(isFirstVisit ? 0 : letters.length + 1);
+  const letterRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const saasRef = useRef<HTMLSpanElement>(null);
+
+  const [orbitRects, setOrbitRects] = useState<any[]>([]);
+  const [saasRect, setSaasRect] = useState<any>(null);
+
+  const [revealedLetters, setRevealedLetters] = useState<boolean[]>(
+    isFirstVisit ? new Array(5).fill(false) : new Array(5).fill(true)
+  );
+  const [saasRevealed, setSaasRevealed] = useState(!isFirstVisit);
+  const [loaderComplete, setLoaderComplete] = useState(!isFirstVisit);
   const [isHeroLoaded, setIsHeroLoaded] = useState(!isFirstVisit);
-  const [ringDissolved, setRingDissolved] = useState(!isFirstVisit);
 
-  const revealedCount = Math.min(step, letters.length);
-  const showRing = step > 0 && step <= letters.length;
-  const showSaaS = step > letters.length;
-
+  // Measure final resting places of text so Canvas can target them
   useEffect(() => {
-    if (!isFirstVisit) return; // Skip loading sequence on return visits
-    // step 1-5: each letter materializes, step 6: SaaS, step 7: hero loaded
-    const timings = [500, 1000, 1500, 2100, 2700, 3300, 4100];
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    timings.forEach((ms, i) => {
-      timers.push(setTimeout(() => {
-        if (i < letters.length) setStep(i + 1);
-        else if (i === letters.length) {
-          setStep(letters.length + 1);
-          setRingDissolved(true);
-        }
-        else setIsHeroLoaded(true);
-      }, ms));
+    if (!isFirstVisit) return;
+    const measure = () => {
+      setOrbitRects(letterRefs.current.map(el => el ? el.getBoundingClientRect() : null));
+      setSaasRect(saasRef.current ? saasRef.current.getBoundingClientRect() : null);
+    };
+
+    // Wait for fonts to be ready before measuring to guarantee exact placement
+    document.fonts.ready.then(() => {
+      measure();
+      // And a tiny safety delay just in case of layout shifts
+      setTimeout(measure, 100);
     });
-    return () => timers.forEach(t => clearTimeout(t));
+
+    window.addEventListener('resize', measure);
+    return () => {
+      window.removeEventListener('resize', measure);
+    };
+  }, [isFirstVisit]);
+
+  const handleRevealLetter = useCallback((idx: number) => {
+    setRevealedLetters(prev => {
+      const next = [...prev];
+      next[idx] = true;
+      return next;
+    });
   }, []);
+
+  const handleRevealSaaS = useCallback(() => {
+    setSaasRevealed(true);
+  }, []);
+
+  const handleLoaderComplete = useCallback(() => {
+    setLoaderComplete(true);
+    setTimeout(() => setIsHeroLoaded(true), 300);
+  }, []);
+
+  // Fallback if canvas crashes
+  useEffect(() => {
+    if (!isFirstVisit) return;
+    const fallback = setTimeout(() => {
+      handleLoaderComplete();
+    }, 15000); // 15 seconds safety fallback to allow majestic sequence to finish
+    return () => clearTimeout(fallback);
+  }, [isFirstVisit, handleLoaderComplete]);
 
   // Force exactly the screen height ONCE to prevent shrinking when mobile keyboard opens
   const [heroHeight, setHeroHeight] = useState('100vh');
@@ -181,7 +215,10 @@ export function Home() {
     <section
       ref={sectionRef}
       id="hero"
-      className="relative flex items-center justify-center overflow-x-hidden pt-0 pb-12 sm:pt-20 sm:pb-0"
+      className={`relative flex items-center justify-center overflow-x-hidden transition-all duration-1000 ease-in-out ${loaderComplete
+        ? 'pt-0 pb-12 sm:pt-20 sm:pb-0'
+        : 'pt-0 pb-12 sm:pt-20 sm:pb-0'
+        }`}
       style={{ minHeight: heroHeight }}
     >
 
@@ -189,7 +226,7 @@ export function Home() {
         className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
         style={{ contain: 'none' }}
       >
-        <div className="px-4 sm:px-14 py-8 sm:py-10 flex flex-col justify-between items-center min-h-[550px] sm:min-h-0">
+        <div className={`px-4 sm:px-14 py-8 sm:py-10 flex flex-col justify-between items-center transition-all duration-700 ease-in-out ${loaderComplete ? 'min-h-0' : 'min-h-[550px]'} sm:min-h-0`}>
           {/* Badge — slides down with spring */}
           {t.hero.tagline && (() => {
             const line1 = t.hero.tagline;
@@ -267,273 +304,243 @@ export function Home() {
             );
           })()}
 
-          <div className="text-foreground leading-[1] mb-2 sm:mb-10 min-h-[140px] sm:min-h-[180px] flex flex-col items-center justify-center relative">
+          <div className={`text-foreground leading-[1] mb-2 sm:mb-10 flex flex-col items-center justify-center relative transition-all duration-700 ease-in-out ${loaderComplete ? 'min-h-0' : 'min-h-[140px] sm:min-h-[180px]'}`}>
 
-            {/* ─── Holographic Ring Portal ────────────────── */}
-            <AnimatePresence>
-              {showRing && !ringDissolved && (
-                <motion.div
-                  initial={{ scale: 0.3, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 1.8, opacity: 0 }}
-                  transition={{
-                    type: 'spring',
-                    stiffness: 60,
-                    damping: 14,
-                    mass: 0.8,
-                    opacity: { duration: 0.6, ease: 'easeOut' },
-                  }}
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 will-change-transform"
-                >
-                  <div className="orbit-ring-portal" />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {/* ─── 3D Comet-Dice Canvas Loader ─── */}
+            {!loaderComplete && orbitRects.length > 0 && saasRect && (
+              <CometDiceLoaderCanvas
+                orbitRects={orbitRects}
+                saasRect={saasRect}
+                onRevealLetter={handleRevealLetter}
+                onRevealSaaS={handleRevealSaaS}
+                onComplete={handleLoaderComplete}
+              />
+            )}
 
-            {/* ORBIT SaaS title — letters materialize inside the ring */}
-            <div className="flex items-center justify-center relative z-10 whitespace-nowrap">
-              {/* Materialized letters */}
-              {letters.map((letter, i) => (
-                revealedCount > i && (
+            {/* ORBIT SaaS title — Fixed layout, dice moves across it */}
+            <div className="flex items-center justify-center relative z-10 whitespace-nowrap min-w-[280px]">
+
+              {/* O-R-B-I-T container — Flex ensures natural typographic spacing */}
+              <div className="flex relative items-center justify-center gap-[0.02em]">
+                {letters.map((letter, i) => (
                   <motion.span
                     key={letter}
-                    initial={{ opacity: 0, y: 8, scale: 0.9 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{
-                      duration: 0.8,
-                      ease: [0.25, 0.46, 0.45, 0.94],
+                    ref={(el) => { letterRefs.current[i] = el; }}
+                    initial={{ opacity: 0, filter: 'blur(10px)' }}
+                    animate={{
+                      opacity: revealedLetters[i] ? 1 : 0,
+                      filter: revealedLetters[i] ? 'blur(0px)' : 'blur(10px)'
                     }}
-                    className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block will-change-transform pb-1"
+                    transition={{
+                      duration: 0.4,
+                      ease: "easeOut",
+                    }}
+                    className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block animate-text-shimmer-orbit will-change-[opacity,filter]"
                   >
                     {letter}
                   </motion.span>
-                )
-              ))}
+                ))}
+              </div>
 
-              {/* "SaaS" materializes after ring dissolves */}
-              {showSaaS && (
-                <motion.span
-                  initial={{ opacity: 0, scale: 0.85, x: -6 }}
-                  animate={{ opacity: 1, scale: 1, x: 0 }}
-                  transition={{ duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block ml-2 sm:ml-4 pb-1"
-                >
-                  SaaS
-                </motion.span>
-              )}
+              <motion.span
+                ref={saasRef}
+                initial={{ opacity: 0, filter: 'blur(8px)' }}
+                animate={{
+                  opacity: saasRevealed ? 1 : 0,
+                  filter: saasRevealed ? 'blur(0px)' : 'blur(8px)'
+                }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block ml-4 animate-text-shimmer-saas will-change-[opacity,filter]"
+              >
+                SaaS
+              </motion.span>
             </div>
-
-            {/* Title — word-by-word reveal with blur */}
-            <AnimatePresence mode="wait">
-              {isHeroLoaded && (
-                <motion.div
-                  key={`title-${lang}`}
-                  initial={{ opacity: 0, filter: 'blur(10px)' }}
-                  animate={{ opacity: 1, filter: 'blur(0px)' }}
-                  exit={{ opacity: 0, filter: 'blur(10px)', transition: { duration: 0.3 } }}
-                  className={`${isInHero ? 'animate-title-breath' : ''} mt-6 sm:mt-8 md:mt-12 text-[1.5rem] leading-[1.2] sm:text-3xl md:text-4xl lg:text-[3rem] xl:text-5xl font-lobster tracking-normal px-1 sm:px-4 flex flex-wrap justify-center gap-x-[0.25em] gap-y-2 ${lang === 'bn' ? 'font-bengali font-bold' : ''}`}
-                  style={{ color: titleColor }}
-                >
-                  {isLowPerf ? (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.4, delay: 0.05 }}
-                    >
-                      {t.hero.title}
-                    </motion.span>
-                  ) : (
-                    t.hero.title.split(' ').filter(Boolean).map((word: string, wi: number) => {
-                      const delay = 0.05 + wi * 0.06;
-                      return (
-                        <motion.span
-                          key={`tw-${wi}`}
-                          layout
-                          initial={{ opacity: 0, y: 10, filter: 'blur(8px)', scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
-                          transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
-                          className="inline-block align-middle"
-                        >
-                          {word}
-                        </motion.span>
-                      );
-                    })
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
 
-          {/* Subtitle — word-by-word reveal with rich formatting + mid-pause */}
+          {/* Title — word-by-word reveal with blur */}
           <AnimatePresence mode="wait">
-            <motion.p
-              key={lang}
-              initial={{ opacity: 0, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, filter: 'blur(10px)', transition: { duration: 0.3 } }}
-              className="text-muted-foreground text-[12.5px] sm:text-base md:text-lg lg:text-xl w-full max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 mt-2 sm:mt-10 mb-10 sm:mb-16 leading-[1.6] flex flex-wrap justify-center gap-x-[0.35em] gap-y-[0.45rem] sm:gap-y-3 font-medium tracking-wide"
-            >
-              {isLowPerf ? (
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.4, delay: isHeroLoaded ? 0 : baseDelay + 0.9 }}
-                >
-                  {subtitleSegments.map((seg, si) => {
-                    if (!seg.bold && !seg.card && !seg.whiteCard) return <span key={si}>{seg.text}</span>;
+            {isHeroLoaded && (
+              <motion.div
+                key={`title-${lang}`}
+                initial={{ opacity: 0, filter: 'blur(10px)' }}
+                animate={{ opacity: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, filter: 'blur(10px)', transition: { duration: 0.3 } }}
+                className={`${isInHero ? 'animate-title-breath' : ''} mt-6 sm:mt-8 md:mt-12 text-[1.5rem] leading-[1.2] sm:text-3xl md:text-4xl lg:text-[3rem] xl:text-5xl font-lobster tracking-normal px-1 sm:px-4 flex flex-wrap justify-center gap-x-[0.25em] gap-y-2 ${lang === 'bn' ? 'font-bengali font-bold' : ''}`}
+                style={{ color: titleColor }}
+              >
+                {t.hero.title.split(' ').filter(Boolean).map((word: string, wi: number) => {
+                  const delay = 0.05 + wi * 0.06;
+                  return (
+                    <motion.span
+                      key={`tw-${wi}`}
+                      layout
+                      initial={{ opacity: 0, y: 10, filter: 'blur(8px)', scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
+                      transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+                      className="inline-block align-middle"
+                    >
+                      {word}
+                    </motion.span>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Subtitle — word-by-word reveal with rich formatting + mid-pause */}
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={lang}
+            initial={{ opacity: 0, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, filter: 'blur(10px)', transition: { duration: 0.3 } }}
+            className="text-muted-foreground text-[12.5px] sm:text-base md:text-lg lg:text-xl w-full max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 mt-2 sm:mt-10 mb-10 sm:mb-16 leading-[1.6] flex flex-wrap justify-center gap-x-[0.35em] gap-y-[0.45rem] sm:gap-y-3 font-medium tracking-wide"
+          >
+            {(
+              (() => {
+                // Count total words for mid-pause calculation
+                let totalWords = 0;
+                subtitleSegments.forEach(seg => { totalWords += seg.text.split(' ').filter(Boolean).length; });
+                const midPoint = Math.ceil(totalWords / 2);
+                const midPause = 0.6; // seconds to pause between halves
+
+                let wordIndex = 0;
+                return subtitleSegments.map((seg, si) => {
+                  if (seg.bold || seg.card || seg.whiteCard) {
+                    const wordsInSeg = seg.text.split(' ').length;
+                    const pastMid = wordIndex >= midPoint;
+                    const delay = (isHeroLoaded ? 0.05 : baseDelay + 0.9) + wordIndex * 0.04 + (pastMid ? midPause : 0);
+                    wordIndex += wordsInSeg;
                     const cls = [
                       seg.bold ? 'font-bold text-white' : '',
                       seg.card ? 'word-card' : '',
                       seg.whiteCard ? 'word-card-white' : '',
                     ].filter(Boolean).join(' ');
-                    return <span key={si} className={`${cls} inline-block align-middle`}>{seg.text}</span>;
-                  })}
-                </motion.span>
-              ) : (
-                (() => {
-                  // Count total words for mid-pause calculation
-                  let totalWords = 0;
-                  subtitleSegments.forEach(seg => { totalWords += seg.text.split(' ').filter(Boolean).length; });
-                  const midPoint = Math.ceil(totalWords / 2);
-                  const midPause = 0.6; // seconds to pause between halves
-
-                  let wordIndex = 0;
-                  return subtitleSegments.map((seg, si) => {
-                    if (seg.bold || seg.card || seg.whiteCard) {
-                      const wordsInSeg = seg.text.split(' ').length;
-                      const pastMid = wordIndex >= midPoint;
-                      const delay = (isHeroLoaded ? 0.05 : baseDelay + 0.9) + wordIndex * 0.04 + (pastMid ? midPause : 0);
-                      wordIndex += wordsInSeg;
-                      const cls = [
-                        seg.bold ? 'font-bold text-white' : '',
-                        seg.card ? 'word-card' : '',
-                        seg.whiteCard ? 'word-card-white' : '',
-                      ].filter(Boolean).join(' ');
-                      return (
-                        <motion.span
-                          key={`seg-${si}`}
-                          layout
-                          initial={{ opacity: 0, y: 10, filter: 'blur(10px)', scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
-                          transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
-                          className={`${cls} inline-block align-middle`}
-                        >
-                          {seg.text}
-                        </motion.span>
-                      );
-                    }
-                    return seg.text.split(' ').filter(Boolean).map((word, wi) => {
-                      const pastMid = wordIndex >= midPoint;
-                      const delay = (isHeroLoaded ? 0.05 : baseDelay + 0.9) + wordIndex * 0.04 + (pastMid ? midPause : 0);
-                      wordIndex++;
-                      return (
-                        <motion.span
-                          key={`w-${si}-${wi}`}
-                          layout
-                          initial={{ opacity: 0, y: 10, filter: 'blur(8px)', scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
-                          transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
-                          className="inline-block align-middle"
-                        >
-                          {word}
-                        </motion.span>
-                      );
-                    });
-                  });
-                })()
-              )}
-            </motion.p>
-          </AnimatePresence>
-
-          {/* CTA buttons — slide up with spring */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 60, damping: 16, delay: baseDelay + 1.6 }}
-            className="flex flex-row w-full justify-between sm:justify-center sm:w-auto gap-4 sm:gap-10 items-center px-1 sm:px-0"
-          >
-            {/* Relative Container for Dropdown */}
-            <div className="relative w-auto sm:w-auto">
-              <motion.button
-                id="hero-book-appointment"
-                onClick={() => {
-                  const newState = !isCtaOpen;
-                  setIsCtaOpen(newState);
-                  if (newState) {
-                    window.dispatchEvent(new CustomEvent('orbit-cta-open'));
+                    return (
+                      <motion.span
+                        key={`seg-${si}`}
+                        layout
+                        initial={{ opacity: 0, y: 10, filter: 'blur(10px)', scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
+                        transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+                        className={`${cls} inline-block align-middle`}
+                      >
+                        {seg.text}
+                      </motion.span>
+                    );
                   }
-                }}
-                whileHover={{ scale: 1.04, boxShadow: `0 8px 30px ${ctaGradientStart}44` }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                className="inline-flex items-center gap-1.5 px-4 sm:px-8 py-1.5 sm:py-2.5 rounded-full font-bold text-primary-foreground shadow-lg gentle-animation cursor-pointer justify-center text-sm sm:text-base border-[0.5px] border-amber-400/60"
-                style={{ background: `linear-gradient(to right, ${ctaGradientStart}, ${ctaGradientEnd})` }}
-              >
-                {t.hero.cta}
-                <div className="ml-1.5 flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white/20 border border-white/10 shadow-inner group-hover:bg-white/30 transition-colors">
-                  <ChevronDown strokeWidth={2.5} className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-white transition-transform duration-300 ${isCtaOpen ? 'rotate-180' : ''}`} />
-                </div>
-              </motion.button>
+                  return seg.text.split(' ').filter(Boolean).map((word, wi) => {
+                    const pastMid = wordIndex >= midPoint;
+                    const delay = (isHeroLoaded ? 0.05 : baseDelay + 0.9) + wordIndex * 0.04 + (pastMid ? midPause : 0);
+                    wordIndex++;
+                    return (
+                      <motion.span
+                        key={`w-${si}-${wi}`}
+                        layout
+                        initial={{ opacity: 0, y: 10, filter: 'blur(8px)', scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
+                        transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+                        className="inline-block align-middle"
+                      >
+                        {word}
+                      </motion.span>
+                    );
+                  });
+                });
+              })()
+            )}
+          </motion.p>
+        </AnimatePresence>
 
-              <AnimatePresence>
-                {isCtaOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute top-full left-0 right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 mt-4 w-full sm:w-[240px] z-[150] flex flex-col gap-2"
-                  >
-                    <motion.a
-                      href={whatsappUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setIsCtaOpen(false)}
-                      whileHover={{ scale: 1.02, x: 3 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="flex items-center gap-2.5 px-3 py-1.5 bg-secondary border border-border rounded-lg shadow-lg hover:border-primary/50 transition-colors text-foreground font-semibold group"
-                    >
-                      <div className="w-6 h-6 rounded-md bg-[#0d2818] flex items-center justify-center shrink-0 group-hover:bg-[#143d24] transition-colors">
-                        <MessageCircle className="w-3 h-3 text-[#25D366]" />
-                      </div>
-                      <div className="flex flex-col items-start">
-                        <span className="text-sm">WhatsApp</span>
-                        <span className="text-[10px] text-muted-foreground font-normal leading-tight">Direct inquiry</span>
-                      </div>
-                    </motion.a>
-
-                    <motion.a
-                      href="mailto:contact@orbitsaas.cloud"
-                      onClick={() => setIsCtaOpen(false)}
-                      whileHover={{ scale: 1.02, x: 3 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="flex items-center gap-2.5 px-3 py-1.5 bg-secondary border border-border rounded-lg shadow-lg hover:border-primary/50 transition-colors text-foreground font-semibold group"
-                    >
-                      <div className="w-6 h-6 rounded-md bg-[#1a2a1e] flex items-center justify-center shrink-0 group-hover:bg-[#243a28] transition-colors">
-                        <Mail className="w-3 h-3 text-primary" />
-                      </div>
-                      <div className="flex flex-col items-start">
-                        <span className="text-sm">Email Us</span>
-                        <span className="text-[10px] text-muted-foreground font-normal leading-tight">Send a detailed inquiry</span>
-                      </div>
-                    </motion.a>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            <motion.a
-              href="#services"
-              whileHover={{ scale: 1.04 }}
+        {/* CTA buttons — slide up with spring */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 60, damping: 16, delay: baseDelay + 1.6 }}
+          className="flex flex-row w-full justify-between sm:justify-center sm:w-auto gap-4 sm:gap-10 items-center px-1 sm:px-0"
+        >
+          {/* Relative Container for Dropdown */}
+          <div className="relative w-auto sm:w-auto">
+            <motion.button
+              id="hero-book-appointment"
+              onClick={() => {
+                const newState = !isCtaOpen;
+                setIsCtaOpen(newState);
+                if (newState) {
+                  window.dispatchEvent(new CustomEvent('orbit-cta-open'));
+                }
+              }}
+              whileHover={{ scale: 1.04, boxShadow: `0 8px 30px ${ctaGradientStart}44` }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-              className="inline-flex items-center gap-1.5 px-4 sm:px-8 py-1.5 sm:py-2.5 rounded-full font-bold glass-effect text-foreground cursor-pointer justify-center text-sm sm:text-base border-[0.5px] border-amber-400/60"
+              className="inline-flex items-center gap-1.5 px-4 sm:px-8 py-1.5 sm:py-2.5 rounded-full font-bold text-primary-foreground shadow-lg gentle-animation cursor-pointer justify-center text-sm sm:text-base border-[0.5px] border-amber-400/60"
+              style={{ background: `linear-gradient(to right, ${ctaGradientStart}, ${ctaGradientEnd})` }}
             >
-              {t.hero.learnMore}
-            </motion.a>
-          </motion.div>
+              {t.hero.cta}
+              <div className="ml-1.5 flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white/20 border border-white/10 shadow-inner group-hover:bg-white/30 transition-colors">
+                <ChevronDown strokeWidth={2.5} className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-white transition-transform duration-300 ${isCtaOpen ? 'rotate-180' : ''}`} />
+              </div>
+            </motion.button>
 
-        </div>{/* End Hero Container Card */}
-      </div>
+            <AnimatePresence>
+              {isCtaOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-full left-0 right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 mt-4 w-full sm:w-[240px] z-[150] flex flex-col gap-2"
+                >
+                  <motion.a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setIsCtaOpen(false)}
+                    whileHover={{ scale: 1.02, x: 3 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-2.5 px-3 py-1.5 bg-secondary border border-border rounded-lg shadow-lg hover:border-primary/50 transition-colors text-foreground font-semibold group"
+                  >
+                    <div className="w-6 h-6 rounded-md bg-[#0d2818] flex items-center justify-center shrink-0 group-hover:bg-[#143d24] transition-colors">
+                      <MessageCircle className="w-3 h-3 text-[#25D366]" />
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm">WhatsApp</span>
+                      <span className="text-[10px] text-muted-foreground font-normal leading-tight">Direct inquiry</span>
+                    </div>
+                  </motion.a>
+
+                  <motion.a
+                    href="mailto:contact@orbitsaas.cloud"
+                    onClick={() => setIsCtaOpen(false)}
+                    whileHover={{ scale: 1.02, x: 3 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-2.5 px-3 py-1.5 bg-secondary border border-border rounded-lg shadow-lg hover:border-primary/50 transition-colors text-foreground font-semibold group"
+                  >
+                    <div className="w-6 h-6 rounded-md bg-[#1a2a1e] flex items-center justify-center shrink-0 group-hover:bg-[#243a28] transition-colors">
+                      <Mail className="w-3 h-3 text-primary" />
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm">Email Us</span>
+                      <span className="text-[10px] text-muted-foreground font-normal leading-tight">Send a detailed inquiry</span>
+                    </div>
+                  </motion.a>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          <motion.a
+            href="#services"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+            className="inline-flex items-center gap-1.5 px-4 sm:px-8 py-1.5 sm:py-2.5 rounded-full font-bold glass-effect text-foreground cursor-pointer justify-center text-sm sm:text-base border-[0.5px] border-amber-400/60"
+          >
+            {t.hero.learnMore}
+          </motion.a>
+        </motion.div>
+
+      </div>{/* End Hero Container Card */}
 
       {/* Full-Screen Blur Overlay for Newsletter Focus */}
       <AnimatePresence>

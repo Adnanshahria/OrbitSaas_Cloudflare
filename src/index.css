@@ -93,16 +93,16 @@
 
 .animate-text-shimmer-orbit {
   background: linear-gradient(to right,
-      var(--foreground) 30%,
-      var(--neon-amber) 40%,
-      var(--neon-emerald) 45%,
-      var(--foreground) 55%,
-      var(--foreground) 100%);
-  background-size: 200% auto;
+      var(--foreground) 10%,
+      var(--neon-amber) 30%,
+      var(--neon-emerald) 50%,
+      var(--neon-teal) 70%,
+      var(--foreground) 90%);
+  background-size: 300% auto;
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
-  animation: textShimmerSweep 5s linear infinite;
+  animation: textShimmerSweep 4s linear infinite;
   will-change: background-position;
   display: inline-block;
 }

@@ -13,12 +13,10 @@ import { useCollisionSound } from './CollisionSound';
  */
 
 const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-const isLowPerf =
-    typeof document !== 'undefined' &&
-    document.documentElement.classList.contains('low-perf');
 
-const NUM_STARS = isLowPerf ? (isMobile ? 5 : 10) : isMobile ? 20 : 40;
-const ROT_SPEED_1 = (2 * Math.PI) / (isLowPerf ? 600 : 180); // rad/s
+// Canvas is GPU-efficient — all devices get the full experience
+const NUM_STARS = isMobile ? 30 : 50;
+const ROT_SPEED_1 = (2 * Math.PI) / 180; // rad/s
 const ROT_SPEED_2 = (2 * Math.PI) / 240;
 const TAU = 2 * Math.PI;
 
@@ -28,6 +26,10 @@ interface ZoomStar {
     tx: number; ty: number; // travel direction (vw/vh units)
     sz: number; op: number; color: string;
     dur: number; prog: number; maxSc: number;
+    shape: 'sparkle' | 'diamond' | 'cross' | 'dot'; // star shape variety
+    twinkleSpeed: number; // individual twinkle frequency
+    twinklePhase: number; // random phase offset for twinkle
+    glowSize: number; // outer glow radius multiplier
 }
 interface Shooting {
     x: number; y: number; angle: number; speed: number;
@@ -81,21 +83,31 @@ function iconImg(path: string, sz: number, col: string): HTMLImageElement {
 }
 
 // ── Star generation ───────────────────────────────────────
+const STAR_COLORS = ['#ffffff', '#e0f2fe', '#fbbf24', '#34d399', '#a78bfa', '#f0abfc', '#93c5fd'];
+
 function makeStars(n: number): ZoomStar[] {
     return Array.from({ length: n }, () => {
-        const rx = Math.random(), ry = Math.random();
-        const dx = rx - 0.5, dy = ry - 0.5;
+        // Full-screen uniform distribution
+        const bx = Math.random(), by = Math.random();
+        const dx = bx - 0.5, dy = by - 0.5;
         const d = Math.sqrt(dx * dx + dy * dy) || 0.01;
         const td = 60 + Math.random() * 80;
+        // Weighted shape selection: sparkles & diamonds more common
+        const shapeRoll = Math.random();
+        const shape: ZoomStar['shape'] = shapeRoll < 0.35 ? 'sparkle' : shapeRoll < 0.6 ? 'diamond' : shapeRoll < 0.8 ? 'cross' : 'dot';
         return {
-            bx: 0.5 + dx * 0.2, by: 0.5 + dy * 0.2,
+            bx, by,
             tx: (dx / d) * td, ty: (dy / d) * td,
-            sz: 1 + Math.random() * 1.8,
-            op: 0.4 + Math.random() * 0.6,
-            color: Math.random() > 0.85 ? '#fbbf24' : Math.random() > 0.7 ? '#34d399' : '#fff',
+            sz: 1.2 + Math.random() * 2.5,
+            op: 0.35 + Math.random() * 0.65,
+            color: STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
             dur: 8 + Math.random() * 16,
             prog: Math.random(),
             maxSc: 2 + Math.random() * 3.5,
+            shape,
+            twinkleSpeed: 1.5 + Math.random() * 3.5,
+            twinklePhase: Math.random() * TAU,
+            glowSize: 1.8 + Math.random() * 2.5,
         };
     });
 }
@@ -138,8 +150,8 @@ export function StarfieldCanvas() {
         const particles: Particle[] = [];
         const flashes: Flash[] = [];
 
-        // sequencer
-        let seqStep = 0, seqTimer = isLowPerf ? 2 : 1;
+        // sequencer — random event selection with ~4s fixed gaps
+        let seqTimer = 1;
         let lastSide = 0, lastCSide = false;
         let time = 0, lastTs = 0;
 
@@ -151,7 +163,7 @@ export function StarfieldCanvas() {
             else if (side === 1) { x = -0.1 * W; y = (-0.1 + Math.random() * 0.8) * H; ang = (-20 + Math.random() * 80) * Math.PI / 180; }
             else { x = 1.1 * W; y = (-0.1 + Math.random() * 0.8) * H; ang = (120 + Math.random() * 80) * Math.PI / 180; }
             const dur = 2 + Math.random() * 2.5;
-            shoots.push({ x, y, angle: ang, speed: ((1 + Math.random()) * W) / dur, w: 60 + Math.random() * 100, op: 0.5 + Math.random() * 0.5, life: 0, maxLife: dur });
+            shoots.push({ x, y, angle: ang, speed: ((1 + Math.random()) * W) / dur, w: 140 + Math.random() * 180, op: 0.5 + Math.random() * 0.5, life: 0, maxLife: dur });
         };
 
         const spawnComet = () => {
@@ -169,7 +181,7 @@ export function StarfieldCanvas() {
                 life: 0, maxLife: dur, color: col,
                 img: iconImg(svg, Math.round(sz * dpr), col), iSz: sz,
                 spin: 0, spinSpd: (Math.random() > 0.5 ? 1 : -1) * TAU / (1.5 + Math.random() * 2),
-                trail: 100,
+                trail: 200 + Math.random() * 100,
             });
         };
 
@@ -193,7 +205,7 @@ export function StarfieldCanvas() {
             const mk = (fX: number, fY: number, col: string, icon?: string): Approach => ({
                 fX, fY, tX: cx, tY: cy, life: 0, maxLife: dur, color: col,
                 img: icon ? iconImg(icon, Math.round(18 * dpr), col) : null, iSz: 18,
-                spin: 0, spinSpd: TAU / 2, trail: icon ? 50 : 80, dot: !icon,
+                spin: 0, spinSpd: TAU / 2, trail: icon ? 120 : 160, dot: !icon,
             });
 
             if (spec) {
@@ -246,13 +258,14 @@ export function StarfieldCanvas() {
             const dt = lastTs ? Math.min((ts - lastTs) / 1000, 0.1) : 0.016;
             lastTs = ts; time += dt;
 
-            // Sequencer
+            // Sequencer — random event, ~4s fixed gap
             seqTimer -= dt;
             if (seqTimer <= 0) {
-                const gap = isLowPerf ? 4 : 3;
-                if (seqStep === 0 || seqStep === 2) { spawnShoot(); seqStep = (seqStep + 1) % 4; seqTimer = 3.5 + gap; }
-                else if (seqStep === 1) { spawnComet(); seqStep = 2; seqTimer = 6 + gap; }
-                else { spawnCollision(); seqStep = 0; seqTimer = 4 + gap; }
+                const roll = Math.random();
+                if (roll < 0.33) { spawnShoot(); }
+                else if (roll < 0.66) { spawnComet(); }
+                else { spawnCollision(); }
+                seqTimer = 3.5 + Math.random() * 1.5; // ~4s avg gap
             }
 
             // ── Draw ──
@@ -262,8 +275,8 @@ export function StarfieldCanvas() {
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, W, H);
 
-            // 2. Nebulae (skip low-perf)
-            if (!isLowPerf) {
+            // 2. Nebulae
+            {
                 // Green nebula
                 const n1 = 0.5 + 0.25 * (1 + Math.sin(time * TAU / 15));
                 ctx.globalAlpha = n1;
@@ -294,10 +307,65 @@ export function StarfieldCanvas() {
                 ctx.globalAlpha = 1;
             }
 
-            // 3. Stars
+            // 3. Stars — sparkle / diamond / cross shapes with glow & twinkle
             rot1 += dt * ROT_SPEED_1;
             rot2 -= dt * ROT_SPEED_2;
             const csz = 1.5 * W; // 150vw container
+
+            const drawStar = (cx: number, cy: number, s: ZoomStar, sc: number, baseOp: number) => {
+                // Twinkle modulation — smooth sin wave with per-star frequency/phase
+                const twinkle = 0.55 + 0.45 * Math.sin(time * s.twinkleSpeed + s.twinklePhase);
+                const op = baseOp * twinkle;
+                if (op < 0.01) return;
+                const r = s.sz * sc / 2;
+
+                // Outer glow halo
+                ctx.globalAlpha = op * 0.25;
+                const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * s.glowSize);
+                glow.addColorStop(0, s.color + 'aa');
+                glow.addColorStop(0.5, s.color + '22');
+                glow.addColorStop(1, s.color + '00');
+                ctx.fillStyle = glow;
+                ctx.beginPath(); ctx.arc(cx, cy, r * s.glowSize, 0, TAU); ctx.fill();
+
+                ctx.globalAlpha = op;
+                ctx.fillStyle = s.color;
+
+                if (s.shape === 'sparkle') {
+                    // 4-point sparkle with elongated spikes
+                    const spike = r * 2.2;
+                    const inner = r * 0.35;
+                    ctx.beginPath();
+                    for (let i = 0; i < 4; i++) {
+                        const angle = (i * Math.PI) / 2;
+                        ctx.lineTo(cx + Math.cos(angle) * spike, cy + Math.sin(angle) * spike);
+                        const mid = angle + Math.PI / 4;
+                        ctx.lineTo(cx + Math.cos(mid) * inner, cy + Math.sin(mid) * inner);
+                    }
+                    ctx.closePath(); ctx.fill();
+                } else if (s.shape === 'diamond') {
+                    // Rotated diamond with a bright core
+                    const d = r * 1.8;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy - d); ctx.lineTo(cx + d * 0.5, cy);
+                    ctx.lineTo(cx, cy + d); ctx.lineTo(cx - d * 0.5, cy);
+                    ctx.closePath(); ctx.fill();
+                    // bright core dot
+                    ctx.globalAlpha = op * 1.2;
+                    ctx.beginPath(); ctx.arc(cx, cy, r * 0.4, 0, TAU); ctx.fill();
+                } else if (s.shape === 'cross') {
+                    // Thin + shape with glow
+                    const arm = r * 2;
+                    const thick = Math.max(r * 0.25, 0.5);
+                    ctx.fillRect(cx - thick, cy - arm, thick * 2, arm * 2);
+                    ctx.fillRect(cx - arm, cy - thick, arm * 2, thick * 2);
+                    // bright center
+                    ctx.beginPath(); ctx.arc(cx, cy, r * 0.5, 0, TAU); ctx.fill();
+                } else {
+                    // Classic dot with enhanced glow
+                    ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.fill();
+                }
+            };
 
             const drawLayer = (stars: ZoomStar[], rot: number) => {
                 ctx.save(); ctx.translate(W / 2, H / 2); ctx.rotate(rot);
@@ -312,13 +380,12 @@ export function StarfieldCanvas() {
                     else { const t = (p - 0.8) / 0.2; op = s.op * (1 - t); sc = 1 + (s.maxSc - 1) * t; txP = s.tx * (W / 100) * t; tyP = s.ty * (H / 100) * t; }
                     if (op < 0.01) continue;
                     const cx = (s.bx - 0.5) * csz + txP, cy = (s.by - 0.5) * csz + tyP;
-                    ctx.globalAlpha = op; ctx.fillStyle = s.color;
-                    ctx.beginPath(); ctx.arc(cx, cy, s.sz * sc / 2, 0, TAU); ctx.fill();
+                    drawStar(cx, cy, s, sc, op);
                 }
                 ctx.restore();
             };
             drawLayer(s1, rot1);
-            if (!isLowPerf) drawLayer(s2, rot2);
+            drawLayer(s2, rot2);
 
             // 4. Shooting stars
             ctx.globalAlpha = 1;
