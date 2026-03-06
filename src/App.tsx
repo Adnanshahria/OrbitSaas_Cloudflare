@@ -178,7 +178,6 @@ function AdminLoading() {
 }
 
 import { HelmetProvider } from 'react-helmet-async';
-import { Analytics } from '@vercel/analytics/react';
 import { SEOHead } from './components/seo/SEOHead';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -235,7 +234,7 @@ export default function App() {
                   </Route>
                 </Routes>
               </Suspense>
-              <Analytics />
+
             </BrowserRouter>
           </LanguageProvider>
         </ContentProvider>
