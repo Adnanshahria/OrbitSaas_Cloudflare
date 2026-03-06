@@ -70,62 +70,62 @@ function AdminLoading() {
  */
 function VisitorGateway({ children }: { children: React.ReactNode }) {
   const { loading: isDataLoading } = useContent();
-  const [hasEntered, setHasEntered] = useState(false);
+  const [hasEntered, setHasEntered] = useState(() => localStorage.getItem('orbit_gate_passed') === 'true');
+  const [isChecked, setIsChecked] = useState(false);
 
-  const handleEnter = () => {
-    setHasEntered(true);
-    // Explicitly unmute in case it was left muted from a previous session
-    localStorage.removeItem('orbit_sound_muted');
-    window.dispatchEvent(new Event('orbit-sound-toggle'));
+  const handleEnter = async () => {
+    // Phase 1: Animate the checkbox tick
+    setIsChecked(true);
 
+    // Phase 2: Request notification permission DURING this user gesture
+    // (must be called synchronously from click handler to avoid browser blocking it)
     try {
-      getAudioCtx().resume();
+      if ('Notification' in window && 'serviceWorker' in navigator && Notification.permission !== 'denied' && localStorage.getItem('orbit_push_subscribed') !== 'true') {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          // Subscribe in the background — don't block the gate transition
+          (async () => {
+            try {
+              const registration = await navigator.serviceWorker.ready;
+              const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+              if (!vapidPublicKey) return;
+
+              const padding = '='.repeat((4 - (vapidPublicKey.length % 4)) % 4);
+              const base64 = (vapidPublicKey + padding).replace(/-/g, '+').replace(/_/g, '/');
+              const rawData = atob(base64);
+              const applicationServerKey = new Uint8Array(rawData.length);
+              for (let i = 0; i < rawData.length; i++) applicationServerKey[i] = rawData.charCodeAt(i);
+
+              const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey,
+              });
+
+              const sub = subscription.toJSON();
+              const API_BASE = import.meta.env.VITE_API_URL || '';
+              await fetch(`${API_BASE}/api/notifications?action=subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ endpoint: sub.endpoint, keys: sub.keys }),
+              });
+
+              localStorage.setItem('orbit_push_subscribed', 'true');
+            } catch (err) {
+              console.error('Push subscription failed:', err);
+            }
+          })();
+        }
+      }
     } catch { }
 
-    // Request push notification permission (non-blocking)
-    requestPushPermission();
-  };
-
-  const requestPushPermission = async () => {
-    try {
-      if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
-      if (Notification.permission === 'denied') return;
-      if (localStorage.getItem('orbit_push_subscribed') === 'true') return;
-
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') return;
-
-      const registration = await navigator.serviceWorker.ready;
-      const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-      if (!vapidPublicKey) return;
-
-      // Convert VAPID key to Uint8Array
-      const padding = '='.repeat((4 - (vapidPublicKey.length % 4)) % 4);
-      const base64 = (vapidPublicKey + padding).replace(/-/g, '+').replace(/_/g, '/');
-      const rawData = atob(base64);
-      const applicationServerKey = new Uint8Array(rawData.length);
-      for (let i = 0; i < rawData.length; i++) applicationServerKey[i] = rawData.charCodeAt(i);
-
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey,
-      });
-
-      const sub = subscription.toJSON();
-      const API_BASE = import.meta.env.VITE_API_URL || '';
-      await fetch(`${API_BASE}/api/notifications?action=subscribe`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          endpoint: sub.endpoint,
-          keys: sub.keys,
-        }),
-      });
-
-      localStorage.setItem('orbit_push_subscribed', 'true');
-    } catch (err) {
-      console.error('Push subscription failed:', err);
-    }
+    // Phase 3: After a brief delay to show the check animation, enter the site
+    setTimeout(() => {
+      setHasEntered(true);
+      localStorage.setItem('orbit_gate_passed', 'true');
+      localStorage.removeItem('orbit_sound_muted');
+      window.dispatchEvent(new Event('orbit-sound-toggle'));
+      try { getAudioCtx().resume(); } catch { }
+    }, 700);
   };
 
   return (
@@ -158,17 +158,97 @@ function VisitorGateway({ children }: { children: React.ReactNode }) {
                 ) : (
                   <motion.button
                     initial={{ opacity: 0, scale: 0.8, y: 15 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.95 }}
+                    animate={isChecked
+                      ? { opacity: 1, scale: 1, y: 0 }
+                      : {
+                        opacity: 1,
+                        scale: [1, 1.04, 1],
+                        y: 0,
+                        boxShadow: [
+                          '0 0 8px rgba(16,185,129,0.15), 0 0 15px rgba(245,158,11,0.08)',
+                          '0 0 25px rgba(16,185,129,0.4), 0 0 50px rgba(245,158,11,0.2)',
+                          '0 0 8px rgba(16,185,129,0.15), 0 0 15px rgba(245,158,11,0.08)',
+                        ],
+                      }
+                    }
+                    transition={isChecked
+                      ? { type: 'spring', stiffness: 300, damping: 15 }
+                      : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
+                    }
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.96 }}
                     onClick={handleEnter}
-                    className="w-full max-w-[280px] relative group overflow-hidden rounded-lg border border-border/50 bg-card/20 hover:bg-card/40 transition-colors duration-300 p-4 flex items-center gap-4 cursor-pointer"
+                    disabled={isChecked}
+                    className="w-full max-w-[300px] relative group overflow-hidden rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all duration-500 backdrop-blur-md"
+                    style={{
+                      background: isChecked
+                        ? 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(245,158,11,0.15))'
+                        : 'rgba(255,255,255,0.03)',
+                      border: isChecked
+                        ? '1.5px solid rgba(16,185,129,0.6)'
+                        : '1.5px solid rgba(255,255,255,0.1)',
+                      boxShadow: isChecked
+                        ? '0 0 25px rgba(16,185,129,0.3), 0 0 50px rgba(245,158,11,0.15)'
+                        : '0 2px 10px rgba(0,0,0,0.2)',
+                    }}
                   >
-                    <div className="w-6 h-6 rounded border-2 border-muted-foreground/30 group-hover:border-primary group-hover:bg-primary/10 flex items-center justify-center shrink-0 transition-all">
-                      <Check className="w-4 h-4 text-transparent group-hover:text-primary transition-colors" strokeWidth={3} />
-                    </div>
-                    <span className="text-sm font-bold text-foreground tracking-wide group-hover:text-primary transition-colors text-left uppercase">I am not a robot</span>
+                    {/* Shimmer sweep effect */}
+                    <motion.div
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{
+                        background: 'linear-gradient(105deg, transparent 40%, rgba(16,185,129,0.08) 50%, transparent 60%)',
+                        backgroundSize: '200% 100%',
+                      }}
+                      animate={{ backgroundPosition: ['200% 0', '-200% 0'] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                    />
+
+                    {/* Checkbox */}
+                    <motion.div
+                      animate={isChecked ? {
+                        scale: [1, 1.3, 1],
+                        borderColor: ['rgba(16,185,129,0.6)', 'rgba(245,158,11,0.8)', 'rgba(16,185,129,0.8)'],
+                        backgroundColor: ['rgba(16,185,129,0.1)', 'rgba(16,185,129,0.2)', 'rgba(16,185,129,0.15)'],
+                      } : {}}
+                      transition={{ duration: 0.5, ease: 'easeOut' }}
+                      className={`relative w-7 h-7 rounded-md flex items-center justify-center shrink-0 transition-all duration-300 ${isChecked
+                        ? 'border-2 border-emerald-500 bg-emerald-500/15 shadow-[0_0_15px_rgba(16,185,129,0.5)]'
+                        : 'border-2 border-muted-foreground/30 group-hover:border-emerald-500/60 group-hover:bg-emerald-500/5'
+                        }`}
+                    >
+                      <AnimatePresence>
+                        {isChecked && (
+                          <motion.div
+                            initial={{ scale: 0, rotate: -45 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                          >
+                            <Check className="w-4.5 h-4.5 text-emerald-400 drop-shadow-[0_0_6px_rgba(16,185,129,0.8)]" strokeWidth={3} />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      {!isChecked && (
+                        <Check className="w-4 h-4 text-transparent group-hover:text-emerald-500/40 transition-colors duration-300" strokeWidth={3} />
+                      )}
+                    </motion.div>
+
+                    {/* Label */}
+                    <span className={`text-sm font-bold tracking-wide text-left uppercase transition-all duration-500 ${isChecked
+                      ? 'bg-gradient-to-r from-emerald-400 to-amber-400 bg-clip-text text-transparent'
+                      : 'text-foreground group-hover:text-emerald-400'
+                      }`}>
+                      {isChecked ? 'Verified ✓' : 'I am not a robot'}
+                    </span>
+
+                    {/* Glow ring on checked */}
+                    {isChecked && (
+                      <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1.5, opacity: 0 }}
+                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                        className="absolute inset-0 rounded-xl border-2 border-emerald-500/50 pointer-events-none"
+                      />
+                    )}
                   </motion.button>
                 )}
               </div>
@@ -230,7 +310,7 @@ function PublicSite() {
   return (
     <div className="min-h-[100dvh] text-foreground relative z-0">
       {isLoaded && <Navbar />}
-      <main>
+      <main className="pb-24 md:pb-0">
         <Home />
         {isLoaded && (
           <Suspense fallback={null}>

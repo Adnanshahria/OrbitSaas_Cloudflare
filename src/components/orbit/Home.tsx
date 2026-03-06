@@ -180,13 +180,7 @@ export function Home() {
     return () => clearTimeout(fallback);
   }, [isFirstVisit, handleLoaderComplete]);
 
-  // Force exactly the screen height ONCE to prevent shrinking when mobile keyboard opens
-  const [heroHeight, setHeroHeight] = useState('100vh');
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setHeroHeight(`${window.innerHeight}px`);
-    }
-  }, []);
+  // heroHeight removed — using min-h-[100dvh] in className instead
 
   // Rigorous body scroll lock when newsletter is focused to prevent browser from auto-scrolling hero content upwards
   useEffect(() => {
@@ -218,18 +212,17 @@ export function Home() {
     <section
       ref={sectionRef}
       id="hero"
-      className={`relative flex items-center justify-center overflow-x-hidden transition-all duration-1000 ease-in-out ${loaderComplete
-        ? 'pt-0 pb-12 sm:pt-6 sm:pb-0'
-        : 'pt-0 pb-12 sm:pt-6 sm:pb-0'
+      className={`relative flex flex-col items-center justify-center overflow-x-hidden transition-all duration-1000 ease-in-out min-h-[100dvh] pb-28 sm:pb-8 ${loaderComplete
+        ? 'pt-0 sm:pt-6'
+        : 'pt-0 sm:pt-6'
         }`}
-      style={{ minHeight: heroHeight }}
     >
 
       <div
         className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto lg:-mt-12"
         style={{ contain: 'none' }}
       >
-        <div className={`px-4 sm:px-14 py-8 sm:py-10 flex flex-col justify-between items-center transition-all duration-700 ease-in-out ${loaderComplete ? 'min-h-0' : 'min-h-[350px]'} sm:min-h-0`}>
+        <div className={`px-4 sm:px-14 py-8 sm:py-10 flex flex-col justify-center items-center gap-4 sm:gap-6 transition-all duration-700 ease-in-out ${loaderComplete ? 'min-h-0' : 'min-h-[350px]'} sm:min-h-0`}>
           {/* Badge — slides down with spring */}
           {t.hero.tagline && (() => {
             const line1 = t.hero.tagline;
@@ -253,21 +246,21 @@ export function Home() {
                   initial={{ opacity: 0, y: -12, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: baseDelay + 0.3 }}
-                  className="flex sm:hidden flex-col items-center w-full max-w-[95%] mx-auto mb-10 -mt-6 font-playfair italic font-bold text-[14px] tracking-wide relative"
+                  className="flex sm:hidden flex-col items-center gap-y-2 w-full max-w-[95%] mx-auto font-playfair italic font-bold text-[14px] tracking-wide relative"
                 >
-                  {/* Fusion Glow Effect (behind intersection) - Moved down to overlap */}
+                  {/* Fusion Glow Effect (centered behind badges) */}
                   <motion.div
                     initial={{ opacity: 0, scale: 0 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: baseDelay + 0.8, duration: 0.8 }}
                     viewport={{ once: true }}
-                    className="absolute top-[20px] left-[52%] -translate-x-1/2 w-48 h-10 bg-gradient-to-r from-emerald-500/60 to-amber-500/60 blur-xl z-[8] mix-blend-screen pointer-events-none"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-10 bg-gradient-to-r from-emerald-500/60 to-amber-500/60 blur-xl z-[8] mix-blend-screen pointer-events-none"
                   />
 
                   {/* Row 1 — slightly left, pill shaped box */}
                   <motion.div
-                    initial={{ opacity: 0.2, x: -75 }}
-                    animate={{ opacity: 1, x: -40 }}
+                    initial={{ opacity: 0.2, x: -40 }}
+                    animate={{ opacity: 1, x: -30 }}
                     transition={{ type: "spring", stiffness: 120, damping: 15, delay: baseDelay + 0.4 }}
                     viewport={{ once: true }}
                     className="relative z-[9] flex items-center justify-center gap-2 px-4 py-1.5 backdrop-blur-md shadow-lg rounded-full"
@@ -285,8 +278,8 @@ export function Home() {
                   {/* Row 2 — slightly right, pill shaped box */}
                   {line2 && (
                     <motion.div
-                      initial={{ opacity: 0, x: 65 }}
-                      animate={{ opacity: 1, x: 40 }}
+                      initial={{ opacity: 0, x: 40 }}
+                      animate={{ opacity: 1, x: 30 }}
                       transition={{ type: "spring", stiffness: 120, damping: 15, delay: baseDelay + 0.6 }}
                       viewport={{ once: true }}
                       className="relative z-[5] flex items-center justify-center gap-2 px-6 py-1.5 backdrop-blur-md shadow-lg rounded-full"
@@ -368,7 +361,7 @@ export function Home() {
                 initial={{ opacity: 0, filter: 'blur(10px)' }}
                 animate={{ opacity: 1, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, filter: 'blur(10px)', transition: { duration: 0.3 } }}
-                className={`${isInHero ? 'animate-title-breath' : ''} mt-1 sm:mt-2 md:mt-4 text-[1.5rem] leading-[1.2] sm:text-3xl md:text-4xl lg:text-[3rem] xl:text-5xl font-lobster tracking-normal px-1 sm:px-4 flex flex-wrap justify-center gap-x-[0.25em] gap-y-2 ${lang === 'bn' ? 'font-bengali font-bold' : ''}`}
+                className={`${isInHero ? 'animate-title-breath' : ''} text-[clamp(1.15rem,4.5vw,1.5rem)] leading-[1.2] sm:text-3xl md:text-4xl lg:text-[3rem] xl:text-5xl font-lobster tracking-normal px-1 sm:px-4 flex flex-wrap justify-center gap-x-[0.25em] gap-y-2 ${lang === 'bn' ? 'font-bengali font-bold' : ''}`}
                 style={{ color: titleColor }}
               >
                 {t.hero.title.split(' ').filter(Boolean).map((word: string, wi: number) => {
