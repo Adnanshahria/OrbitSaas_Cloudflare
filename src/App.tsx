@@ -70,7 +70,7 @@ function AdminLoading() {
  */
 function VisitorGateway({ children }: { children: React.ReactNode }) {
   const { loading: isDataLoading } = useContent();
-  const [hasEntered, setHasEntered] = useState(() => localStorage.getItem('orbit_gate_passed') === 'true');
+  const [hasEntered, setHasEntered] = useState(() => sessionStorage.getItem('orbit_gate_passed') === 'true');
   const [isChecked, setIsChecked] = useState(false);
 
   const handleEnter = async () => {
@@ -80,7 +80,7 @@ function VisitorGateway({ children }: { children: React.ReactNode }) {
     // Phase 2: Request notification permission DURING this user gesture
     // (must be called synchronously from click handler to avoid browser blocking it)
     try {
-      if ('Notification' in window && 'serviceWorker' in navigator && Notification.permission !== 'denied' && localStorage.getItem('orbit_push_subscribed') !== 'true') {
+      if ('Notification' in window && 'serviceWorker' in navigator && Notification.permission !== 'denied' && sessionStorage.getItem('orbit_push_subscribed') !== 'true') {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
           // Subscribe in the background — don't block the gate transition
@@ -109,7 +109,7 @@ function VisitorGateway({ children }: { children: React.ReactNode }) {
                 body: JSON.stringify({ endpoint: sub.endpoint, keys: sub.keys }),
               });
 
-              localStorage.setItem('orbit_push_subscribed', 'true');
+              sessionStorage.setItem('orbit_push_subscribed', 'true');
             } catch (err) {
               console.error('Push subscription failed:', err);
             }
@@ -121,7 +121,7 @@ function VisitorGateway({ children }: { children: React.ReactNode }) {
     // Phase 3: After a brief delay to show the check animation, enter the site
     setTimeout(() => {
       setHasEntered(true);
-      localStorage.setItem('orbit_gate_passed', 'true');
+      sessionStorage.setItem('orbit_gate_passed', 'true');
       localStorage.removeItem('orbit_sound_muted');
       window.dispatchEvent(new Event('orbit-sound-toggle'));
       try { getAudioCtx().resume(); } catch { }
@@ -355,7 +355,7 @@ const queryClient = new QueryClient({
 
 export default function App() {
   return (
-    <HelmetProvider>
+    <>
       <QueryClientProvider client={queryClient}>
         <ContentProvider>
           <LanguageProvider>
@@ -430,6 +430,6 @@ export default function App() {
           </LanguageProvider>
         </ContentProvider>
       </QueryClientProvider>
-    </HelmetProvider>
+    </>
   );
 }

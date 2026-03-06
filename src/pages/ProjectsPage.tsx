@@ -81,8 +81,8 @@ export default function ProjectsPage() {
     return (
         <div className="min-h-[100dvh] bg-background text-foreground">
             <Helmet>
-                <title>All Projects | ORBIT SaaS</title>
-                <meta name="description" content="Browse all projects built by ORBIT SaaS — web apps, AI solutions, mobile apps, and more." />
+                <title data-rh="true">All Projects | ORBIT SaaS</title>
+                <meta data-rh="true" name="description" content="Browse all projects built by ORBIT SaaS — web apps, AI solutions, mobile apps, and more." />
             </Helmet>
             <Navbar />
             <main className="pt-24 pb-20">

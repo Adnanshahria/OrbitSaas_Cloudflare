@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { SectionHeader } from '@/components/admin/EditorComponents';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -249,5 +249,3 @@ export default function AdminNotifications() {
         </div>
     );
 }
-   
- 
