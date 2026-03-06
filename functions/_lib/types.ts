@@ -29,4 +29,9 @@ export interface Env {
 
   // Cloudflare Pages static assets binding
   ASSETS: Fetcher;
+
+  // Web Push (VAPID)
+  VAPID_PUBLIC_KEY: string;
+  VAPID_PRIVATE_KEY: string;
+  VAPID_EMAIL: string;
 }

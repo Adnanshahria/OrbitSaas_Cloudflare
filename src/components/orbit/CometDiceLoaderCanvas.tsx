@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { playBoomDirect, warmUpAudio } from './CollisionSound';
 
 interface Rect {
     x: number;
@@ -37,6 +38,9 @@ export function CometDiceLoaderCanvas({ orbitRects, saasRect, onRevealLetter, on
     onCompleteRef.current = onComplete;
 
     useEffect(() => {
+        // Pre-warm audio so the boom is ready by the time the fireball hits (~8s)
+        warmUpAudio();
+
         const cvs = canvasRef.current;
         if (!cvs) return;
         const ctx = cvs.getContext('2d');
@@ -133,13 +137,15 @@ export function CometDiceLoaderCanvas({ orbitRects, saasRect, onRevealLetter, on
                 ctx.closePath();
                 ctx.fillStyle = 'rgba(10, 10, 10, 0.8)';
                 ctx.fill();
+                ctx.fillStyle = 'rgba(10, 10, 10, 0.8)';
+                ctx.fill();
                 ctx.strokeStyle = '#10b981';
                 ctx.lineWidth = 2.5;
-                const glow = Math.max(0, (size - zAvg) / size);
-                ctx.shadowColor = '#10b981';
-                ctx.shadowBlur = glow * 10;
+                // Faster alternative to shadowBlur
+                ctx.globalAlpha = alpha * 0.3;
                 ctx.stroke();
-                ctx.shadowBlur = 0;
+                ctx.globalAlpha = alpha;
+                ctx.stroke();
             });
 
             if (centerText) {
@@ -147,8 +153,7 @@ export function CometDiceLoaderCanvas({ orbitRects, saasRect, onRevealLetter, on
                 ctx.font = `bold ${size * 0.7}px Poppins`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.shadowColor = '#10b981';
-                ctx.shadowBlur = 20;
+                // Simplify or remove text shadow
                 ctx.fillText(centerText, 0, 0);
             }
             ctx.restore();
@@ -185,8 +190,6 @@ export function CometDiceLoaderCanvas({ orbitRects, saasRect, onRevealLetter, on
             ctx.strokeStyle = grad;
             ctx.lineWidth = c.size * 2;
             ctx.lineCap = 'round';
-            ctx.shadowColor = c.color;
-            ctx.shadowBlur = 10;
             ctx.stroke();
 
             // Head glow
@@ -201,8 +204,6 @@ export function CometDiceLoaderCanvas({ orbitRects, saasRect, onRevealLetter, on
                 ctx.font = `bold ${c.size * 2.5}px Poppins`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.shadowColor = c.color;
-                ctx.shadowBlur = 10;
                 ctx.fillText(c.text, c.x, c.y);
             }
             ctx.restore();
@@ -377,10 +378,15 @@ export function CometDiceLoaderCanvas({ orbitRects, saasRect, onRevealLetter, on
                     if (c.type === 'letter') {
                         onRevealLetterRef.current(c.idx);
                         spawnParticles(c.x, c.y, c.color, 30);
+                        // Play a subtler 20% volume sound for each letter reveal
+                        playBoomDirect(0.2);
                     } else if (c.type === 'strike') {
                         spawnParticles(c.x, c.y, '#ef4444', 40, 3);
                         spawnParticles(c.x, c.y, '#f97316', 40, 2);
                         state = 'DISLOCATING';
+
+                        // Play the boom sound on fireball impact
+                        playBoomDirect();
 
                         const saasTarget = getSaasTarget();
                         diceVx = (saasTarget.x - diceX) * 2.5;

@@ -82,6 +82,77 @@ function iconImg(path: string, sz: number, col: string): HTMLImageElement {
     return img;
 }
 
+// ── Star Texture Caching ──────────────────────────────────
+const _starCache = new Map<string, HTMLCanvasElement>();
+function getStarTexture(s: ZoomStar, dpr: number): HTMLCanvasElement {
+    const key = `${s.shape}-${s.color}-${s.glowSize}`;
+    let canvas = _starCache.get(key);
+    if (canvas) return canvas;
+
+    canvas = document.createElement('canvas');
+    const r = (s.sz * 2.5) * dpr; // Base size for cache
+    canvas.width = r * 2 * s.glowSize;
+    canvas.height = r * 2 * s.glowSize;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return canvas;
+
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const baseR = r;
+
+    // Outer glow halo (pre-rendered)
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseR * s.glowSize);
+    glow.addColorStop(0, s.color + '66');
+    glow.addColorStop(0.5, s.color + '11');
+    glow.addColorStop(1, s.color + '00');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(cx, cy, baseR * s.glowSize, 0, TAU); ctx.fill();
+
+    ctx.fillStyle = s.color;
+    const sr = baseR;
+
+    if (s.shape === 'sparkle') {
+        // High-contrast 4-point star with very sharp spikes
+        const outer = sr * 2.8;
+        const inner = sr * 0.25;
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+            const r = i % 2 === 0 ? outer : inner;
+            const a = (i * Math.PI) / 4;
+            ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+        }
+        ctx.closePath(); ctx.fill();
+        // Bright core
+        ctx.beginPath(); ctx.arc(cx, cy, sr * 0.6, 0, TAU); ctx.fill();
+    } else if (s.shape === 'diamond') {
+        const d = sr * 1.8;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - d); ctx.lineTo(cx + d * 0.5, cy);
+        ctx.lineTo(cx, cy + d); ctx.lineTo(cx - d * 0.5, cy);
+        ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx, cy, sr * 0.4, 0, TAU); ctx.fill();
+    } else if (s.shape === 'cross') {
+        // Decorative "Compass" star — better than a plain cross
+        const outer = sr * 2.0;
+        const inner = sr * 0.6;
+        const mid = sr * 0.8;
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+            const r = i % 2 === 0 ? outer : mid;
+            const a = (i * Math.PI) / 4;
+            ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+        }
+        ctx.closePath(); ctx.fill();
+        // Center glow
+        ctx.beginPath(); ctx.arc(cx, cy, sr * 0.5, 0, TAU); ctx.fill();
+    } else {
+        ctx.beginPath(); ctx.arc(cx, cy, sr, 0, TAU); ctx.fill();
+    }
+
+    _starCache.set(key, canvas);
+    return canvas;
+}
+
 // ── Star generation ───────────────────────────────────────
 const STAR_COLORS = ['#ffffff', '#e0f2fe', '#fbbf24', '#34d399', '#a78bfa', '#f0abfc', '#93c5fd'];
 
@@ -98,16 +169,16 @@ function makeStars(n: number): ZoomStar[] {
         return {
             bx, by,
             tx: (dx / d) * td, ty: (dy / d) * td,
-            sz: 1.2 + Math.random() * 2.5,
+            sz: 0.6 + Math.random() * 1.5,
             op: 0.35 + Math.random() * 0.65,
             color: STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
             dur: 8 + Math.random() * 16,
             prog: Math.random(),
-            maxSc: 2 + Math.random() * 3.5,
+            maxSc: 1.2 + Math.random() * 2.0,
             shape,
             twinkleSpeed: 1.5 + Math.random() * 3.5,
             twinklePhase: Math.random() * TAU,
-            glowSize: 1.8 + Math.random() * 2.5,
+            glowSize: 1.0 + Math.random() * 1.5,
         };
     });
 }
@@ -124,7 +195,7 @@ export function StarfieldCanvas() {
     useEffect(() => {
         const cvs = canvasRef.current;
         if (!cvs) return;
-        const ctx = cvs.getContext('2d');
+        const ctx = cvs.getContext('2d', { alpha: false }); // Optimize for opaque background
         if (!ctx) return;
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
@@ -136,6 +207,7 @@ export function StarfieldCanvas() {
             W = window.innerWidth; H = window.innerHeight;
             cvs.width = W * dpr; cvs.height = H * dpr;
             cvs.style.width = W + 'px'; cvs.style.height = H + 'px';
+            _starCache.clear(); // Clear cache on resize if DPR changes
         };
         resize();
         window.addEventListener('resize', resize);
@@ -323,58 +395,15 @@ export function StarfieldCanvas() {
             const csz = 1.5 * W; // 150vw container
 
             const drawStar = (cx: number, cy: number, s: ZoomStar, sc: number, baseOp: number) => {
-                // Twinkle modulation — smooth sin wave with per-star frequency/phase
+                const tex = getStarTexture(s, dpr);
                 const twinkle = 0.55 + 0.45 * Math.sin(time * s.twinkleSpeed + s.twinklePhase);
                 const op = baseOp * twinkle;
                 if (op < 0.01) return;
-                const r = s.sz * sc / 2;
-
-                // Outer glow halo
-                ctx.globalAlpha = op * 0.25;
-                const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * s.glowSize);
-                glow.addColorStop(0, s.color + 'aa');
-                glow.addColorStop(0.5, s.color + '22');
-                glow.addColorStop(1, s.color + '00');
-                ctx.fillStyle = glow;
-                ctx.beginPath(); ctx.arc(cx, cy, r * s.glowSize, 0, TAU); ctx.fill();
 
                 ctx.globalAlpha = op;
-                ctx.fillStyle = s.color;
-
-                if (s.shape === 'sparkle') {
-                    // 4-point sparkle with elongated spikes
-                    const spike = r * 2.2;
-                    const inner = r * 0.35;
-                    ctx.beginPath();
-                    for (let i = 0; i < 4; i++) {
-                        const angle = (i * Math.PI) / 2;
-                        ctx.lineTo(cx + Math.cos(angle) * spike, cy + Math.sin(angle) * spike);
-                        const mid = angle + Math.PI / 4;
-                        ctx.lineTo(cx + Math.cos(mid) * inner, cy + Math.sin(mid) * inner);
-                    }
-                    ctx.closePath(); ctx.fill();
-                } else if (s.shape === 'diamond') {
-                    // Rotated diamond with a bright core
-                    const d = r * 1.8;
-                    ctx.beginPath();
-                    ctx.moveTo(cx, cy - d); ctx.lineTo(cx + d * 0.5, cy);
-                    ctx.lineTo(cx, cy + d); ctx.lineTo(cx - d * 0.5, cy);
-                    ctx.closePath(); ctx.fill();
-                    // bright core dot
-                    ctx.globalAlpha = op * 1.2;
-                    ctx.beginPath(); ctx.arc(cx, cy, r * 0.4, 0, TAU); ctx.fill();
-                } else if (s.shape === 'cross') {
-                    // Thin + shape with glow
-                    const arm = r * 2;
-                    const thick = Math.max(r * 0.25, 0.5);
-                    ctx.fillRect(cx - thick, cy - arm, thick * 2, arm * 2);
-                    ctx.fillRect(cx - arm, cy - thick, arm * 2, thick * 2);
-                    // bright center
-                    ctx.beginPath(); ctx.arc(cx, cy, r * 0.5, 0, TAU); ctx.fill();
-                } else {
-                    // Classic dot with enhanced glow
-                    ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.fill();
-                }
+                const drawW = tex.width / dpr * sc;
+                const drawH = tex.height / dpr * sc;
+                ctx.drawImage(tex, cx - drawW / 2, cy - drawH / 2, drawW, drawH);
             };
 
             const drawLayer = (stars: ZoomStar[], rot: number) => {
@@ -434,9 +463,13 @@ export function StarfieldCanvas() {
                 // icon
                 if (c.img?.complete) {
                     ctx.save(); ctx.translate(px, py); ctx.rotate(c.spin); ctx.globalAlpha = op;
-                    ctx.shadowColor = c.color; ctx.shadowBlur = 12;
+                    // Fast glow alternative
+                    ctx.globalAlpha = op * 0.4;
+                    ctx.fillStyle = c.color;
+                    ctx.beginPath(); ctx.arc(0, 0, c.iSz * 0.8, 0, TAU); ctx.fill();
+                    ctx.globalAlpha = op;
                     ctx.drawImage(c.img, -c.iSz / 2, -c.iSz / 2, c.iSz, c.iSz);
-                    ctx.shadowBlur = 0; ctx.restore();
+                    ctx.restore();
                 }
             }
 
@@ -457,13 +490,19 @@ export function StarfieldCanvas() {
                 ctx.globalAlpha = op; ctx.strokeStyle = gr; ctx.lineWidth = a.dot ? 5 : 4; ctx.lineCap = 'round';
                 ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(px, py); ctx.stroke();
                 if (a.dot) {
-                    ctx.fillStyle = a.color; ctx.shadowColor = a.color; ctx.shadowBlur = 8;
-                    ctx.beginPath(); ctx.arc(px, py, 3, 0, TAU); ctx.fill(); ctx.shadowBlur = 0;
+                    ctx.fillStyle = a.color;
+                    ctx.globalAlpha = op * 0.5;
+                    ctx.beginPath(); ctx.arc(px, py, 6, 0, TAU); ctx.fill();
+                    ctx.globalAlpha = op;
+                    ctx.beginPath(); ctx.arc(px, py, 3, 0, TAU); ctx.fill();
                 } else if (a.img?.complete) {
                     ctx.save(); ctx.translate(px, py); ctx.rotate(a.spin);
-                    ctx.shadowColor = a.color; ctx.shadowBlur = 6;
+                    ctx.globalAlpha = op * 0.4;
+                    ctx.fillStyle = a.color;
+                    ctx.beginPath(); ctx.arc(0, 0, a.iSz * 0.7, 0, TAU); ctx.fill();
+                    ctx.globalAlpha = op;
                     ctx.drawImage(a.img, -a.iSz / 2, -a.iSz / 2, a.iSz, a.iSz);
-                    ctx.shadowBlur = 0; ctx.restore();
+                    ctx.restore();
                 }
             }
 
@@ -488,9 +527,11 @@ export function StarfieldCanvas() {
                 const px = p.cx * W / 100 + p.px * eT, py = p.cy * H / 100 + p.py * eT;
                 const radius = (p.sz / 2) * (1 - t); // shrink to 0
                 ctx.globalAlpha = 1 - t; ctx.fillStyle = p.color;
-                ctx.shadowColor = p.color; ctx.shadowBlur = 8;
+                // Simplified particle glow
+                ctx.beginPath(); ctx.arc(px, py, Math.max(radius * 1.5, 1), 0, TAU);
+                ctx.globalAlpha = (1 - t) * 0.3; ctx.fill();
+                ctx.globalAlpha = 1 - t;
                 ctx.beginPath(); ctx.arc(px, py, Math.max(radius, 0.5), 0, TAU); ctx.fill();
-                ctx.shadowBlur = 0;
             }
 
             ctx.globalAlpha = 1;
