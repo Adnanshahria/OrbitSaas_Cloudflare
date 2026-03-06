@@ -11,24 +11,76 @@ const ICON_MAP: Record<string, LucideIcon> = {
 };
 const DEFAULT_ICONS = [Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket];
 
-const cardVariants = {
-  hidden: {
-    opacity: 0,
-    y: 40,
-    scale: 0.97,
-  },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 100,
-      damping: 18,
-      delay: i * 0.1,
-    },
-  }),
-};
+/* ── Marquee keyframes (injected once) ── */
+const marqueeStyleId = 'services-marquee-keyframes';
+if (typeof document !== 'undefined' && !document.getElementById(marqueeStyleId)) {
+  const style = document.createElement('style');
+  style.id = marqueeStyleId;
+  style.textContent = `
+    @keyframes marquee-scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function ServiceCard({
+  item,
+  iconColor,
+  cardBorder,
+  index,
+}: {
+  item: any;
+  iconColor: string;
+  cardBorder: string;
+  index: number;
+}) {
+  const Icon =
+    item.icon && ICON_MAP[item.icon]
+      ? ICON_MAP[item.icon]
+      : DEFAULT_ICONS[index % DEFAULT_ICONS.length];
+  const accent = item.color || iconColor;
+
+  return (
+    <article
+      className="relative rounded-xl sm:rounded-2xl p-5 sm:p-8 group cursor-default premium-card-sub overflow-hidden transition-all duration-300 flex flex-col bg-card/60 backdrop-blur-md sm:hover:-translate-y-1 sm:hover:shadow-[0_4px_24px_rgba(16,185,129,0.10)] flex-shrink-0"
+      style={{ width: 'clamp(340px, 34vw, 440px)' }}
+    >
+      {/* Hover glow */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at 30% 0%, ${accent}18, transparent 65%)`,
+        }}
+      />
+
+      {/* Row 1: Icon + Title */}
+      <div className="relative z-10 flex items-center gap-3 sm:gap-4 mb-3">
+        <div
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
+          style={{ backgroundColor: `${accent}15` }}
+        >
+          <Icon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: accent }} />
+        </div>
+        <h3 className="font-display text-[1rem] sm:text-[1.15rem] font-bold text-foreground leading-snug">
+          {item.title}
+        </h3>
+      </div>
+
+      {/* Row 2: Description — full width */}
+      <p className="relative z-10 text-muted-foreground text-[0.8rem] sm:text-[0.85rem] leading-[1.7] opacity-80 group-hover:opacity-100 transition-opacity duration-300">
+        {item.desc}
+      </p>
+
+      {/* Subtle bottom accent line */}
+      <div
+        className="absolute bottom-0 left-6 right-6 h-px opacity-0 group-hover:opacity-40 transition-opacity duration-500"
+        style={{ backgroundColor: accent }}
+      />
+    </article>
+  );
+}
 
 export function ServicesSection() {
   const { t } = useLang();
@@ -44,13 +96,17 @@ export function ServicesSection() {
   const subtitle = t.services.subtitle || '';
   const words = useMemo(() => subtitle.split(' '), [subtitle]);
 
+  const items: any[] = t.services.items;
+  // Speed: ~30s per full cycle — adjust as needed
+  const duration = Math.max(items.length * 5, 20);
+
   return (
     <section id="services" className="py-10 sm:py-20 px-3 sm:px-6 lg:px-8 relative scroll-mt-12" style={{ contain: 'none' }}>
 
       <div className="w-full mx-auto relative" ref={ref}>
-        <div className="rounded-2xl sm:rounded-3xl premium-card bg-white/[0.02] backdrop-blur-xl px-4 sm:px-14 py-4 sm:py-8 shadow-[0_0_40px_rgba(108,92,231,0.08)]">
+        <div className="rounded-2xl sm:rounded-3xl premium-card bg-white/[0.02] backdrop-blur-xl px-0 sm:px-0 py-4 sm:py-8 shadow-[0_0_40px_rgba(108,92,231,0.08)]">
           {/* Section Header */}
-          <div className="text-center mb-5 sm:mb-8">
+          <div className="text-center mb-5 sm:mb-8 px-4 sm:px-14">
             <motion.h2
               initial={{ opacity: 0, y: -16 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -82,56 +138,32 @@ export function ServicesSection() {
             </motion.p>
           </div>
 
-          {/* Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {t.services.items.map((item: any, i: number) => {
-              const Icon = (item.icon && ICON_MAP[item.icon]) ? ICON_MAP[item.icon] : DEFAULT_ICONS[i % DEFAULT_ICONS.length];
-              const accent = item.color || iconColor;
-              const bg = item.bg || '';
-              const border = item.border || cardBorder;
-
-              return (
-                <article
-                  key={i}
-                  className={`relative rounded-xl sm:rounded-2xl p-3 sm:p-7 group cursor-default premium-card-sub overflow-hidden transition-shadow duration-300 flex flex-col bg-card/60 backdrop-blur-md sm:hover:-translate-y-1 sm:transition-transform sm:duration-300`}
-                >
-                  {/* Hover glow */}
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                    style={{
-                      background: `radial-gradient(circle at 30% 0%, ${accent}18, transparent 65%)`,
-                    }}
-                  />
-
-                  {/* Content */}
-                  <div className="relative z-10 flex flex-col items-center text-center h-full">
-                    {/* Icon */}
-                    <div
-                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110 mb-3 sm:mb-4"
-                      style={{ backgroundColor: `${accent}15` }}
-                    >
-                      <Icon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: accent }} />
-                    </div>
-
-                    {/* Title Row */}
-                    <h3 className="font-display text-[0.95rem] sm:text-[1.1rem] font-bold text-foreground leading-snug mb-3">
-                      {item.title}
-                    </h3>
-
-                    {/* Description */}
-                    <p className="text-muted-foreground text-[0.8rem] sm:text-[0.85rem] leading-[1.6] opacity-85 sm:opacity-80 group-hover:opacity-100 transition-opacity duration-300">
-                      {item.desc}
-                    </p>
-                  </div>
-
-                  {/* Subtle bottom accent line */}
-                  <div
-                    className="absolute bottom-0 left-6 right-6 h-px opacity-0 group-hover:opacity-40 transition-opacity duration-500"
-                    style={{ backgroundColor: accent }}
-                  />
-                </article>
-              );
-            })}
+          {/* ── Marquee ── */}
+          <div
+            className="overflow-hidden relative"
+            style={{
+              maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)',
+            }}
+          >
+            <div
+              className="flex gap-4 sm:gap-5 w-max"
+              style={{
+                animation: `marquee-scroll ${duration}s linear infinite`,
+                willChange: 'transform',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.animationPlayState = 'paused'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.animationPlayState = 'running'; }}
+            >
+              {/* Original set */}
+              {items.map((item, i) => (
+                <ServiceCard key={`a-${i}`} item={item} iconColor={iconColor} cardBorder={cardBorder} index={i} />
+              ))}
+              {/* Duplicate set for seamless loop */}
+              {items.map((item, i) => (
+                <ServiceCard key={`b-${i}`} item={item} iconColor={iconColor} cardBorder={cardBorder} index={i} />
+              ))}
+            </div>
           </div>
         </div>
       </div>
