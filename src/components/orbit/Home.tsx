@@ -331,7 +331,7 @@ export function Home() {
                       duration: 0.4,
                       ease: "easeOut",
                     }}
-                    className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block animate-text-shimmer-orbit will-change-[opacity,filter]"
+                    className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-abril tracking-tight inline-block animate-text-shimmer-orbit will-change-[opacity,filter]"
                   >
                     {letter}
                   </motion.span>
@@ -346,7 +346,7 @@ export function Home() {
                   filter: saasRevealed ? 'blur(0px)' : 'blur(8px)'
                 }}
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block ml-4 animate-text-shimmer-saas will-change-[opacity,filter]"
+                className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-abril tracking-tight inline-block ml-4 animate-text-shimmer-saas will-change-[opacity,filter]"
               >
                 SaaS
               </motion.span>

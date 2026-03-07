@@ -20,6 +20,7 @@ export default {
       fontFamily: {
         bagel: ['Bagel Fat One', 'cursive'],
         poppins: ['Poppins', 'sans-serif'],
+        abril: ['"Abril Fatface"', 'cursive'],
         lobster: ['"Lobster Two"', 'cursive'],
         playfair: ['"Playfair Display"', 'serif'],
       },
