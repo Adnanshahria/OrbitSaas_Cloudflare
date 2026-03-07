@@ -80,8 +80,12 @@ function VisitorGateway({ children }: { children: React.ReactNode }) {
     // Phase 2: Request notification permission DURING this user gesture
     // (must be called synchronously from click handler to avoid browser blocking it)
     try {
-      if ('Notification' in window && 'serviceWorker' in navigator && Notification.permission !== 'denied' && sessionStorage.getItem('orbit_push_subscribed') !== 'true') {
-        const permission = await Notification.requestPermission();
+      if ('Notification' in window && 'serviceWorker' in navigator && localStorage.getItem('orbit_push_subscribed') !== 'true') {
+        let permission = Notification.permission;
+        if (permission === 'default') {
+          permission = await Notification.requestPermission();
+        }
+
         if (permission === 'granted') {
           // Subscribe in the background — don't block the gate transition
           (async () => {
@@ -109,7 +113,7 @@ function VisitorGateway({ children }: { children: React.ReactNode }) {
                 body: JSON.stringify({ endpoint: sub.endpoint, keys: sub.keys }),
               });
 
-              sessionStorage.setItem('orbit_push_subscribed', 'true');
+              localStorage.setItem('orbit_push_subscribed', 'true');
             } catch (err) {
               console.error('Push subscription failed:', err);
             }

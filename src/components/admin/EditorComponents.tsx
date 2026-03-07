@@ -706,8 +706,15 @@ export function useSectionEditor(sectionName: string) {
                 setTimeout(() => setSaved(false), 2000);
             } else {
                 console.error(`[Admin] Save failed (Server rejection): ${sectionName}`);
-                setError('Failed to save. Please try again.');
-                toast.error('Failed to save changes', { id: toastId });
+                const isUnauthorized = !localStorage.getItem('admin_token');
+                if (isUnauthorized) {
+                    setError('Session expired. Please log in again.');
+                    toast.error('Session expired. Redirecting to login...', { id: toastId });
+                    setTimeout(() => window.location.href = '/admin/login', 2000);
+                } else {
+                    setError('Failed to save. Please try again.');
+                    toast.error('Failed to save changes', { id: toastId });
+                }
             }
         } catch (err) {
             console.error(`[Admin] Save error:`, err);
