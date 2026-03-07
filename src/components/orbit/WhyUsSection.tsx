@@ -2,6 +2,7 @@ import { motion, useInView } from 'framer-motion';
 import React, { useRef, useMemo } from 'react';
 import { useLang } from '@/contexts/LanguageContext';
 import { parseRichText } from '@/lib/utils';
+import { CircularMarquee } from './CircularMarquee';
 import { Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket, Code, Database, Shield, Cloud, Cpu, Monitor, Wifi, Mail, Camera, Music, Heart, Star, Target, Briefcase, Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, Eye, Palette, Brain, Wrench } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -165,33 +166,12 @@ export function WhyUsSection() {
             </motion.div>
           </div>
 
-          {/* ── Marquee (reverse direction) ── */}
-          <div
-            className="overflow-hidden relative"
-            style={{
-              maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)',
-            }}
-          >
-            <div
-              className="flex gap-4 sm:gap-5 w-max"
-              style={{
-                animation: `marquee-scroll-reverse ${duration}s linear infinite`,
-                willChange: 'transform',
-              }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.animationPlayState = 'paused'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.animationPlayState = 'running'; }}
-            >
-              {/* Original set */}
-              {items.map((item, i) => (
-                <WhyUsCard key={`a-${i}`} item={item} index={i} />
-              ))}
-              {/* Duplicate set for seamless loop */}
-              {items.map((item, i) => (
-                <WhyUsCard key={`b-${i}`} item={item} index={i} />
-              ))}
-            </div>
-          </div>
+          {/* ── Circular Marquee (infinite scroll, reverse direction) ── */}
+          <CircularMarquee speed={0.5} direction="right">
+            {items.map((item, i) => (
+              <WhyUsCard key={i} item={item} index={i} />
+            ))}
+          </CircularMarquee>
         </div>
       </div>
     </section>

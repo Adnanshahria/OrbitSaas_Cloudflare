@@ -3,6 +3,7 @@ import { Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket, Code, Database, Shie
 import { useRef, useMemo } from 'react';
 import { useLang } from '@/contexts/LanguageContext';
 import { parseRichText } from '@/lib/utils';
+import { CircularMarquee } from './CircularMarquee';
 import type { LucideIcon } from 'lucide-react';
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -183,33 +184,12 @@ export function ServicesSection() {
             </motion.p>
           </div>
 
-          {/* ── Marquee ── */}
-          <div
-            className="overflow-hidden relative"
-            style={{
-              maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)',
-            }}
-          >
-            <div
-              className="flex gap-4 sm:gap-5 w-max"
-              style={{
-                animation: `marquee-scroll ${duration}s linear infinite`,
-                willChange: 'transform',
-              }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.animationPlayState = 'paused'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.animationPlayState = 'running'; }}
-            >
-              {/* Original set */}
-              {items.map((item, i) => (
-                <ServiceCard key={`a-${i}`} item={item} iconColor={iconColor} cardBorder={cardBorder} index={i} />
-              ))}
-              {/* Duplicate set for seamless loop */}
-              {items.map((item, i) => (
-                <ServiceCard key={`b-${i}`} item={item} iconColor={iconColor} cardBorder={cardBorder} index={i} />
-              ))}
-            </div>
-          </div>
+          {/* ── Circular Marquee (infinite scroll in both directions) ── */}
+          <CircularMarquee speed={0.5} direction="left">
+            {items.map((item, i) => (
+              <ServiceCard key={i} item={item} iconColor={iconColor} cardBorder={cardBorder} index={i} />
+            ))}
+          </CircularMarquee>
         </div>
       </div>
     </section>
