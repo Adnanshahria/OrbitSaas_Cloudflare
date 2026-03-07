@@ -380,8 +380,8 @@ export function TextField({
                     )}
                     {/* Live Preview */}
                     {hasRichMarkers && (
-                        <div className="mt-2 px-3 py-2 rounded-lg bg-background/50 border border-border/50 text-sm text-muted-foreground leading-relaxed flex flex-wrap gap-x-[0.3em]">
-                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 font-bold w-full mb-1">Preview</span>
+                        <div className="mt-2 px-3 py-2 rounded-lg bg-background/50 border border-border/50 text-sm text-muted-foreground leading-relaxed">
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 font-bold block mb-1">Preview</span>
                             {parseRichSegments(value).map((seg, i) => {
                                 if (!seg.bold && !seg.card && !seg.whiteCard && !seg.color && !seg.greenCard) return <span key={i}>{seg.text}</span>;
 

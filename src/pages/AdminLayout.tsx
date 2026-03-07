@@ -218,12 +218,12 @@ export default function AdminLayout() {
                 <title>Admin Panel | Orbit SaaS</title>
                 <meta name="robots" content="noindex, nofollow" />
             </Helmet>
-            {/* Mobile overlay */}
+            {/* Overlay — closes sidebar on tap (mobile only) */}
             {sidebarOpen && (
                 <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
             )}
 
-            {/* Sidebar */}
+            {/* Sidebar — controlled entirely by sidebarOpen */}
             <aside className={`fixed top-0 left-0 z-50 h-[100dvh] w-64 bg-card border-r border-border flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -232,15 +232,12 @@ export default function AdminLayout() {
                     </div>
                     <button
                         type="button"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            setSidebarOpen(false);
-                        }}
-                        className="p-2 -mr-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:bg-secondary transition-colors relative z-50 flex items-center justify-center cursor-pointer"
+                        onClick={() => setSidebarOpen(false)}
+                        className="p-2 -mr-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:bg-secondary transition-colors flex items-center justify-center cursor-pointer"
                         aria-label="Collapse sidebar"
                         title="Collapse sidebar"
                     >
-                        <PanelLeftClose className="w-6 h-6" />
+                        <PanelLeftClose className="w-5 h-5" />
                     </button>
                 </div>
 
@@ -300,27 +297,25 @@ export default function AdminLayout() {
                 </div>
             </aside>
 
-            {/* Main content */}
+            {/* Main content — left padding shifts when sidebar is open on desktop */}
             <main className={`flex-1 min-h-[100dvh] w-full flex flex-col relative z-10 transition-all duration-300 ${sidebarOpen ? 'lg:pl-64' : ''}`}>
-                {/* Top Bar (Fixed) — shows toggle when sidebar is hidden */}
-                <div className={`sticky top-0 left-0 w-full z-30 bg-card/95 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center justify-between shadow-sm ${sidebarOpen ? 'lg:hidden' : ''}`}>
-                    <div className="flex items-center gap-3 relative z-10">
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setSidebarOpen(true);
-                            }}
-                            className="p-2 -ml-2 rounded-lg text-foreground bg-secondary/30 hover:bg-secondary/80 active:bg-secondary transition-colors relative z-20 cursor-pointer flex items-center justify-center pointer-events-auto"
-                            aria-label="Expand sidebar"
-                            title="Expand sidebar"
-                        >
-                            <Menu className="w-6 h-6 pointer-events-none" />
-                        </button>
-                        <span className="font-display font-bold text-foreground text-lg pointer-events-none">Admin Panel</span>
+                {/* Top Bar — always visible when sidebar is collapsed; hidden on lg when sidebar open */}
+                {!sidebarOpen && (
+                    <div className="sticky top-0 left-0 w-full z-30 bg-card/95 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setSidebarOpen(true)}
+                                className="p-2 -ml-2 rounded-lg text-foreground bg-secondary/30 hover:bg-secondary/80 active:bg-secondary transition-colors cursor-pointer flex items-center justify-center"
+                                aria-label="Expand sidebar"
+                                title="Expand sidebar"
+                            >
+                                <PanelLeft className="w-5 h-5" />
+                            </button>
+                            <span className="font-display font-bold text-foreground text-lg">Admin Panel</span>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 <motion.div
                     initial={{ opacity: 0 }}
