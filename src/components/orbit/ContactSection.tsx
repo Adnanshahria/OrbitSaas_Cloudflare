@@ -38,12 +38,25 @@ export function ContactSection() {
             transition={{ type: 'spring', stiffness: 70, damping: 16 }}
           >
             <motion.h2
-              className="inline-block px-6 sm:px-8 py-2 sm:py-3 rounded-full border-[0.5px] border-[#8B5A2B]/50 bg-[#8B5A2B]/10 text-[#FFE5B4] text-xl sm:text-3xl lg:text-4xl font-display italic tracking-wide mb-3 sm:mb-4 shadow-[0_4px_20px_rgba(139,90,43,0.15)]"
+              className="inline-block px-6 sm:px-8 py-2 sm:py-3 rounded-full border-[0.5px] border-[#8B5A2B]/50 bg-[#8B5A2B]/10 text-[#FFE5B4] text-xl sm:text-3xl lg:text-4xl font-display italic tracking-wide mb-3 sm:mb-4 shadow-[0_4px_20px_rgba(139,90,43,0.15)] flex flex-wrap justify-center gap-x-[0.3em]"
               initial={{ opacity: 0, scale: 0.97 }}
               animate={inView ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              {t.contact.title}
+              {parseRichText(t.contact.title || '').map((seg, j) => {
+                if (!seg.bold && !seg.card && !seg.whiteCard && !seg.color && !seg.greenCard) return <span key={j}>{seg.text}</span>;
+                const cls = [
+                  seg.bold && !seg.color ? 'font-bold text-white' : '',
+                  seg.bold && seg.color ? 'font-bold' : '',
+                  seg.card ? 'word-card' : '',
+                  seg.whiteCard ? 'word-card-white' : '',
+                  seg.greenCard ? 'word-card-green' : '',
+                  seg.color === 'green' ? '!text-emerald-400' : '',
+                  seg.color === 'gold' ? '!text-amber-500' : '',
+                  seg.color === 'white' ? '!text-white' : '',
+                ].filter(Boolean).join(' ');
+                return <span key={j} className={cls}>{seg.text}</span>;
+              })}
             </motion.h2>
             <motion.p
               className="text-[#10b981] text-[12.5px] sm:text-base md:text-lg lg:text-xl max-w-xl mx-auto flex flex-wrap justify-center gap-x-[0.4em] gap-y-[0.4rem] sm:gap-y-2 tracking-wide italic leading-relaxed pt-2 mb-6 sm:mb-8"
@@ -91,9 +104,22 @@ export function ContactSection() {
                   transition: { type: 'spring', stiffness: 400, damping: 15 },
                 }}
                 whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center gap-2 px-5 sm:px-8 py-2 sm:py-2.5 rounded-full font-bold text-base sm:text-lg text-primary-foreground bg-primary shadow-lg cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 sm:px-8 py-2 sm:py-2.5 rounded-full font-bold text-base sm:text-lg text-primary-foreground bg-primary shadow-lg cursor-pointer flex-wrap justify-center overflow-hidden"
               >
-                {t.contact.cta}
+                {parseRichText(t.contact.cta || '').map((seg, j) => {
+                  if (!seg.bold && !seg.card && !seg.whiteCard && !seg.color && !seg.greenCard) return <span key={j}>{seg.text}</span>;
+                  const cls = [
+                    seg.bold && !seg.color ? 'font-bold text-white' : '',
+                    seg.bold && seg.color ? 'font-bold' : '',
+                    seg.card ? 'word-card' : '',
+                    seg.whiteCard ? 'word-card-white' : '',
+                    seg.greenCard ? 'word-card-green' : '',
+                    seg.color === 'green' ? '!text-emerald-400' : '',
+                    seg.color === 'gold' ? '!text-amber-500' : '',
+                    seg.color === 'white' ? '!text-white' : '',
+                  ].filter(Boolean).join(' ');
+                  return <span key={j} className={cls}>{seg.text}</span>;
+                })}
                 <div className="ml-1 flex items-center justify-center w-6 h-6 rounded-full bg-white/20 border border-white/10 shadow-inner group-hover:bg-white/30 transition-colors">
                   <ChevronDown strokeWidth={2.5} className={`w-3.5 h-3.5 text-white transition-transform duration-300 ${isCtaOpen ? 'rotate-180' : ''}`} />
                 </div>

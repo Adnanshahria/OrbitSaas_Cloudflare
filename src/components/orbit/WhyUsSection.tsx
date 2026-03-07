@@ -61,8 +61,21 @@ function WhyUsCard({ item, index }: { item: any; index: number }) {
       </div>
 
       {/* Row 2: Description — full width */}
-      <p className="relative z-10 text-muted-foreground text-[0.8rem] sm:text-[0.85rem] leading-[1.7] opacity-80 group-hover:opacity-100 transition-opacity duration-300">
-        {item.desc}
+      <p className="relative z-10 text-muted-foreground text-[0.8rem] sm:text-[0.85rem] leading-[1.7] opacity-80 group-hover:opacity-100 transition-opacity duration-300 flex flex-wrap gap-x-[0.3em]">
+        {parseRichText(item.desc || '').map((seg, i) => {
+          if (!seg.bold && !seg.card && !seg.whiteCard && !seg.color && !seg.greenCard) return <span key={i}>{seg.text}</span>;
+          const cls = [
+            seg.bold && !seg.color ? 'font-bold text-white' : '',
+            seg.bold && seg.color ? 'font-bold' : '',
+            seg.card ? 'word-card' : '',
+            seg.whiteCard ? 'word-card-white' : '',
+            seg.greenCard ? 'word-card-green' : '',
+            seg.color === 'green' ? '!text-emerald-400' : '',
+            seg.color === 'gold' ? '!text-amber-500' : '',
+            seg.color === 'white' ? '!text-white' : '',
+          ].filter(Boolean).join(' ');
+          return <span key={i} className={cls}>{seg.text}</span>;
+        })}
       </p>
 
       {/* Left accent line instead of bottom line for editorial look */}

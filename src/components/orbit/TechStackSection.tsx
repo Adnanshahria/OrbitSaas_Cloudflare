@@ -68,8 +68,21 @@ function MarqueeRow({
                   boxShadow: `0 0 6px ${category.color}50`,
                 }}
               />
-              <span className="font-medium text-foreground/85 text-sm group-hover:text-foreground gentle-animation">
-                {item}
+              <span className="font-medium text-foreground/85 text-sm group-hover:text-foreground gentle-animation flex flex-wrap gap-x-[0.2em]">
+                {parseRichText(item || '').map((seg, j) => {
+                  if (!seg.bold && !seg.card && !seg.whiteCard && !seg.color && !seg.greenCard) return <span key={j}>{seg.text}</span>;
+                  const cls = [
+                    seg.bold && !seg.color ? 'font-bold text-white' : '',
+                    seg.bold && seg.color ? 'font-bold' : '',
+                    seg.card ? 'word-card' : '',
+                    seg.whiteCard ? 'word-card-white' : '',
+                    seg.greenCard ? 'word-card-green' : '',
+                    seg.color === 'green' ? '!text-emerald-400' : '',
+                    seg.color === 'gold' ? '!text-amber-500' : '',
+                    seg.color === 'white' ? '!text-white' : '',
+                  ].filter(Boolean).join(' ');
+                  return <span key={j} className={cls}>{seg.text}</span>;
+                })}
               </span>
             </div>
           ))}

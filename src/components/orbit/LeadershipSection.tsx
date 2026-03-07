@@ -103,9 +103,39 @@ export function LeadershipSection() {
                     )}
                     <div className="absolute inset-0 rounded-full border border-white/10 pointer-events-none" />
                   </motion.div>
-                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-display font-normal text-[#FFE5B4] mb-2 sm:mb-3 leading-tight transition-colors drop-shadow-sm">{member.name}</h3>
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-display font-normal text-[#FFE5B4] mb-2 sm:mb-3 leading-tight transition-colors drop-shadow-sm flex flex-wrap justify-center gap-x-[0.3em]">
+                    {parseRichText(member.name || '').map((seg, j) => {
+                      if (!seg.bold && !seg.card && !seg.whiteCard && !seg.color && !seg.greenCard) return <span key={j}>{seg.text}</span>;
+                      const cls = [
+                        seg.bold && !seg.color ? 'font-bold text-white' : '',
+                        seg.bold && seg.color ? 'font-bold' : '',
+                        seg.card ? 'word-card' : '',
+                        seg.whiteCard ? 'word-card-white' : '',
+                        seg.greenCard ? 'word-card-green' : '',
+                        seg.color === 'green' ? '!text-emerald-400' : '',
+                        seg.color === 'gold' ? '!text-amber-500' : '',
+                        seg.color === 'white' ? '!text-white' : '',
+                      ].filter(Boolean).join(' ');
+                      return <span key={j} className={cls}>{seg.text}</span>;
+                    })}
+                  </h3>
                   <div className="inline-block mt-2">
-                    <p className="text-white/90 text-xs sm:text-sm lg:text-base font-medium tracking-wide uppercase italic drop-shadow-sm">{member.role}</p>
+                    <p className="text-white/90 text-xs sm:text-sm lg:text-base font-medium tracking-wide uppercase italic drop-shadow-sm flex flex-wrap justify-center gap-x-[0.3em]">
+                      {parseRichText(member.role || '').map((seg, j) => {
+                        if (!seg.bold && !seg.card && !seg.whiteCard && !seg.color && !seg.greenCard) return <span key={j}>{seg.text}</span>;
+                        const cls = [
+                          seg.bold && !seg.color ? 'font-bold text-white' : '',
+                          seg.bold && seg.color ? 'font-bold' : '',
+                          seg.card ? 'word-card' : '',
+                          seg.whiteCard ? 'word-card-white' : '',
+                          seg.greenCard ? 'word-card-green' : '',
+                          seg.color === 'green' ? '!text-emerald-400' : '',
+                          seg.color === 'gold' ? '!text-amber-500' : '',
+                          seg.color === 'white' ? '!text-white' : '',
+                        ].filter(Boolean).join(' ');
+                        return <span key={j} className={cls}>{seg.text}</span>;
+                      })}
+                    </p>
                   </div>
 
                   {/* Subtle background glow effect on hover instead of a card border */}
@@ -124,9 +154,22 @@ export function LeadershipSection() {
               className="mt-12 sm:mt-16 max-w-4xl mx-auto"
             >
               <div className="glass-effect rounded-2xl sm:rounded-[2rem] p-6 sm:p-10 text-center bg-gradient-to-b from-[#8B5A2B]/5 to-transparent border-t-[0.5px] border-[#8B5A2B]/30 backdrop-blur-md transition-colors duration-500">
-                <p className="text-lg sm:text-2xl lg:text-3xl font-medium text-foreground leading-relaxed italic relative z-10">
+                <p className="text-lg sm:text-2xl lg:text-3xl font-medium text-foreground leading-relaxed italic relative z-10 flex flex-wrap justify-center gap-x-[0.3em]">
                   <span className="text-primary/40 text-4xl leading-none absolute -top-4 -left-2 sm:-left-6">"</span>
-                  {tagline}
+                  {parseRichText(tagline || '').map((seg, j) => {
+                    if (!seg.bold && !seg.card && !seg.whiteCard && !seg.color && !seg.greenCard) return <span key={j}>{seg.text}</span>;
+                    const cls = [
+                      seg.bold && !seg.color ? 'font-bold text-white' : '',
+                      seg.bold && seg.color ? 'font-bold' : '',
+                      seg.card ? 'word-card' : '',
+                      seg.whiteCard ? 'word-card-white' : '',
+                      seg.greenCard ? 'word-card-green' : '',
+                      seg.color === 'green' ? '!text-emerald-400' : '',
+                      seg.color === 'gold' ? '!text-amber-500' : '',
+                      seg.color === 'white' ? '!text-white' : '',
+                    ].filter(Boolean).join(' ');
+                    return <span key={j} className={cls}>{seg.text}</span>;
+                  })}
                   <span className="text-primary/40 text-4xl leading-none absolute -bottom-4 -right-2 sm:-right-6">"</span>
                 </p>
               </div>
