@@ -267,7 +267,6 @@ export function TextField({
         } else {
             onChange(before + prefix + selected + suffix + after);
         }
-        setSelToolbar(null);
     }, [selToolbar, onChange]);
 
     const stripMarkers = useCallback(() => {
@@ -282,7 +281,6 @@ export function TextField({
         // Remove all known markers from selection
         const cleaned = selected.replace(/\*\*|\[\[|\]\]|\{\{|\}\}|\=\=|\<\<|\>\>|\(\(|\)\)|\|\|/g, '');
         onChange(before + cleaned + after);
-        setSelToolbar(null);
     }, [selToolbar, onChange]);
 
     // Check if value has any rich markers for preview
@@ -305,7 +303,7 @@ export function TextField({
                     <textarea
                         ref={taRef}
                         value={value}
-                        onChange={e => { onChange(e.target.value); setSelToolbar(null); }}
+                        onChange={e => { onChange(e.target.value); }}
                         onMouseUp={checkSelection}
                         onKeyUp={checkSelection}
                         onBlur={() => setTimeout(() => setSelToolbar(null), 250)}
@@ -370,6 +368,7 @@ export function TextField({
                                             // Trigger the global save button logic (handled by EditorComponents SaveButton)
                                             const saveBtn = document.querySelector('button[title="Save section changes"]') as HTMLButtonElement;
                                             if (saveBtn) saveBtn.click();
+                                            setSelToolbar(null);
                                         }}
                                         className="w-full bg-primary/20 hover:bg-primary/40 border border-primary/50 text-primary rounded px-2 py-1 text-[10px] font-black uppercase tracking-tighter transition-all shadow-[0_0_10px_rgba(16,185,129,0.2)] active:scale-95"
                                     >

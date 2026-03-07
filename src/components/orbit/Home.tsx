@@ -314,9 +314,9 @@ export function Home() {
                   className="hidden sm:inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md text-sm font-playfair italic font-bold mb-12 -mt-4 tracking-wide w-auto max-w-[95%] md:text-center shrink-0 min-w-0 shadow-[0_0_20px_rgba(255,255,255,0.05)]"
                   style={{ color: taglineColor }}
                 >
-                  <Icon1 className="w-4 h-4 shrink-0 tagline-icon-spin text-[#10b981]" />
+                  <Icon1 className="w-4 h-4 shrink-0 tagline-icon-spin text-[#10b981] relative top-[0.5px]" />
                   {fullTagline}
-                  <Icon2 className="w-4 h-4 shrink-0 tagline-icon-float text-[#10b981]" />
+                  <Icon2 className="w-4 h-4 shrink-0 tagline-icon-float text-[#10b981] relative top-[0.5px]" />
                 </motion.div>
 
                 {/* Mobile: single pill with animated SVG icons */}
