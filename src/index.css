@@ -40,7 +40,7 @@
   --secondary: #141420;
   --secondary-foreground: #f8f8ff;
   --muted: #141420;
-  --muted-foreground: #d1d1e0;
+  --muted-foreground: #e5e5f0; /* Brighter for better contrast with Playfair Display */
   --accent: #141420;
   --accent-foreground: #f8f8ff;
   --destructive: #ef4444;
@@ -92,12 +92,67 @@
 }
 
 .animate-text-shimmer-orbit {
-  background: linear-gradient(to right,
-      var(--foreground) 10%,
-      var(--neon-amber) 30%,
-      var(--neon-emerald) 50%,
-      var(--neon-teal) 70%,
-      var(--foreground) 90%);
+  background: linear-gradient(
+    to right,
+    #10b981 0%,
+    #34d399 25%,
+    #f8f8ff 50%,
+    #34d399 75%,
+    #10b981 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: textShimmerSweep 4s linear infinite;
+  filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.4));
+}
+
+.animate-text-shimmer-saas {
+  background: linear-gradient(
+    to right,
+    #f59e0b 0%,
+    #fbbf24 25%,
+    #f8f8ff 50%,
+    #fbbf24 75%,
+    #f59e0b 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: textShimmerSweep 4s linear infinite reverse;
+  filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.4));
+}
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: textShimmerSweep 4s linear infinite;
+}
+
+/* ── Metallic Gold Shimmer ── */
+@keyframes gold-shimmer {
+  0% { background-position: -200% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.premium-gold-shimmer {
+  background: linear-gradient(
+    135deg, 
+    #B8860B 0%, 
+    #FFD700 25%, 
+    #FFFFFF 50%, 
+    #FFD700 75%, 
+    #B8860B 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gold-shimmer 6s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.2));
+}
   background-size: 300% auto;
   color: transparent;
   -webkit-background-clip: text;
@@ -836,11 +891,8 @@ html.hide-scrollbar::-webkit-scrollbar {
     font-size: 2rem;
     font-weight: 600;
     line-height: 1.2;
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #B8860B 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    display: inline-block; /* Required for background-clip on some elements */
+    @apply premium-gold-shimmer;
+    display: inline-block;
   }
 
   h3 {
@@ -849,10 +901,7 @@ html.hide-scrollbar::-webkit-scrollbar {
     font-size: 1.5rem;
     font-weight: 600;
     line-height: 1.3;
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #B8860B 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    @apply premium-gold-shimmer;
     display: inline-block;
   }
 
@@ -860,6 +909,31 @@ html.hide-scrollbar::-webkit-scrollbar {
     font-family: 'Playfair Display', serif;
     font-size: 1.125rem;
     line-height: 1.7;
+    letter-spacing: 0.01em;
+  }
+
+  /* Section background glow */
+  section {
+    position: relative;
+    overflow: hidden;
+  }
+
+  section::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60%;
+    height: 60%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  section.hero-glow::before {
+    background: radial-gradient(circle, rgba(108, 92, 231, 0.08) 0%, transparent 70%);
   }
 }
 
