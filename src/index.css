@@ -834,7 +834,7 @@ html.hide-scrollbar::-webkit-scrollbar {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
     font-size: 2rem;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.2;
   }
 
@@ -842,7 +842,7 @@ html.hide-scrollbar::-webkit-scrollbar {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
     font-size: 1.5rem;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.3;
   }
 
