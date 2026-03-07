@@ -37,7 +37,7 @@ export function ContactSection() {
             transition={{ type: 'spring', stiffness: 70, damping: 16 }}
           >
             <motion.h2
-              className="inline-block px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-neon-emerald/25 bg-neon-emerald/5 font-display text-xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4"
+              className="inline-block px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-neon-emerald/25 bg-neon-emerald/5 text-xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4"
               initial={{ opacity: 0, scale: 0.97 }}
               animate={inView ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.6, delay: 0.2 }}

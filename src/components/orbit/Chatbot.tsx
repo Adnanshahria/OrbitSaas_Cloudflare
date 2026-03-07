@@ -998,7 +998,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
             {/* Header */}
             <div className="shrink-0 px-5 py-3.5 bg-primary/20 border-b border-border flex items-center justify-between relative">
               <div>
-                <h4 className="font-display font-semibold text-foreground text-sm leading-tight">
+                <h4 className="font-semibold text-foreground text-sm leading-tight">
                   {chatContentMemo.title}
                 </h4>
                 <div className="flex items-center gap-1.5 mt-0.5">
