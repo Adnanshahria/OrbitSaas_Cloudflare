@@ -2,11 +2,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronDown, Send, Loader2, Mail, MessageCircle, Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket, Code, Database, Shield, Cloud, Cpu, Monitor, Wifi, Camera, Music, Heart, Star, Target, Briefcase, Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, Eye, Palette, Brain, Wrench } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
+// ─── Custom Icons ───
+const Bullseye = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
+  <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    {/* Outer circle (broken at top-right) */}
+    <path d="M16.5 4A9.5 9.5 0 1 0 20 7.5" />
+    {/* Inner circle (broken at top-right) */}
+    <path d="M14 8a4.5 4.5 0 1 0 2 2" />
+    {/* Arrow shaft — from center outward to top-right */}
+    <line x1="11" y1="13" x2="20" y2="4" />
+    {/* Solid arrowhead pointing OUTWARD (at top-right) */}
+    <path d="M14 2h8v8Z" fill="currentColor" stroke="currentColor" />
+  </svg>
+);
+
 // ─── Icon Map for dynamic tagline icons (synced with admin panel) ───
-const TAGLINE_ICON_MAP: Record<string, LucideIcon> = {
+const TAGLINE_ICON_MAP: Record<string, LucideIcon | any> = {
   Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket, Code, Database, Shield, Cloud,
   Cpu, Monitor, Wifi, Mail, Camera, Music, Heart, Star, Target, Briefcase,
-  Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, Eye, Palette, Brain, Wrench
+  Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, Eye, Palette, Brain, Wrench,
+  Bullseye
 };
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useLang } from '@/contexts/LanguageContext';
@@ -236,7 +251,7 @@ export function Home() {
             const line1 = t.hero.tagline;
             const line2 = (t.hero as any).tagline2 || '';
             const fullTagline = line2 ? `${line1} ${line2}` : line1;
-            const icon1Name = (t.hero as any).taglineIcon1 || 'Target';
+            const icon1Name = (t.hero as any).taglineIcon1 || 'Bullseye';
             const icon2Name = (t.hero as any).taglineIcon2 || 'Rocket';
             const Icon1 = TAGLINE_ICON_MAP[icon1Name] || Target;
             const Icon2 = TAGLINE_ICON_MAP[icon2Name] || Rocket;

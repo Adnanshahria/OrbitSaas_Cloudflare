@@ -8,11 +8,22 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
+// ─── Custom Icons ───
+const Bullseye = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
+    <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16.5 4A9.5 9.5 0 1 0 20 7.5" />
+        <path d="M14 8a4.5 4.5 0 1 0 2 2" />
+        <line x1="11" y1="13" x2="20" y2="4" />
+        <path d="M14 2h8v8Z" fill="currentColor" stroke="currentColor" />
+    </svg>
+);
+
 // ─── Icon Registry (same as Services/WhyUs) ───
-const ICON_MAP: Record<string, LucideIcon> = {
+const ICON_MAP: Record<string, LucideIcon | any> = {
     Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket, Code, Database, Shield, Cloud,
     Cpu, Monitor, Wifi, Mail, Camera, Music, Heart, Star, Target, Briefcase,
-    Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, Eye, Palette, Brain, Wrench
+    Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, Eye, Palette, Brain, Wrench,
+    Bullseye
 };
 const ICON_NAMES = Object.keys(ICON_MAP);
 
@@ -66,7 +77,7 @@ export default function AdminHero() {
     const [learnMore, setLearnMore] = useState('');
 
     // Icons for tagline
-    const [taglineIcon1, setTaglineIcon1] = useState('Target');
+    const [taglineIcon1, setTaglineIcon1] = useState('Bullseye');
     const [taglineIcon2, setTaglineIcon2] = useState('Rocket');
 
     // Theme Customization
@@ -85,7 +96,7 @@ export default function AdminHero() {
             setCta(d.cta || '');
             setLearnMore(d.learnMore || '');
 
-            setTaglineIcon1(d.taglineIcon1 || 'Target');
+            setTaglineIcon1(d.taglineIcon1 || 'Bullseye');
             setTaglineIcon2(d.taglineIcon2 || 'Rocket');
 
             // Defaults for colors
@@ -175,7 +186,7 @@ export default function AdminHero() {
                         setSubtitle(parsed.subtitle || '');
                         setCta(parsed.cta || '');
                         setLearnMore(parsed.learnMore || '');
-                        setTaglineIcon1(parsed.taglineIcon1 || 'Target');
+                        setTaglineIcon1(parsed.taglineIcon1 || 'Bullseye');
                         setTaglineIcon2(parsed.taglineIcon2 || 'Rocket');
                         setTaglineColor(parsed.taglineColor || '#00F5FF');
                         setTitleColor(parsed.titleColor || '#FF00A8');
