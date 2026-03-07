@@ -90,10 +90,10 @@ export default function ProjectsPage() {
 
 
 
-                    <div className="max-w-7xl mx-auto relative" ref={ref}>
+                    <div className="max-w-none mx-auto relative" ref={ref}>
 
                         {/* Big Container Card */}
-                        <div className="rounded-2xl sm:rounded-3xl border-2 border-neon-purple/30 bg-white/[0.02] backdrop-blur-xl px-4 sm:px-8 md:px-14 py-6 sm:py-10 shadow-[0_0_40px_rgba(108,92,231,0.08)]">
+                        <div className="px-4 sm:px-8 md:px-14 py-6 sm:py-10">
 
                             {/* Header */}
                             <motion.div

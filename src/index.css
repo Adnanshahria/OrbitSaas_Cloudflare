@@ -23,6 +23,42 @@
   }
 }
 
+/* ── Tagline SVG icon animations ── */
+@keyframes taglineIconSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes taglineIconFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(-15deg);
+    filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.4));
+  }
+  50% {
+    transform: translateY(-3px) rotate(-5deg);
+    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.7));
+  }
+}
+
+@keyframes taglineIconPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.3));
+  }
+  50% {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6));
+  }
+}
+
+.tagline-icon-spin {
+  animation: taglineIconPulse 3s ease-in-out infinite;
+}
+
+.tagline-icon-float {
+  animation: taglineIconFloat 3s ease-in-out infinite;
+}
+
 
 :root {
   --font-size: 16px;

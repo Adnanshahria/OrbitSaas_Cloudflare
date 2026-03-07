@@ -1,5 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ChevronDown, Send, Loader2, Mail, MessageCircle } from 'lucide-react';
+import { ArrowRight, ChevronDown, Send, Loader2, Mail, MessageCircle, Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket, Code, Database, Shield, Cloud, Cpu, Monitor, Wifi, Camera, Music, Heart, Star, Target, Briefcase, Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, Eye, Palette, Brain, Wrench } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+
+// ─── Icon Map for dynamic tagline icons (synced with admin panel) ───
+const TAGLINE_ICON_MAP: Record<string, LucideIcon> = {
+  Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket, Code, Database, Shield, Cloud,
+  Cpu, Monitor, Wifi, Mail, Camera, Music, Heart, Star, Target, Briefcase,
+  Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, Eye, Palette, Brain, Wrench
+};
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useLang } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
@@ -227,9 +235,14 @@ export function Home() {
           {t.hero.tagline && (() => {
             const line1 = t.hero.tagline;
             const line2 = (t.hero as any).tagline2 || '';
+            const fullTagline = line2 ? `${line1} ${line2}` : line1;
+            const icon1Name = (t.hero as any).taglineIcon1 || 'Target';
+            const icon2Name = (t.hero as any).taglineIcon2 || 'Rocket';
+            const Icon1 = TAGLINE_ICON_MAP[icon1Name] || Target;
+            const Icon2 = TAGLINE_ICON_MAP[icon2Name] || Rocket;
             return (
               <>
-                {/* Desktop: single pill (combines both if tagline2 exists) */}
+                {/* Desktop: single pill with animated SVG icons */}
                 <motion.div
                   initial={{ opacity: 0, y: -12, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -237,64 +250,26 @@ export function Home() {
                   className="hidden sm:inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md text-sm font-playfair italic font-bold mb-12 -mt-4 tracking-wide w-auto max-w-[95%] md:text-center shrink-0 min-w-0 shadow-[0_0_20px_rgba(255,255,255,0.05)]"
                   style={{ color: taglineColor }}
                 >
-                  <span className="w-2.5 h-2.5 rounded-full animate-pulse bg-[#F59E0B] shadow-[0_0_15px_rgba(245,158,11,0.8)]" />
-                  {line2 ? `${line1} ${line2}` : line1}
+                  <Icon1 className="w-4 h-4 shrink-0 tagline-icon-spin" style={{ color: '#F59E0B' }} />
+                  {fullTagline}
+                  <Icon2 className="w-4 h-4 shrink-0 tagline-icon-float" style={{ color: '#F59E0B' }} />
                 </motion.div>
 
-                {/* Mobile: two overlapping rectangles, offset like chain links */}
+                {/* Mobile: single pill with animated SVG icons */}
                 <motion.div
                   initial={{ opacity: 0, y: -12, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: baseDelay + 0.3 }}
-                  className="flex sm:hidden flex-col items-center gap-y-2 w-full max-w-[95%] mx-auto font-playfair italic font-bold text-[14px] tracking-wide relative"
+                  className="flex sm:hidden items-center justify-center gap-2 px-4 py-2 rounded-full backdrop-blur-md shadow-lg font-playfair italic font-bold text-[13px] tracking-wide mx-auto mb-6"
+                  style={{
+                    background: 'rgba(245, 158, 11, 0.12)',
+                    border: '1.5px solid rgba(245, 158, 11, 0.6)',
+                    color: 'var(--metallic-pale)',
+                  }}
                 >
-                  {/* Fusion Glow Effect (centered behind badges) */}
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: baseDelay + 0.8, duration: 0.8 }}
-                    viewport={{ once: true }}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-10 bg-gradient-to-r from-[#F59E0B]/60 to-[#FFD700]/60 blur-xl z-[8] mix-blend-screen pointer-events-none"
-                  />
-
-                  {/* Row 1 — slightly left, pill shaped box */}
-                  <motion.div
-                    initial={{ opacity: 0.2, x: -40 }}
-                    animate={{ opacity: 1, x: -30 }}
-                    transition={{ type: "spring", stiffness: 120, damping: 15, delay: baseDelay + 0.4 }}
-                    viewport={{ once: true }}
-                    className="relative z-[9] flex items-center justify-center gap-2 px-4 py-1.5 backdrop-blur-md shadow-lg rounded-full"
-                    style={{
-                      background: 'rgba(245, 158, 11, 0.12)',
-                      border: '1.5px solid rgba(245, 158, 11, 0.6)',
-                      color: 'var(--metallic-pale)',
-                    }}
-                  >
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="w-2 h-2 rounded-full animate-pulse bg-[#F59E0B] shadow-[0_0_15px_rgba(245,158,11,0.8)] shrink-0" />
-                      <span>{line1}</span>
-                    </div>
-                  </motion.div>
-                  {/* Row 2 — slightly right, pill shaped box */}
-                  {line2 && (
-                    <motion.div
-                      initial={{ opacity: 0, x: 40 }}
-                      animate={{ opacity: 1, x: 30 }}
-                      transition={{ type: "spring", stiffness: 120, damping: 15, delay: baseDelay + 0.6 }}
-                      viewport={{ once: true }}
-                      className="relative z-[5] flex items-center justify-center gap-2 px-6 py-1.5 backdrop-blur-md shadow-lg rounded-full"
-                      style={{
-                        marginTop: '0px',
-                        background: 'rgba(139, 90, 43, 0.12)', // Bronze background
-                        border: '1.5px solid rgba(139, 90, 43, 0.6)', // Bronze border
-                        color: 'var(--metallic-gold)',
-                      }}
-                    >
-                      <div className="flex items-center gap-2 text-sm">
-                        <span>{line2}</span>
-                      </div>
-                    </motion.div>
-                  )}
+                  <Icon1 className="w-3.5 h-3.5 shrink-0 tagline-icon-spin" style={{ color: '#F59E0B' }} />
+                  <span>{fullTagline}</span>
+                  <Icon2 className="w-3.5 h-3.5 shrink-0 tagline-icon-float" style={{ color: '#F59E0B' }} />
                 </motion.div>
               </>
             );
@@ -317,25 +292,32 @@ export function Home() {
             <div className="flex items-center justify-center relative z-10 whitespace-nowrap min-w-[280px]">
 
               {/* O-R-B-I-T container — Flex ensures natural typographic spacing */}
-              <div className="flex relative items-center justify-center gap-[0.02em]">
-                {letters.map((letter, i) => (
-                  <motion.span
-                    key={letter}
-                    ref={(el) => { letterRefs.current[i] = el; }}
-                    initial={{ opacity: 0, filter: 'blur(10px)' }}
-                    animate={{
-                      opacity: revealedLetters[i] ? 1 : 0,
-                      filter: revealedLetters[i] ? 'blur(0px)' : 'blur(10px)'
-                    }}
-                    transition={{
-                      duration: 0.4,
-                      ease: "easeOut",
-                    }}
-                    className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-abril tracking-tight inline-block animate-text-shimmer-orbit will-change-[opacity,filter]"
-                  >
-                    {letter}
-                  </motion.span>
-                ))}
+              <div className="flex relative items-baseline justify-center gap-[0.02em]">
+                {letters.map((letter, i) => {
+                  const isFirstLetter = i === 0;
+                  const fontSizeClass = isFirstLetter
+                    ? "text-[clamp(3.8rem,15vw,6rem)] lg:text-[7rem] xl:text-[8rem]"
+                    : "text-[clamp(2.5rem,10vw,4.5rem)] lg:text-[5rem] xl:text-[6rem]";
+
+                  return (
+                    <motion.span
+                      key={letter}
+                      ref={(el) => { letterRefs.current[i] = el; }}
+                      initial={{ opacity: 0, filter: 'blur(10px)' }}
+                      animate={{
+                        opacity: revealedLetters[i] ? 1 : 0,
+                        filter: revealedLetters[i] ? 'blur(0px)' : 'blur(10px)'
+                      }}
+                      transition={{
+                        duration: 0.4,
+                        ease: "easeOut",
+                      }}
+                      className={`${fontSizeClass} font-abril tracking-tight inline-block animate-text-shimmer-orbit will-change-[opacity,filter]`}
+                    >
+                      {letter}
+                    </motion.span>
+                  );
+                })}
               </div>
 
               <motion.span
@@ -346,9 +328,24 @@ export function Home() {
                   filter: saasRevealed ? 'blur(0px)' : 'blur(8px)'
                 }}
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-abril tracking-tight inline-block ml-4 animate-text-shimmer-saas will-change-[opacity,filter]"
+                className="font-abril tracking-tight inline-block ml-4 animate-text-shimmer-saas will-change-[opacity,filter]"
               >
-                SaaS
+                {['S', 'a', 'a', 'S'].map((char, i) => {
+                  const isLarge = i === 0 || i === 3; // First and last S
+
+                  // 'S' uses the large size.
+                  // 'a' needs to be sized up so its x-height matches the cap-height of 'RBIT' (which uses xl:text-[6rem]).
+                  // vertical-align is used instead of relative/transform so WebKit's background clip doesn't break
+                  const fontSizeClass = isLarge
+                    ? "text-[clamp(3.8rem,15vw,6rem)] lg:text-[7rem] xl:text-[8rem]"
+                    : "text-[clamp(3.3rem,13vw,5.8rem)] lg:text-[6.5rem] xl:text-[7.8rem] align-[0.05em]";
+
+                  return (
+                    <span key={i} className={fontSizeClass}>
+                      {char}
+                    </span>
+                  );
+                })}
               </motion.span>
             </div>
           </div>

@@ -541,21 +541,9 @@ export function StarfieldCanvas() {
         rafRef.current = requestAnimationFrame(render);
 
         // ── Pause/Resume ──
-        const hero = document.getElementById('hero');
-        let obs: IntersectionObserver | undefined;
-        if (hero) {
-            obs = new IntersectionObserver(([e]) => {
-                if (document.hidden) return;
-                pausedRef.current = !e.isIntersecting;
-            }, { threshold: 0.01 });
-            obs.observe(hero);
-        }
+        // Keep animation active globally, only pause if tab is hidden
         const onVis = () => {
-            if (document.hidden) { pausedRef.current = true; }
-            else if (hero) {
-                const r = hero.getBoundingClientRect();
-                pausedRef.current = !(r.bottom > 0 && r.top < window.innerHeight);
-            }
+            pausedRef.current = document.hidden;
             lastTs = 0;
         };
         document.addEventListener('visibilitychange', onVis);
@@ -564,7 +552,6 @@ export function StarfieldCanvas() {
             cancelAnimationFrame(rafRef.current);
             window.removeEventListener('resize', resize);
             document.removeEventListener('visibilitychange', onVis);
-            obs?.disconnect();
         };
     }, []);
 

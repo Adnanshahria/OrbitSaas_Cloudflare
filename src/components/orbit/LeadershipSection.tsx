@@ -81,7 +81,7 @@ export function LeadershipSection() {
                   </motion.div>
                   <h3 className="text-2xl sm:text-3xl lg:text-4xl font-display font-normal text-[#FFE5B4] mb-2 sm:mb-3 leading-tight transition-colors drop-shadow-sm">{member.name}</h3>
                   <div className="inline-block mt-2">
-                    <p className="text-[#F59E0B] text-xs sm:text-sm lg:text-base font-medium tracking-[0.25em] uppercase drop-shadow-sm">{member.role}</p>
+                    <p className="text-white/90 text-xs sm:text-sm lg:text-base font-medium tracking-wide uppercase italic drop-shadow-sm">{member.role}</p>
                   </div>
 
                   {/* Subtle background glow effect on hover instead of a card border */}

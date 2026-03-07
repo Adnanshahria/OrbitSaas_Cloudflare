@@ -71,15 +71,16 @@ export function ProjectsSection() {
 
 
 
-      <div className="w-full mx-auto relative" ref={ref}>
+      <motion.div layout className="w-full mx-auto relative" ref={ref}>
         {/* Big Container Card */}
-        <div className="relative rounded-2xl sm:rounded-3xl premium-card bg-white/[0.02] backdrop-blur-xl px-4 sm:px-14 py-5 sm:py-10 shadow-[0_0_40px_rgba(108,92,231,0.08)]">
+        <div className="relative px-4 sm:px-14 py-5 sm:py-10">
           {/* View All / Mobile Nav Button */}
           <Link
             to="/project"
-            className="absolute top-5 right-5 sm:top-8 sm:right-8 inline-flex items-center justify-center gap-2 rounded-xl bg-neon-amber/20 text-neon-amber font-semibold text-sm border border-neon-amber/30 hover:bg-neon-amber/30 transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:shadow-[0_0_25px_rgba(245,158,11,0.5)] hover:gap-3 w-10 h-10 sm:w-auto sm:h-auto sm:px-5 sm:py-2.5 animate-pulse-slow sm:animate-none"
+            className="absolute top-5 right-5 sm:top-8 sm:right-12 inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-[#8B5A2B]/5 backdrop-blur-md border border-[#8B5A2B]/30 text-[#FFE5B4] font-display italic text-sm transition-all duration-500 hover:bg-[#8B5A2B]/10 hover:border-[#8B5A2B]/50 hover:gap-4 hover:shadow-[0_0_20px_rgba(139,90,43,0.15)] group"
           >
-            <span className="hidden sm:inline">View All</span> <ArrowRight className="w-4 h-4" />
+            <span>View All</span>
+            <ArrowRight className="w-4 h-4 text-[#8B5A2B] transition-transform duration-500 group-hover:translate-x-1" />
           </Link>
           {/* Header */}
           <motion.div
@@ -97,27 +98,37 @@ export function ProjectsSection() {
           </motion.div>
 
           {/* Projects Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {items.map((item: any, idx: number) => {
-              const routeId = item._id || item._originalIndex;
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence mode="popLayout">
+              {items.map((item: any, idx: number) => {
+                const routeId = item._id || item._originalIndex;
 
-              return (
-                <div key={routeId}>
-                  <ProjectCard
-                    item={item}
-                    routeId={routeId}
-                    isHovered={hoveredProject === item._originalIndex}
-                    onMouseEnter={() => setHoveredProject(item._originalIndex)}
-                    onMouseLeave={() => setHoveredProject(null)}
-                  />
-                </div>
-              );
-            })}
-          </div>
+                return (
+                  <motion.div
+                    key={routeId}
+                    layout
+                    initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                    transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
+                  >
+                    <ProjectCard
+                      item={item}
+                      routeId={routeId}
+                      isHovered={hoveredProject === item._originalIndex}
+                      onMouseEnter={() => setHoveredProject(item._originalIndex)}
+                      onMouseLeave={() => setHoveredProject(null)}
+                    />
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
 
           {/* Expand / Collapse Button */}
           {canExpand && (
             <motion.div
+              layout
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.4 }}
@@ -146,7 +157,7 @@ export function ProjectsSection() {
             </motion.div>
           )}
         </div>{/* End Container Card */}
-      </div>
+      </motion.div>
     </section >
   );
 }
