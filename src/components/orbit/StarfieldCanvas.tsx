@@ -67,7 +67,7 @@ const ICONS = [
     '<rect width="16" height="16" x="4" y="4" rx="2" stroke="C" stroke-width="2" fill="none"/><rect width="6" height="6" x="9" y="9" rx="1" stroke="C" stroke-width="2" fill="none"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2" stroke="C" stroke-width="2" fill="none" stroke-linecap="round"/>',
     '<rect width="14" height="20" x="5" y="2" rx="2" stroke="C" stroke-width="2" fill="none"/><path d="M12 18h.01" stroke="C" stroke-width="2" fill="none" stroke-linecap="round"/>',
 ];
-const COLORS = ['#10b981', '#14b8a6', '#f59e0b', '#34d399', '#a78bfa'];
+const COLORS = ['#f59e0b', '#d97706', '#fbbf24', '#b45309', '#a78bfa'];
 
 // ── SVG → cached Image ────────────────────────────────────
 const _ic = new Map<string, HTMLImageElement>();
@@ -154,7 +154,7 @@ function getStarTexture(s: ZoomStar, dpr: number): HTMLCanvasElement {
 }
 
 // ── Star generation ───────────────────────────────────────
-const STAR_COLORS = ['#ffffff', '#e0f2fe', '#fbbf24', '#34d399', '#a78bfa', '#f0abfc', '#93c5fd'];
+const STAR_COLORS = ['#ffffff', '#fffbeb', '#fbbf24', '#fcd34d', '#fef3c7', '#f59e0b', '#d97706'];
 
 function makeStars(n: number): ZoomStar[] {
     return Array.from({ length: n }, () => {
@@ -363,7 +363,7 @@ export function StarfieldCanvas() {
                 const n1 = 0.5 + 0.25 * (1 + Math.sin(time * TAU / 15));
                 ctx.globalAlpha = n1;
                 const g1 = ctx.createRadialGradient(W * .3, H * .7, 0, W * .3, H * .7, W * .5);
-                g1.addColorStop(0, 'rgba(16,185,129,0.08)'); g1.addColorStop(0.5, 'rgba(4,47,46,0.03)'); g1.addColorStop(1, 'rgba(0,0,0,0)');
+                g1.addColorStop(0, 'rgba(245,158,11,0.08)'); g1.addColorStop(0.5, 'rgba(120,53,15,0.03)'); g1.addColorStop(1, 'rgba(0,0,0,0)');
                 ctx.fillStyle = g1; ctx.fillRect(0, 0, W, H);
 
                 // Orange nebula
@@ -376,7 +376,7 @@ export function StarfieldCanvas() {
                 // Diagonal dust
                 ctx.globalAlpha = 1;
                 const g3 = ctx.createLinearGradient(0, 0, W, H);
-                g3.addColorStop(0, 'rgba(16,185,129,0.03)'); g3.addColorStop(0.4, 'rgba(0,0,0,0)'); g3.addColorStop(1, 'rgba(245,158,11,0.03)');
+                g3.addColorStop(0, 'rgba(245,158,11,0.03)'); g3.addColorStop(0.4, 'rgba(0,0,0,0)'); g3.addColorStop(1, 'rgba(217,119,6,0.03)');
                 ctx.fillStyle = g3; ctx.fillRect(0, 0, W, H);
 
                 // Galaxy core
@@ -439,7 +439,7 @@ export function StarfieldCanvas() {
                 const tx = px - Math.cos(s.angle) * s.w, ty = py - Math.sin(s.angle) * s.w;
                 const gr = ctx.createLinearGradient(tx, ty, px, py);
                 gr.addColorStop(0, 'rgba(0,0,0,0)');
-                gr.addColorStop(0.4, `rgba(16,185,129,${(0.3 * op).toFixed(2)})`);
+                gr.addColorStop(0.4, `rgba(245,158,11,${(0.3 * op).toFixed(2)})`);
                 gr.addColorStop(1, `rgba(255,255,255,${op.toFixed(2)})`);
                 ctx.globalAlpha = 1; ctx.strokeStyle = gr; ctx.lineWidth = 5; ctx.lineCap = 'round';
                 ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(px, py); ctx.stroke();

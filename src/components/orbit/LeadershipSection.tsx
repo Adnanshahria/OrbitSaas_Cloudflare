@@ -35,14 +35,14 @@ export function LeadershipSection() {
     <section id="leadership" className="py-16 sm:py-20 px-3 sm:px-6 relative scroll-mt-12">
 
       <div className="w-full mx-auto relative" ref={ref}>
-        <div className="rounded-2xl sm:rounded-3xl premium-card bg-white/[0.02] backdrop-blur-xl px-4 sm:px-14 py-4 sm:py-8 shadow-[0_0_40px_rgba(108,92,231,0.08)]">
+        <div className="px-4 sm:px-14 py-4 sm:py-8">
           <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.97 }}
             animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
             transition={{ type: 'spring', stiffness: 80, damping: 20 }}
             className="text-center mb-5 sm:mb-8"
           >
-            <h2 className="inline-block px-4 sm:px-5 py-1.5 sm:py-2 rounded-full border border-neon-emerald/25 bg-neon-emerald/5 text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2 sm:mb-3">{t.leadership.title}</h2>
+            <h2 className="inline-block px-6 sm:px-8 py-1.5 sm:py-2 rounded-full border-[0.5px] border-[#8B5A2B]/50 bg-[#8B5A2B]/10 text-[#FFE5B4] text-2xl sm:text-3xl lg:text-4xl font-display italic tracking-wide mb-2 sm:mb-3 shadow-[0_4px_20px_rgba(139,90,43,0.15)]">{t.leadership.title}</h2>
             <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto">{t.leadership.subtitle}</p>
           </motion.div>
 
@@ -54,17 +54,18 @@ export function LeadershipSection() {
               return (
                 <div
                   key={i}
-                  className="glass-effect bg-card/40 rounded-xl sm:rounded-2xl p-3 sm:p-5 lg:p-6 text-center group transition-all duration-300 premium-card-sub sm:hover:-translate-y-1"
+                  className="rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-center group transition-all duration-500 hover:-translate-y-2 relative overflow-hidden"
                 >
+
                   {/* Circular photo or fallback icon */}
                   <motion.div
-                    className="w-20 h-20 sm:w-32 sm:h-32 lg:w-36 lg:h-36 rounded-full mx-auto mb-3 sm:mb-4 lg:mb-5 overflow-hidden flex items-center justify-center bg-secondary/30 border-2 sm:border-3 border-background shadow-xl relative"
+                    className="w-24 h-24 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-full mx-auto mb-4 sm:mb-6 lg:mb-8 overflow-hidden flex items-center justify-center bg-secondary/30 relative z-10"
                     style={
                       hasImage
                         ? { boxShadow: style.shadow }
                         : { background: style.gradient, boxShadow: style.shadow }
                     }
-                    whileHover={{ scale: 1.08, transition: { type: 'spring', stiffness: 300, damping: 15 } }}
+                    whileHover={{ scale: 1.05, boxShadow: '0 15px 40px rgba(245,158,11,0.25)', transition: { type: 'spring', stiffness: 300, damping: 15 } }}
                   >
                     {hasImage ? (
                       <img
@@ -78,8 +79,13 @@ export function LeadershipSection() {
                     )}
                     <div className="absolute inset-0 rounded-full border border-white/10 pointer-events-none" />
                   </motion.div>
-                  <h3 className="text-sm sm:text-xl lg:text-2xl font-bold text-foreground mb-0.5 sm:mb-1.5 leading-tight">{member.name}</h3>
-                  <p className="text-neon-amber text-[10px] sm:text-sm lg:text-base font-bold tracking-wide uppercase">{member.role}</p>
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-display font-normal text-[#FFE5B4] mb-2 sm:mb-3 leading-tight transition-colors drop-shadow-sm">{member.name}</h3>
+                  <div className="inline-block mt-2">
+                    <p className="text-[#F59E0B] text-xs sm:text-sm lg:text-base font-medium tracking-[0.25em] uppercase drop-shadow-sm">{member.role}</p>
+                  </div>
+
+                  {/* Subtle background glow effect on hover instead of a card border */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.08)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none -z-10" />
                 </div>
               );
             })}
@@ -93,7 +99,7 @@ export function LeadershipSection() {
               transition={{ delay: 0.5, type: 'spring', stiffness: 60 }}
               className="mt-12 sm:mt-16 max-w-4xl mx-auto"
             >
-              <div className="glass-effect rounded-2xl sm:rounded-[2rem] p-6 sm:p-10 text-center bg-card/40 backdrop-blur-md transition-colors duration-500 premium-card">
+              <div className="glass-effect rounded-2xl sm:rounded-[2rem] p-6 sm:p-10 text-center bg-gradient-to-b from-[#8B5A2B]/5 to-transparent border-t-[0.5px] border-[#8B5A2B]/30 backdrop-blur-md transition-colors duration-500">
                 <p className="text-lg sm:text-2xl lg:text-3xl font-medium text-foreground leading-relaxed italic relative z-10">
                   <span className="text-primary/40 text-4xl leading-none absolute -top-4 -left-2 sm:-left-6">"</span>
                   {tagline}

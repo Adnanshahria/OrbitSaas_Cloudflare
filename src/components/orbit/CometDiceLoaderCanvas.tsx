@@ -16,7 +16,7 @@ interface Props {
     onComplete: () => void;
 }
 
-const COLORS = ['#10b981', '#14b8a6', '#f59e0b', '#34d399', '#a78bfa'];
+const COLORS = ['#f59e0b', '#d97706', '#fbbf24', '#b45309', '#fcd34d'];
 const TAU = Math.PI * 2;
 
 export function CometDiceLoaderCanvas({ orbitRects, saasRect, onRevealLetter, onRevealSaaS, onComplete }: Props) {
@@ -139,7 +139,7 @@ export function CometDiceLoaderCanvas({ orbitRects, saasRect, onRevealLetter, on
                 ctx.fill();
                 ctx.fillStyle = 'rgba(10, 10, 10, 0.8)';
                 ctx.fill();
-                ctx.strokeStyle = '#10b981';
+                ctx.strokeStyle = '#f59e0b';
                 ctx.lineWidth = 2.5;
                 // Faster alternative to shadowBlur
                 ctx.globalAlpha = alpha * 0.3;
@@ -325,7 +325,7 @@ export function CometDiceLoaderCanvas({ orbitRects, saasRect, onRevealLetter, on
                         x: diceX + (Math.random() - 0.5) * 20,
                         y: diceY + (Math.random() - 0.5) * 20,
                         vx: -diceVx * 0.1, vy: -diceVy * 0.1,
-                        life: 1, decay: 0.05, color: '#10b981', size: 3
+                        life: 1, decay: 0.05, color: '#f59e0b', size: 3
                     });
                 }
 
@@ -334,7 +334,7 @@ export function CometDiceLoaderCanvas({ orbitRects, saasRect, onRevealLetter, on
                     stateTimer = 0.4;
                     onRevealSaaSRef.current();
                     spawnParticles(diceX, diceY, '#f59e0b', 50, 3);
-                    spawnParticles(diceX, diceY, '#10b981', 50, 4);
+                    spawnParticles(diceX, diceY, '#fbbf24', 50, 4);
                 }
             }
             // ─── STATE: BURSTING ───

@@ -104,11 +104,11 @@ export function Home() {
   const isFirstVisit = true;
   const baseDelay = 8.5; // Stretched to fit the new 10s canvas sequence
 
-  // Theme Customization: Forcing Emerald & Gold for this redesign
-  const taglineColor = '#10b981'; // Emerald
-  const titleColor = '#f59e0b';   // Amber/Gold
-  const ctaGradientStart = '#10b981';
-  const ctaGradientEnd = '#14b8a6';
+  // Theme Customization: Metallic Hierarchy
+  const taglineColor = 'var(--metallic-pale)'; // Champagne for the subtle top tag
+  const titleColor = 'var(--metallic-gold)';   // Pure Gold for the hero text
+  const ctaGradientStart = 'var(--metallic-amber)';
+  const ctaGradientEnd = 'var(--metallic-bronze)';
 
   // Dynamic WhatsApp URL from admin settings
   const whatsappNumber = (t.contact as any).whatsapp || '';
@@ -237,7 +237,7 @@ export function Home() {
                   className="hidden sm:inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md text-sm font-playfair italic font-bold mb-12 -mt-4 tracking-wide w-auto max-w-[95%] md:text-center shrink-0 min-w-0 shadow-[0_0_20px_rgba(255,255,255,0.05)]"
                   style={{ color: taglineColor }}
                 >
-                  <span className="w-2.5 h-2.5 rounded-full animate-pulse bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)]" />
+                  <span className="w-2.5 h-2.5 rounded-full animate-pulse bg-[#F59E0B] shadow-[0_0_15px_rgba(245,158,11,0.8)]" />
                   {line2 ? `${line1} ${line2}` : line1}
                 </motion.div>
 
@@ -254,7 +254,7 @@ export function Home() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: baseDelay + 0.8, duration: 0.8 }}
                     viewport={{ once: true }}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-10 bg-gradient-to-r from-emerald-500/60 to-amber-500/60 blur-xl z-[8] mix-blend-screen pointer-events-none"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-10 bg-gradient-to-r from-[#F59E0B]/60 to-[#FFD700]/60 blur-xl z-[8] mix-blend-screen pointer-events-none"
                   />
 
                   {/* Row 1 — slightly left, pill shaped box */}
@@ -265,13 +265,13 @@ export function Home() {
                     viewport={{ once: true }}
                     className="relative z-[9] flex items-center justify-center gap-2 px-4 py-1.5 backdrop-blur-md shadow-lg rounded-full"
                     style={{
-                      background: 'rgba(16, 185, 129, 0.12)',
-                      border: '1.5px solid rgba(16, 185, 129, 0.6)',
-                      color: taglineColor,
+                      background: 'rgba(245, 158, 11, 0.12)',
+                      border: '1.5px solid rgba(245, 158, 11, 0.6)',
+                      color: 'var(--metallic-pale)',
                     }}
                   >
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="w-2 h-2 rounded-full animate-pulse bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)] shrink-0" />
+                      <span className="w-2 h-2 rounded-full animate-pulse bg-[#F59E0B] shadow-[0_0_15px_rgba(245,158,11,0.8)] shrink-0" />
                       <span>{line1}</span>
                     </div>
                   </motion.div>
@@ -285,9 +285,9 @@ export function Home() {
                       className="relative z-[5] flex items-center justify-center gap-2 px-6 py-1.5 backdrop-blur-md shadow-lg rounded-full"
                       style={{
                         marginTop: '0px',
-                        background: 'rgba(245, 158, 11, 0.12)',
-                        border: '1.5px solid rgba(245, 158, 11, 0.6)',
-                        color: '#f59e0b',
+                        background: 'rgba(139, 90, 43, 0.12)', // Bronze background
+                        border: '1.5px solid rgba(139, 90, 43, 0.6)', // Bronze border
+                        color: 'var(--metallic-gold)',
                       }}
                     >
                       <div className="flex items-center gap-2 text-sm">
@@ -470,8 +470,8 @@ export function Home() {
               whileHover={{ scale: 1.04, boxShadow: `0 8px 30px ${ctaGradientStart}44` }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-              className="inline-flex items-center gap-1.5 px-4 sm:px-8 py-1.5 sm:py-2.5 rounded-full font-bold text-primary-foreground shadow-lg gentle-animation cursor-pointer justify-center text-sm sm:text-base border-[0.5px] border-amber-400/60"
-              style={{ background: `linear-gradient(to right, ${ctaGradientStart}, ${ctaGradientEnd})` }}
+              className="inline-flex items-center gap-1.5 px-4 sm:px-8 py-1.5 sm:py-2.5 rounded-full font-bold text-black shadow-[0_0_20px_rgba(245,158,11,0.2)] gentle-animation cursor-pointer justify-center text-sm sm:text-base border border-[#FFE5B4]/40"
+              style={{ background: `linear-gradient(to right, var(--metallic-gold), var(--metallic-amber))` }}
             >
               {t.hero.cta}
               <div className="ml-1.5 flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white/20 border border-white/10 shadow-inner group-hover:bg-white/30 transition-colors">
@@ -530,7 +530,7 @@ export function Home() {
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-            className="inline-flex items-center gap-1.5 px-4 sm:px-8 py-1.5 sm:py-2.5 rounded-full font-bold glass-effect text-foreground cursor-pointer justify-center text-sm sm:text-base border-[0.5px] border-amber-400/60"
+            className="inline-flex items-center gap-1.5 px-4 sm:px-8 py-1.5 sm:py-2.5 rounded-full font-bold bg-[#8B5A2B]/10 hover:bg-[#8B5A2B]/20 text-[#FFE5B4] cursor-pointer justify-center text-sm sm:text-base border border-[#8B5A2B]/40 hover:border-[#F59E0B]/60 shadow-lg"
           >
             {t.hero.learnMore}
           </motion.a>
@@ -610,7 +610,7 @@ export function Home() {
                 </button>
               </form>
               {status === 'success' && (
-                <p className="text-emerald-400 text-xs mt-3 text-center animate-in fade-in slide-in-from-bottom-2 font-medium">
+                <p className="text-amber-500 text-xs mt-3 text-center animate-in fade-in slide-in-from-bottom-2 font-medium">
                   {lang === 'bn' ? 'স্বাগতম!' : 'Welcome to the waitlist!'}
                 </p>
               )}

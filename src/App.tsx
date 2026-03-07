@@ -223,19 +223,19 @@ function VisitorGateway({ children }: { children: React.ReactNode }) {
                             animate={{ scale: 1, rotate: 0 }}
                             transition={{ type: 'spring', stiffness: 500, damping: 15 }}
                           >
-                            <Check className="w-4.5 h-4.5 text-emerald-400 drop-shadow-[0_0_6px_rgba(16,185,129,0.8)]" strokeWidth={3} />
+                            <Check className="w-4.5 h-4.5 text-amber-500 drop-shadow-[0_0_6px_rgba(245,158,11,0.8)]" strokeWidth={3} />
                           </motion.div>
                         )}
                       </AnimatePresence>
                       {!isChecked && (
-                        <Check className="w-4 h-4 text-transparent group-hover:text-emerald-500/40 transition-colors duration-300" strokeWidth={3} />
+                        <Check className="w-4 h-4 text-transparent group-hover:text-amber-500/40 transition-colors duration-300" strokeWidth={3} />
                       )}
                     </motion.div>
 
                     {/* Label */}
                     <span className={`text-sm font-bold tracking-wide text-left uppercase transition-all duration-500 ${isChecked
                       ? 'bg-gradient-to-r from-emerald-400 to-amber-400 bg-clip-text text-transparent'
-                      : 'text-foreground group-hover:text-emerald-400'
+                      : 'text-foreground group-hover:text-amber-500'
                       }`}>
                       {isChecked ? 'Verified ✓' : 'I am not a robot'}
                     </span>

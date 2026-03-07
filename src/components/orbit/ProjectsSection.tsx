@@ -77,7 +77,7 @@ export function ProjectsSection() {
           {/* View All / Mobile Nav Button */}
           <Link
             to="/project"
-            className="absolute top-5 right-5 sm:top-8 sm:right-8 inline-flex items-center justify-center gap-2 rounded-xl bg-neon-emerald/20 text-neon-emerald font-semibold text-sm border border-neon-emerald/30 hover:bg-neon-emerald/30 transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(108,92,231,0.3)] hover:gap-3 w-10 h-10 sm:w-auto sm:h-auto sm:px-5 sm:py-2.5 animate-pulse-slow sm:animate-none"
+            className="absolute top-5 right-5 sm:top-8 sm:right-8 inline-flex items-center justify-center gap-2 rounded-xl bg-neon-amber/20 text-neon-amber font-semibold text-sm border border-neon-amber/30 hover:bg-neon-amber/30 transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:shadow-[0_0_25px_rgba(245,158,11,0.5)] hover:gap-3 w-10 h-10 sm:w-auto sm:h-auto sm:px-5 sm:py-2.5 animate-pulse-slow sm:animate-none"
           >
             <span className="hidden sm:inline">View All</span> <ArrowRight className="w-4 h-4" />
           </Link>
@@ -88,7 +88,7 @@ export function ProjectsSection() {
             transition={{ duration: 0.6 }}
             className="text-center mb-6 sm:mb-10"
           >
-            <h2 className="inline-block px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-neon-emerald/25 bg-neon-emerald/5 text-3xl sm:text-4xl font-bold text-foreground mb-4">
+            <h2 className="inline-block px-6 sm:px-8 py-2 sm:py-3 rounded-full border-[0.5px] border-[#8B5A2B]/50 bg-[#8B5A2B]/10 text-[#FFE5B4] text-3xl sm:text-4xl font-display italic tracking-wide mb-4 shadow-[0_4px_20px_rgba(139,90,43,0.15)]">
               {sectionTitle}
             </h2>
             <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
@@ -138,7 +138,7 @@ export function ProjectsSection() {
                   {expanded ? 'Show Less' : 'Explore More ✦'}
                 </span>
                 {expanded ? (
-                  <ChevronUp className="w-4 h-4 text-emerald-400 transition-transform group-hover:-translate-y-0.5" />
+                  <ChevronUp className="w-4 h-4 text-amber-500 transition-transform group-hover:-translate-y-0.5" />
                 ) : (
                   <ChevronDown className="w-4 h-4 text-amber-400 transition-transform group-hover:translate-y-0.5" />
                 )}
