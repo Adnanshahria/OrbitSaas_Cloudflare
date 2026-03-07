@@ -224,7 +224,7 @@ export default function AdminLayout() {
             )}
 
             {/* Sidebar */}
-            <aside className={`fixed top-0 left-0 z-50 h-[100dvh] w-64 bg-card border-r border-border flex flex-col transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <aside className={`fixed top-0 left-0 z-50 h-[100dvh] w-64 bg-card border-r border-border flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <LayoutDashboard className="w-5 h-5 text-primary" />
@@ -236,7 +236,7 @@ export default function AdminLayout() {
                             e.preventDefault();
                             setSidebarOpen(false);
                         }}
-                        className="p-2 -mr-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:bg-secondary transition-colors lg:hidden relative z-50 flex items-center justify-center cursor-pointer"
+                        className="p-2 -mr-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:bg-secondary transition-colors relative z-50 flex items-center justify-center cursor-pointer"
                         aria-label="Collapse sidebar"
                         title="Collapse sidebar"
                     >
@@ -301,9 +301,9 @@ export default function AdminLayout() {
             </aside>
 
             {/* Main content */}
-            <main className="flex-1 min-h-[100dvh] w-full lg:pl-64 flex flex-col relative z-10">
-                {/* Mobile Top Bar (Fixed) */}
-                <div className="sticky top-0 left-0 w-full z-30 bg-card/95 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center justify-between lg:hidden shadow-sm">
+            <main className={`flex-1 min-h-[100dvh] w-full flex flex-col relative z-10 transition-all duration-300 ${sidebarOpen ? 'lg:pl-64' : ''}`}>
+                {/* Top Bar (Fixed) — shows toggle when sidebar is hidden */}
+                <div className={`sticky top-0 left-0 w-full z-30 bg-card/95 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center justify-between shadow-sm ${sidebarOpen ? 'lg:hidden' : ''}`}>
                     <div className="flex items-center gap-3 relative z-10">
                         <button
                             type="button"
