@@ -100,7 +100,7 @@ export default function AdminReviews() {
                     <h3 className="font-semibold text-foreground flex items-center gap-2">⭐ Reviews ({items.length})</h3>
                     <button
                         onClick={addItem}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neon-emerald/20 text-neon-emerald text-sm font-medium border border-neon-emerald/30 hover:bg-neon-emerald/30 transition-all cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-500 text-sm font-medium border border-emerald-500/30 hover:bg-emerald-500/30 transition-all cursor-pointer"
                     >
                         <Plus className="w-4 h-4" /> Add Review
                     </button>

@@ -86,6 +86,13 @@ export default function AdminHero() {
     const [ctaGradientStart, setCtaGradientStart] = useState('');
     const [ctaGradientEnd, setCtaGradientEnd] = useState('');
 
+    const [feature1Title, setFeature1Title] = useState('Build & run processes with AI');
+    const [feature1Icon, setFeature1Icon] = useState('Bot');
+    const [feature2Title, setFeature2Title] = useState('Tasks optimized for the field');
+    const [feature2Icon, setFeature2Icon] = useState('Smartphone');
+    const [feature3Title, setFeature3Title] = useState('Track and report on efficiency');
+    const [feature3Icon, setFeature3Icon] = useState('BarChart3');
+
     useEffect(() => {
         const d = getData();
         if (d) {
@@ -104,13 +111,24 @@ export default function AdminHero() {
             setTitleColor(d.titleColor || '#FF00A8');
             setCtaGradientStart(d.ctaGradientStart || '#6c5ce7');
             setCtaGradientEnd(d.ctaGradientEnd || '#3b82f6');
+
+            // Features
+            setFeature1Title(d.feature1Title || 'Build & run processes with AI');
+            setFeature1Icon(d.feature1Icon || 'Bot');
+            setFeature2Title(d.feature2Title || 'Tasks optimized for the field');
+            setFeature2Icon(d.feature2Icon || 'Smartphone');
+            setFeature3Title(d.feature3Title || 'Track and report on efficiency');
+            setFeature3Icon(d.feature3Icon || 'BarChart3');
         }
     }, [getData]);
 
     const currentPayload = {
         tagline, tagline2, title, subtitle, cta, learnMore,
         taglineIcon1, taglineIcon2,
-        taglineColor, titleColor, ctaGradientStart, ctaGradientEnd
+        taglineColor, titleColor, ctaGradientStart, ctaGradientEnd,
+        feature1Title, feature1Icon,
+        feature2Title, feature2Icon,
+        feature3Title, feature3Icon
     };
 
     return (
@@ -173,6 +191,31 @@ export default function AdminHero() {
                 </div>
             </div>
 
+            {/* Feature Cards */}
+            <div className="space-y-4 bg-card rounded-xl p-4 md:p-6 border border-border">
+                <h3 className="font-semibold text-foreground mb-1 flex items-center gap-2">
+                    ✨ Feature Flash Cards
+                </h3>
+                <p className="text-xs text-muted-foreground -mt-2 mb-2">The three floating geometric glassmorphic cards on the right side of the hero section.</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-3 p-4 border border-border/50 rounded-lg bg-background/50">
+                        <h4 className="text-sm font-bold opacity-70">Card 1 (Top)</h4>
+                        <TextField label="Title" value={feature1Title} onChange={setFeature1Title} lang={lang} />
+                        <IconPicker label="Icon" value={feature1Icon} onChange={setFeature1Icon} />
+                    </div>
+                    <div className="space-y-3 p-4 border border-border/50 rounded-lg bg-background/50">
+                        <h4 className="text-sm font-bold opacity-70">Card 2 (Middle)</h4>
+                        <TextField label="Title" value={feature2Title} onChange={setFeature2Title} lang={lang} />
+                        <IconPicker label="Icon" value={feature2Icon} onChange={setFeature2Icon} />
+                    </div>
+                    <div className="space-y-3 p-4 border border-border/50 rounded-lg bg-background/50">
+                        <h4 className="text-sm font-bold opacity-70">Card 3 (Bottom)</h4>
+                        <TextField label="Title" value={feature3Title} onChange={setFeature3Title} lang={lang} />
+                        <IconPicker label="Icon" value={feature3Icon} onChange={setFeature3Icon} />
+                    </div>
+                </div>
+            </div>
+
             <SaveButton onClick={() => save(currentPayload)} saving={saving} saved={saved} />
 
             <div className="mt-8 pt-8 border-t border-border">
@@ -192,6 +235,12 @@ export default function AdminHero() {
                         setTitleColor(parsed.titleColor || '#FF00A8');
                         setCtaGradientStart(parsed.ctaGradientStart || '#6c5ce7');
                         setCtaGradientEnd(parsed.ctaGradientEnd || '#3b82f6');
+                        setFeature1Title(parsed.feature1Title || 'Build & run processes with AI');
+                        setFeature1Icon(parsed.feature1Icon || 'Bot');
+                        setFeature2Title(parsed.feature2Title || 'Tasks optimized for the field');
+                        setFeature2Icon(parsed.feature2Icon || 'Smartphone');
+                        setFeature3Title(parsed.feature3Title || 'Track and report on efficiency');
+                        setFeature3Icon(parsed.feature3Icon || 'BarChart3');
                     }}
                 />
             </div>

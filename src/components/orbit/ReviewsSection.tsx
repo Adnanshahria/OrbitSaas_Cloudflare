@@ -1,211 +1,124 @@
-import { motion, useInView } from 'framer-motion';
-import { useRef, useEffect, useCallback } from 'react';
-import { Star, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
-import { useNavigate } from 'react-router-dom';
+import { Star, Quote } from 'lucide-react';
 
 export function ReviewsSection() {
     const { content } = useContent();
     const { lang } = useLang();
-    const navigate = useNavigate();
-    const ref = useRef(null);
-    const inView = useInView(ref, { once: true, margin: '-60px' });
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const isPaused = useRef(false);
-    const rafRef = useRef<number>(0);
-
-    // Get reviews data — no placeholders, only admin-managed items
-    const enReviews = (content.en as any).reviews;
-    const bnReviews = (content.bn as any).reviews;
-    const reviewsData = lang === 'bn' && bnReviews ? bnReviews : enReviews;
-
-    const title = reviewsData?.title || 'Client Reviews';
-    const subtitle = reviewsData?.subtitle || 'What our clients say about working with us';
-    const items: any[] = reviewsData?.items?.length ? reviewsData.items : [];
-
-    // Resolve projectId to route
-    const enProjects = (content.en as any).projects;
-    const projectItems: any[] = Array.isArray(enProjects?.items) ? enProjects.items : [];
-
-    const resolveProjectRoute = (review: any) => {
-        if (!review.projectId) return null;
-        const idx = projectItems.findIndex((p: any) => (p.id || '') === review.projectId);
-        if (idx >= 0) return `/project/${projectItems[idx].id || idx}`;
-        const numIdx = parseInt(review.projectId, 10);
-        if (!isNaN(numIdx) && numIdx >= 0 && numIdx < projectItems.length) return `/project/${numIdx}`;
-        return null;
-    };
-
-    const resolveProjectName = (review: any) => {
-        if (review.badgeName) return review.badgeName;
-        if (review.projectName) return review.projectName;
-        if (!review.projectId) return null;
-        const idx = projectItems.findIndex((p: any) => (p.id || '') === review.projectId);
-        if (idx >= 0) return projectItems[idx].title;
-        const numIdx = parseInt(review.projectId, 10);
-        if (!isNaN(numIdx) && numIdx >= 0 && numIdx < projectItems.length) return projectItems[numIdx].title;
-        return review.projectId;
-    };
-
-    // Auto-scroll loop
-    const autoScroll = useCallback(() => {
-        const el = scrollRef.current;
-        if (!el || isPaused.current) {
-            rafRef.current = requestAnimationFrame(autoScroll);
-            return;
-        }
-        el.scrollLeft += 0.6;
-        if (el.scrollLeft >= el.scrollWidth / 2) {
-            el.scrollLeft = 0;
-        }
-        rafRef.current = requestAnimationFrame(autoScroll);
-    }, []);
-
-    // Only run auto-scroll when section is visible on screen
-    useEffect(() => {
-        if (!inView) return;
-        rafRef.current = requestAnimationFrame(autoScroll);
-        return () => cancelAnimationFrame(rafRef.current);
-    }, [autoScroll, inView]);
-
-    const pause = () => { isPaused.current = true; };
-    const resume = () => { isPaused.current = false; };
-
-    // Drag support
-    const isDragging = useRef(false);
-    const dragStartX = useRef(0);
-    const dragStartScroll = useRef(0);
-    const hasDragged = useRef(false);
-
-    const onMouseDown = (e: React.MouseEvent) => {
-        isDragging.current = true;
-        hasDragged.current = false;
-        isPaused.current = true;
-        dragStartX.current = e.pageX;
-        dragStartScroll.current = scrollRef.current?.scrollLeft ?? 0;
-    };
-    const onMouseMove = (e: React.MouseEvent) => {
-        if (!isDragging.current || !scrollRef.current) return;
-        const dx = e.pageX - dragStartX.current;
-        if (Math.abs(dx) > 3) hasDragged.current = true;
-        scrollRef.current.scrollLeft = dragStartScroll.current - dx;
-        const el = scrollRef.current;
-        if (el.scrollLeft >= el.scrollWidth / 2) el.scrollLeft = 0;
-        if (el.scrollLeft < 0) el.scrollLeft = el.scrollWidth / 2;
-    };
-    const onMouseUp = () => { isDragging.current = false; isPaused.current = false; };
-
-    const displayItems = items.slice(0, 4);
-    // Only use marquee (duplicate) if 3+ items; for 1-2 items show them statically
-    const useMarquee = displayItems.length >= 3;
-    const loopItems = useMarquee ? [...displayItems, ...displayItems, ...displayItems] : displayItems;
-
-    // Hide section entirely if no admin-managed reviews
-    if (items.length === 0) return null;
+    const t = (content[lang] as any)?.reviews;
+    const items = t?.items || [];
 
     return (
-        <section id="reviews" className="py-10 sm:py-20 px-3 sm:px-6 lg:px-8 relative scroll-mt-12" ref={ref} style={{ contain: 'none' }}>
-            <div className="w-full mx-auto relative">
-                {/* Big Container Card */}
-                <div className="px-4 sm:px-14 py-6 sm:py-10">
-                    {/* Header */}
+        <section id="reviews" className="section-light">
+            <div className="section-container">
+                {/* Header */}
+                <div className="text-center mb-16">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={inView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.6 }}
-                        className="text-center mb-8 sm:mb-10"
+                        initial={{ opacity: 0, y: 15 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4 }}
+                        className="flex justify-center mb-4"
                     >
-                        <h2 className="inline-block px-6 sm:px-8 py-2 sm:py-3 rounded-full border-[0.5px] border-[#8B5A2B]/50 bg-[#8B5A2B]/10 text-[#FFE5B4] text-3xl sm:text-4xl font-display italic tracking-wide mb-4 shadow-[0_4px_20px_rgba(139,90,43,0.15)]">
-                            {title}
-                        </h2>
-                        <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
-                            {subtitle}
-                        </p>
+                        <span className="pill-badge pill-badge-light">
+                            <Star size={14} />
+                            Testimonials
+                        </span>
                     </motion.div>
 
-                    {/* Carousel — marquee for 3+ items, static for 1-2 */}
-                    <div
-                        ref={useMarquee ? scrollRef : undefined}
-                        className={`${useMarquee ? 'overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing select-none' : 'flex justify-center'}`}
-                        style={useMarquee ? { scrollbarWidth: 'none' } : {}}
-                        onMouseEnter={useMarquee ? pause : undefined}
-                        onMouseLeave={useMarquee ? () => { resume(); onMouseUp(); } : undefined}
-                        onMouseDown={useMarquee ? onMouseDown : undefined}
-                        onMouseMove={useMarquee ? onMouseMove : undefined}
-                        onMouseUp={useMarquee ? onMouseUp : undefined}
-                        onTouchStart={useMarquee ? pause : undefined}
-                        onTouchEnd={useMarquee ? resume : undefined}
+                    <motion.h2
+                        initial={{ opacity: 0, y: 15 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: 0.1 }}
+                        className="section-heading"
+                        style={{ color: 'var(--text-dark)' }}
                     >
-                        <div className={`flex gap-4 pb-2 ${useMarquee ? '' : 'flex-wrap justify-center'}`} style={useMarquee ? { width: 'max-content' } : {}}>
-                            {loopItems.map((review: any, i: number) => {
-                                const projectRoute = resolveProjectRoute(review);
-                                const projectName = resolveProjectName(review);
-
-                                return (
-                                    <div
-                                        key={i}
-                                        className="w-[260px] sm:w-[300px] flex-shrink-0"
-                                        aria-hidden={i >= displayItems.length ? true : undefined}
-                                    >
-                                        <div
-                                            className={`h-full p-5 flex flex-col transition-all duration-500 group relative ${projectRoute ? 'cursor-pointer' : ''}`}
-                                            onClick={() => {
-                                                if (hasDragged.current) return;
-                                                if (projectRoute) navigate(projectRoute);
-                                            }}
-                                        >
-                                            {/* Huge background quote mark */}
-                                            <span className="absolute top-2 right-4 text-7xl font-serif text-[#FFE5B4]/5 pointer-events-none z-0">"</span>
-
-                                            {/* Top row: Stars + Project Badge */}
-                                            <div className="flex items-center justify-between mb-4 relative z-10">
-                                                <div className="flex gap-0.5">
-                                                    {Array.from({ length: 5 }).map((_, si) => (
-                                                        <Star key={si} className={`w-3.5 h-3.5 ${si < (review.rating || 5) ? 'text-amber-400 fill-amber-400' : 'text-white/10'}`} />
-                                                    ))}
-                                                </div>
-                                                {projectName && (
-                                                    <span
-                                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border border-transparent"
-                                                        style={{
-                                                            background: 'linear-gradient(#10101a, #10101a) padding-box, linear-gradient(135deg, #10b981, #f59e0b) border-box',
-                                                            borderWidth: '1px', borderStyle: 'solid', borderColor: 'transparent',
-                                                        }}
-                                                    >
-                                                        <span className="bg-gradient-to-r from-emerald-400 to-amber-400 bg-clip-text text-transparent">{projectName}</span>
-                                                        {projectRoute && <ArrowRight className="w-2.5 h-2.5 text-amber-500" />}
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            {/* Review Text */}
-                                            <p className="text-[#FFE5B4]/80 text-sm leading-relaxed mb-6 flex-grow line-clamp-4 italic font-garamond text-lg relative z-10">
-                                                "{review.text}"
-                                            </p>
-
-                                            {/* Reviewer Info */}
-                                            <div className="pt-4 border-t border-[#8B5A2B]/10 relative z-10 group-hover:border-[#8B5A2B]/40 transition-colors duration-500">
-                                                <span className="font-display font-normal text-[#FFE5B4] text-base block tracking-wide">{review.name}</span>
-                                                <span className="text-[#B5A642] text-[10px] uppercase tracking-widest font-semibold mt-1 block">{review.role}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+                        {t?.title || 'Client Reviews'}
+                    </motion.h2>
+                    <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: 0.15 }}
+                        className="section-subheading section-subheading-light mx-auto"
+                    >
+                        {t?.subtitle || ''}
+                    </motion.p>
                 </div>
+
+                {/* Reviews grid */}
+                {items.length > 0 ? (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {items.map((review: any, i: number) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, margin: '-50px' }}
+                                transition={{ duration: 0.4, delay: i * 0.1 }}
+                                className="card-light"
+                            >
+                                <Quote size={24} style={{ color: 'var(--accent)', opacity: 0.5 }} className="mb-4" />
+                                <p
+                                    className="text-sm mb-6 leading-relaxed"
+                                    style={{ color: 'var(--text-dark-secondary)' }}
+                                >
+                                    "{review.text || review.review}"
+                                </p>
+                                <div className="flex items-center gap-3">
+                                    {review.avatar && (
+                                        <img
+                                            src={review.avatar}
+                                            alt={review.name}
+                                            className="w-10 h-10 rounded-full object-cover"
+                                        />
+                                    )}
+                                    {!review.avatar && (
+                                        <div
+                                            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                                            style={{ background: 'var(--accent)' }}
+                                        >
+                                            {review.name?.charAt(0) || 'U'}
+                                        </div>
+                                    )}
+                                    <div>
+                                        <div className="text-sm font-semibold" style={{ color: 'var(--text-dark)' }}>
+                                            {review.name}
+                                        </div>
+                                        {review.role && (
+                                            <div className="text-xs" style={{ color: 'var(--text-dark-tertiary)' }}>
+                                                {review.role}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                {/* Star rating */}
+                                {review.rating && (
+                                    <div className="flex gap-0.5 mt-3">
+                                        {Array.from({ length: review.rating }, (_, si) => (
+                                            <Star key={si} size={14} fill="var(--accent)" color="var(--accent)" />
+                                        ))}
+                                    </div>
+                                )}
+                            </motion.div>
+                        ))}
+                    </div>
+                ) : (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        className="text-center py-12"
+                        style={{ color: 'var(--text-dark-tertiary)' }}
+                    >
+                        Reviews coming soon...
+                    </motion.div>
+                )}
             </div>
         </section>
     );
 }
 
-/**
- * Utility: Get reviews for a specific project (used by ProjectDetail)
- */
-export function getProjectReviews(content: any, projectId: string): any[] {
-    const reviewsData = (content.en as any)?.reviews;
-    if (!reviewsData?.items) return [];
-    return reviewsData.items.filter((r: any) => r.projectId === projectId);
-}
+export default ReviewsSection;
