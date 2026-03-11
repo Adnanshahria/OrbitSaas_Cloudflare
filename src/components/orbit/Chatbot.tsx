@@ -898,22 +898,14 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
             <div className="relative pointer-events-auto cursor-pointer group" onClick={() => setOpen(true)}>
               {/* Main Speech Bubble */}
               <motion.div
-                animate={{
-                  borderColor: ["rgba(16, 185, 129, 0.8)", "rgba(245, 158, 11, 0.8)", "rgba(16, 185, 129, 0.8)"],
-                }}
-                transition={{
-                  duration: 6,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="relative flex flex-col items-start gap-0.5 bg-[#0a0a0f]/95 backdrop-blur-2xl border-[0.5px] rounded-xl rounded-br-sm px-3.5 py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:-translate-y-1"
+                className="relative flex flex-col items-start gap-0.5 bg-card border border-border rounded-xl rounded-br-sm px-3.5 py-1.5 shadow-lg transition-all duration-300 group-hover:-translate-y-1"
               >
                 {/* Text Content */}
                 <div className="flex flex-col items-start pr-1">
-                  <p className="text-[10px] font-bold uppercase tracking-widest mb-0 drop-shadow-[0_0_5px_rgba(16,185,129,0.3)]">
-                    <span className="text-amber-500">ORBIT </span><span className="text-amber-500">AI</span>
+                  <p className="text-[10px] font-bold uppercase tracking-widest mb-0 text-primary">
+                    ORBIT AI
                   </p>
-                  <span className="text-[12px] font-medium text-white/90 tracking-wide whitespace-nowrap drop-shadow-md transition-all duration-300">
+                  <span className="text-[12px] font-medium text-foreground tracking-wide whitespace-nowrap transition-all duration-300">
                     {chatLang === 'bn' ? popupMessage.bn : popupMessage.en}
                   </span>
                 </div>
@@ -921,28 +913,8 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
 
               {/* Speech Bubble Tail */}
               <motion.div
-                animate={{
-                  borderColor: ["rgba(245, 158, 11, 0.8)", "rgba(16, 185, 129, 0.8)", "rgba(245, 158, 11, 0.8)"],
-                }}
-                transition={{
-                  duration: 6,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="absolute -bottom-[5px] right-5 sm:right-7 w-2.5 h-2.5 bg-[#0a0a0f]/95 border-[0.5px] rotate-45 transform shadow-[2px_2px_6px_rgba(0,0,0,0.3)] flex items-center justify-center"
-              >
-                <motion.div
-                  animate={{
-                    backgroundColor: ["rgba(16, 185, 129, 0.8)", "rgba(245, 158, 11, 0.8)", "rgba(16, 185, 129, 0.8)"],
-                  }}
-                  transition={{
-                    duration: 6,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                  className="w-1 h-1 rounded-full shadow-[0_0_3px_rgba(0,0,0,0.4)]"
-                />
-              </motion.div>
+                className="absolute -bottom-[5px] right-5 sm:right-7 w-2.5 h-2.5 bg-card border-b border-r border-border rotate-45 transform"
+              />
             </div>
           </motion.div>
         )}
@@ -957,7 +929,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
         whileTap={{ scale: 0.95 }}
         onClick={() => setOpen(!open)}
         className={`fixed bottom-[10dvh] md:bottom-6 right-4 sm:right-6 z-[200] flex items-center justify-center cursor-pointer transition-all duration-300 ${open
-          ? 'w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary text-primary-foreground neon-glow shadow-2xl hidden md:flex'
+          ? 'w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary text-primary-foreground shadow-xl hidden md:flex'
           : 'w-14 h-14 sm:w-[72px] sm:h-[72px] bg-transparent'
           }`}
         style={{ willChange: 'opacity' }}
@@ -991,9 +963,8 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
             style={{
               ...viewportStyle,
               transformOrigin: 'bottom',
-              boxShadow: '0 0 10px rgba(124, 58, 237, 0.5), 0 0 30px rgba(124, 58, 237, 0.3), 0 0 60px rgba(124, 58, 237, 0.15), inset 0 0 10px rgba(124, 58, 237, 0.05)'
             }}
-            className={`fixed md:bottom-24 left-0 right-0 md:left-auto md:right-6 z-[200] w-full md:w-[400px] max-w-full md:max-w-[400px] overflow-hidden bg-background md:bg-card/90 backdrop-blur-3xl shadow-2xl flex flex-col h-[100dvh] md:h-auto top-0 md:top-auto premium-card ${isKeyboardOpen && typeof window !== 'undefined' && window.innerWidth < 768 ? 'rounded-none border-t-0' : 'bottom-0 rounded-t-3xl md:rounded-2xl'}`}
+            className={`fixed md:bottom-24 left-0 right-0 md:left-auto md:right-6 z-[200] w-full md:w-[400px] max-w-full md:max-w-[400px] overflow-hidden bg-card border border-border shadow-2xl flex flex-col h-[100dvh] md:h-auto top-0 md:top-auto ${isKeyboardOpen && typeof window !== 'undefined' && window.innerWidth < 768 ? 'rounded-none border-t-0' : 'bottom-0 rounded-t-3xl md:rounded-2xl'}`}
           >
             {/* Header */}
             <div className="shrink-0 px-5 py-3.5 bg-primary/20 border-b border-border flex items-center justify-between relative">
@@ -1082,11 +1053,11 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
                 {messages.length === 0 && !isLoading && (
                   <div className="space-y-4 py-2">
                     <div className="flex gap-2">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 border-[0.5px] border-primary/30 shadow-sm">
-                        <Bot className="w-4 h-4 text-amber-500" />
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 border border-primary/30">
+                        <Bot className="w-4 h-4 text-primary" />
                       </div>
-                      <div className="bg-[#0f111a] border-[0.5px] border-primary/40 rounded-xl rounded-tl-none px-3 py-2 text-xs text-[#f8f9fa] max-w-[85%] shadow-lg leading-relaxed">
-                        <p className="font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-amber-400 uppercase tracking-widest text-[10px]">
+                      <div className="bg-muted border border-border rounded-xl rounded-tl-none px-3 py-2 text-xs text-foreground max-w-[85%] leading-relaxed">
+                        <p className="font-bold mb-1 uppercase tracking-widest text-[10px] text-primary">
                           {chatLang === 'bn' ? 'স্বাগতম!' : 'Welcome!'}
                         </p>
                         {chatLang === 'bn'
@@ -1120,13 +1091,13 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
                     <div key={i} className="space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
                       <div className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : ''}`}>
                         {isAssistant && (
-                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 border-[0.5px] border-primary/30 shadow-sm">
-                            <Bot className="w-4 h-4 text-amber-500" />
+                          <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center shrink-0">
+                            <Bot className="w-4 h-4 text-foreground" />
                           </div>
                         )}
-                        <div className={`rounded-xl px-3 py-2 text-xs max-w-[85%] shadow-lg border-[0.5px] ${msg.role === 'user'
-                          ? 'bg-primary text-primary-foreground border-primary/40 shadow-emerald-500/10 rounded-tr-none'
-                          : 'bg-[#0f111a] border-primary/40 text-[#f8f9fa] rounded-tl-none'
+                        <div className={`rounded-xl px-3 py-2 text-xs max-w-[85%] border ${msg.role === 'user'
+                          ? 'bg-primary text-primary-foreground border-primary rounded-tr-none'
+                          : 'bg-muted border-border text-foreground rounded-tl-none'
                           }`}>
                           {isAssistant ? formatMessage(cleanContent) : msg.content}
                         </div>
@@ -1152,10 +1123,10 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
                 {showEmailPrompt && !hasProvidedEmail && (
                   <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <div className="flex gap-2">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 border-[0.5px] border-primary/30 shadow-sm">
-                        <Bot className="w-4 h-4 text-amber-500" />
+                      <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center shrink-0">
+                        <Bot className="w-4 h-4 text-foreground" />
                       </div>
-                      <div className="bg-[#0f111a] rounded-xl rounded-tl-none px-4 py-3 text-sm text-[#f8f9fa] shadow-xl max-w-[90%] border-[0.5px] border-primary/40 bg-gradient-to-br from-[#0f111a] to-emerald-500/5">
+                      <div className="bg-muted rounded-xl rounded-tl-none px-4 py-3 text-sm text-foreground max-w-[90%] border border-border">
                         <p className="mb-3 text-xs leading-relaxed font-medium">
                           {chatLang === 'bn'
                             ? 'অবশ্যই, আমি সাহায্য করতে পারি। তবে আমাদের সংযোগ বিচ্ছিন্ন হয়ে গেলে, আমি কোথায় উত্তর পাঠাবো? আপনার ইমেইলটি দিন:'
@@ -1190,10 +1161,10 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
 
                 {isLoading && (
                   <div className="flex gap-2">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 border-[0.5px] border-primary/30 shadow-sm">
-                      <Bot className="w-4 h-4 text-amber-500" />
+                    <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center shrink-0">
+                      <Bot className="w-4 h-4 text-foreground" />
                     </div>
-                    <div className="bg-[#0f111a] border-[0.5px] border-primary/40 rounded-xl rounded-tl-none px-4 py-3 shadow-lg flex items-center gap-1.5">
+                    <div className="bg-muted border border-border rounded-xl rounded-tl-none px-4 py-3 flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-white" style={{ animation: 'dotBounce 1.4s ease-in-out infinite' }} />
                       <span className="w-2 h-2 rounded-full bg-white" style={{ animation: 'dotBounce 1.4s ease-in-out 0.2s infinite' }} />
                       <span className="w-2 h-2 rounded-full bg-white" style={{ animation: 'dotBounce 1.4s ease-in-out 0.4s infinite' }} />
@@ -1237,7 +1208,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
                             executeAIResponse(newMessages);
                           }, 50);
                         }}
-                        className="shrink-0 px-4 py-2 rounded-full text-[11px] font-bold bg-primary/10 text-white border-[0.5px] border-primary/40 hover:bg-primary/20 hover:border-amber-400/50 hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] transition-all duration-300 cursor-pointer whitespace-nowrap backdrop-blur-sm"
+                        className="shrink-0 px-4 py-2 rounded-full text-[11px] font-bold bg-muted text-foreground border border-border hover:bg-muted-foreground/10 transition-colors cursor-pointer whitespace-nowrap"
                       >
                         {s}
                       </button>
@@ -1273,9 +1244,9 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
                 <button
                   onClick={handleSend}
                   disabled={isLoading || !input.trim()}
-                  className="group w-10 h-10 rounded-full bg-emerald-500 text-black flex items-center justify-center hover:scale-110 active:scale-90 shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border-[1.5px] border-white/40 overflow-hidden relative"
+                  className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                 >
-                  <Send className="w-4 h-4 relative z-10 fill-black stroke-black" strokeWidth={2.5} />
+                  <Send className="w-4 h-4" strokeWidth={2.5} />
                 </button>
               </div>
             </div>

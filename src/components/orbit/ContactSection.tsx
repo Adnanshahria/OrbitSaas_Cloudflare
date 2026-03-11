@@ -1,179 +1,89 @@
-import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { ChevronDown, MessageCircle, Mail } from 'lucide-react';
-import { useRef, useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
-import { parseRichText } from '@/lib/utils';
+import { Phone, ArrowRight, MessageCircle } from 'lucide-react';
 
 export function ContactSection() {
-  const { t } = useLang();
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-80px' });
-  const [isCtaOpen, setIsCtaOpen] = useState(false);
-  const ctaRef = useRef<HTMLDivElement>(null);
+  const { content } = useContent();
+  const { lang } = useLang();
+  const t = (content[lang] as any)?.contact;
 
-  // Dynamic WhatsApp URL from admin settings
-  const whatsappNumber = (t.contact as any).whatsapp || '';
-  const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`;
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (ctaRef.current && !ctaRef.current.contains(e.target as Node)) {
-        setIsCtaOpen(false);
-      }
-    };
-    if (isCtaOpen) document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [isCtaOpen]);
+  const whatsappLink = t?.whatsapp
+    ? `https://wa.me/${t.whatsapp.replace(/[^0-9]/g, '')}`
+    : '#';
 
   return (
-    <section id="contact" className="py-10 sm:py-20 px-3 sm:px-6 relative z-20 scroll-mt-12 min-h-[50vh] flex flex-col justify-center">
+    <section id="contact" className="section-dark relative overflow-hidden">
+      {/* Orange gradient glow at bottom — like GCore's contact section */}
+      <div
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[60%] pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at 50% 100%, rgba(212,160,23,0.22) 0%, rgba(245,197,66,0.08) 40%, transparent 70%)',
+        }}
+      />
 
-
-      <div className="w-full mx-auto text-center relative" ref={ref}>
-        <div className="rounded-2xl sm:rounded-3xl premium-card bg-white/[0.02] backdrop-blur-xl px-4 sm:px-14 py-5 sm:py-10 shadow-[0_0_40px_rgba(108,92,231,0.08)]">
+      <div className="section-container relative z-10">
+        <div className="text-center max-w-2xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, scale: 0.88, y: 40 }}
-            animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
-            transition={{ type: 'spring', stiffness: 70, damping: 16 }}
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4 }}
+            className="flex justify-center mb-4"
           >
-            <motion.h2
-              className="inline-block px-6 sm:px-8 py-2 sm:py-3 rounded-full border-[0.5px] border-[#8B5A2B]/50 bg-[#8B5A2B]/10 text-[#FFE5B4] text-xl sm:text-3xl lg:text-4xl font-display italic tracking-wide mb-3 sm:mb-4 shadow-[0_4px_20px_rgba(139,90,43,0.15)] flex flex-wrap justify-center gap-x-[0.3em]"
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={inView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              {parseRichText(t.contact.title || '').map((seg, j) => {
-                if (!seg.bold && !seg.card && !seg.whiteCard && !seg.color && !seg.greenCard) return <span key={j}>{seg.text}</span>;
-                const cls = [
-                  seg.bold && !seg.color ? 'font-bold text-white' : '',
-                  seg.bold && seg.color ? 'font-bold' : '',
-                  seg.card ? 'word-card' : '',
-                  seg.whiteCard ? 'word-card-white' : '',
-                  seg.greenCard ? 'word-card-green' : '',
-                  seg.color === 'green' ? '!text-emerald-400' : '',
-                  seg.color === 'gold' ? '!text-amber-500' : '',
-                  seg.color === 'white' ? '!text-white' : '',
-                ].filter(Boolean).join(' ');
-                return <span key={j} className={cls}>{seg.text}</span>;
-              })}
-            </motion.h2>
-            <motion.p
-              className="text-[#10b981] text-[12.5px] sm:text-base md:text-lg lg:text-xl max-w-xl mx-auto flex flex-wrap justify-center gap-x-[0.4em] gap-y-[0.4rem] sm:gap-y-2 tracking-wide italic leading-relaxed pt-2 mb-6 sm:mb-8"
-              initial={{ opacity: 0 }}
-              animate={inView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              {parseRichText(t.contact.subtitle).map((seg, i) => {
-                if (!seg.bold && !seg.card && !seg.whiteCard && !seg.color && !seg.greenCard) {
-                  return seg.text.split(' ').filter(Boolean).map((word, wi) => (
-                    <span key={`w-${i}-${wi}`} className="inline-block align-middle">{word}</span>
-                  ));
-                }
-                const cls = [
-                  seg.bold && !seg.color ? 'font-bold text-white' : '',
-                  seg.bold && seg.color ? 'font-bold' : '',
-                  seg.card ? 'word-card' : '',
-                  seg.whiteCard ? 'word-card-white' : '',
-                  seg.greenCard ? 'word-card-green' : '',
-                  seg.color === 'green' ? '!text-emerald-400' : '',
-                  seg.color === 'gold' ? '!text-amber-500' : '',
-                  seg.color === 'white' ? '!text-white' : '',
-                ].filter(Boolean).join(' ');
-                return (
-                  <span key={`s-${i}`} className={`${cls} inline-block align-middle`}>
-                    {seg.text}
-                  </span>
-                );
-              })}
-            </motion.p>
+            <span className="pill-badge pill-badge-accent">
+              <Phone size={14} />
+              Get In Touch
+            </span>
+          </motion.div>
 
-            {/* CTA Dropdown */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ type: 'spring', stiffness: 100, damping: 18, delay: 0.5 }}
-              className="relative flex flex-col items-center justify-center w-full"
-              ref={ctaRef}
+          <motion.h2
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="section-heading text-white"
+          >
+            {t?.title || 'Ready to Build Something Great?'}
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.15 }}
+            className="section-subheading section-subheading-dark mx-auto mb-10"
+          >
+            {t?.subtitle || ''}
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="flex flex-wrap items-center justify-center gap-4"
+          >
+            <a
+              href={whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary cursor-pointer"
             >
-              <motion.button
-                onClick={() => setIsCtaOpen(!isCtaOpen)}
-                whileHover={{
-                  scale: 1.05,
-                  boxShadow: '0 12px 35px rgba(108, 92, 231, 0.3)',
-                  transition: { type: 'spring', stiffness: 400, damping: 15 },
-                }}
-                whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center gap-2 px-5 sm:px-8 py-2 sm:py-2.5 rounded-full font-bold text-base sm:text-lg text-primary-foreground bg-primary shadow-lg cursor-pointer flex-wrap justify-center overflow-hidden"
-              >
-                {parseRichText(t.contact.cta || '').map((seg, j) => {
-                  if (!seg.bold && !seg.card && !seg.whiteCard && !seg.color && !seg.greenCard) return <span key={j}>{seg.text}</span>;
-                  const cls = [
-                    seg.bold && !seg.color ? 'font-bold text-white' : '',
-                    seg.bold && seg.color ? 'font-bold' : '',
-                    seg.card ? 'word-card' : '',
-                    seg.whiteCard ? 'word-card-white' : '',
-                    seg.greenCard ? 'word-card-green' : '',
-                    seg.color === 'green' ? '!text-emerald-400' : '',
-                    seg.color === 'gold' ? '!text-amber-500' : '',
-                    seg.color === 'white' ? '!text-white' : '',
-                  ].filter(Boolean).join(' ');
-                  return <span key={j} className={cls}>{seg.text}</span>;
-                })}
-                <div className="ml-1 flex items-center justify-center w-6 h-6 rounded-full bg-white/20 border border-white/10 shadow-inner group-hover:bg-white/30 transition-colors">
-                  <ChevronDown strokeWidth={2.5} className={`w-3.5 h-3.5 text-white transition-transform duration-300 ${isCtaOpen ? 'rotate-180' : ''}`} />
-                </div>
-              </motion.button>
-
-              <AnimatePresence>
-                {isCtaOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    transition={{ duration: 0.2 }}
-                    className="relative mt-4 w-[260px] z-30 flex flex-col gap-2 mx-auto"
-                  >
-                    <motion.a
-                      href={whatsappUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setIsCtaOpen(false)}
-                      whileHover={{ scale: 1.02, x: 5 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="flex items-center gap-2.5 px-3 py-1.5 bg-secondary border border-border rounded-xl shadow-xl hover:border-primary/50 transition-colors text-foreground font-semibold group"
-                    >
-                      <div className="w-7 h-7 rounded-lg bg-[#1a2e24] flex items-center justify-center shrink-0 group-hover:bg-[#1f3a2b] transition-colors shadow-sm">
-                        <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
-                      </div>
-                      <div className="flex flex-col items-start text-left">
-                        <span className="text-sm">WhatsApp</span>
-                        <span className="text-[10px] text-muted-foreground font-normal">Contact directly</span>
-                      </div>
-                    </motion.a>
-
-                    <motion.a
-                      href="mailto:contact@orbitsaas.cloud"
-                      onClick={() => setIsCtaOpen(false)}
-                      whileHover={{ scale: 1.02, x: 5 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="flex items-center gap-2.5 px-3 py-1.5 bg-secondary border border-border rounded-xl shadow-xl hover:border-primary/50 transition-colors text-foreground font-semibold group"
-                    >
-                      <div className="w-7 h-7 rounded-lg bg-[#211e38] flex items-center justify-center shrink-0 group-hover:bg-[#2a2445] transition-colors shadow-sm">
-                        <Mail className="w-3.5 h-3.5 text-primary" />
-                      </div>
-                      <div className="flex flex-col items-start text-left">
-                        <span className="text-sm">Email Us</span>
-                        <span className="text-[10px] text-muted-foreground font-normal">Send a detailed inquiry</span>
-                      </div>
-                    </motion.a>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+              <MessageCircle size={18} />
+              {t?.cta || 'Book a Free Consultation'}
+            </a>
+            <a
+              href={`mailto:contact@orbitsaas.com`}
+              className="btn-secondary btn-secondary-dark cursor-pointer"
+            >
+              Send Email <ArrowRight size={16} />
+            </a>
           </motion.div>
         </div>
       </div>
     </section>
   );
 }
+
+export default ContactSection;

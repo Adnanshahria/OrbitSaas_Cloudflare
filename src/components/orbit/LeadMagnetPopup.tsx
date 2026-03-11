@@ -103,7 +103,7 @@ export function LeadMagnetPopup() {
                             stiffness: 300,
                             layout: { duration: 0.3, ease: 'easeOut' }
                         }}
-                        className="relative z-10 w-full max-w-[95%] sm:max-w-md md:max-w-lg lg:max-w-2xl rounded-2xl bg-card shadow-2xl overflow-hidden premium-card"
+                        className="relative z-10 w-full max-w-[95%] sm:max-w-md md:max-w-lg lg:max-w-2xl rounded-2xl bg-card border border-border shadow-xl overflow-hidden"
                     >
                         <button
                             onClick={handleClose}
@@ -112,16 +112,14 @@ export function LeadMagnetPopup() {
                             <X className="w-5 h-5" />
                         </button>
 
-                        {/* Gradient Header Pattern */}
-                        <div className="h-24 sm:h-32 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent relative overflow-hidden">
-                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,198,255,0.1),transparent_50%)]" />
-                            <div className="absolute -bottom-8 -right-8 w-24 h-24 sm:w-32 sm:h-32 bg-primary/10 rounded-full blur-xl sm:blur-2xl" />
+                        {/* Flat Header Pattern */}
+                        <div className="h-24 sm:h-32 bg-muted relative overflow-hidden flex items-end justify-center">
+                            <div className="w-full h-px bg-border" />
                         </div>
 
                         <div className="px-5 sm:px-6 pb-6 sm:pb-8 pt-0 relative z-10 -mt-10 sm:-mt-12 text-center">
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 mx-auto bg-card border border-border shadow-lg rounded-2xl flex items-center justify-center mb-4 sm:mb-5 lg:mb-6 relative group">
-                                <div className="absolute inset-0 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
-                                <Rocket className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-primary relative z-10" />
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 mx-auto bg-card border border-border rounded-2xl flex items-center justify-center mb-4 sm:mb-5 lg:mb-6 relative group">
+                                <Rocket className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-primary relative z-10 transition-transform group-hover:scale-110 duration-300" />
                             </div>
 
                             <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">
@@ -157,7 +155,7 @@ export function LeadMagnetPopup() {
                                     <button
                                         type="submit"
                                         disabled={status === 'loading'}
-                                        className="w-full bg-primary text-primary-foreground font-semibold py-2.5 sm:py-3 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(0,198,255,0.3)] disabled:opacity-50 cursor-pointer"
+                                        className="w-full bg-primary text-primary-foreground font-semibold py-2.5 sm:py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-50 cursor-pointer"
                                     >
                                         {status === 'loading' ? (
                                             <Loader2 className="w-5 h-5 animate-spin" />
@@ -176,7 +174,8 @@ export function LeadMagnetPopup() {
                         </div>
                     </motion.div>
                 </div>
-            )}
-        </AnimatePresence>
+            )
+            }
+        </AnimatePresence >
     );
 }

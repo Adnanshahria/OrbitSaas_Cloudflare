@@ -102,7 +102,7 @@ export default function ProjectsPage() {
                                 transition={{ duration: 0.6 }}
                                 className="text-center mb-8 sm:mb-12"
                             >
-                                <div className="inline-block px-4 py-1.5 rounded-full bg-neon-purple/10 border border-neon-purple/20 text-neon-purple text-xs font-bold uppercase tracking-widest mb-4 neon-text">
+                                <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-4">
                                     Our Portfolio
                                 </div>
                                 <p className="text-muted-foreground text-base sm:text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
@@ -115,8 +115,8 @@ export default function ProjectsPage() {
                                             key={cat}
                                             onClick={() => setActiveCategory(cat)}
                                             className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 border cursor-pointer ${activeCategory === cat
-                                                ? 'bg-neon-purple/20 text-neon-purple border-neon-purple/40 shadow-[0_0_15px_rgba(108,92,231,0.25)] scale-105'
-                                                : 'bg-white/[0.03] text-muted-foreground border-white/10 hover:bg-white/[0.06] hover:text-foreground hover:border-white/20 backdrop-blur-sm'
+                                                ? 'bg-primary text-primary-foreground border-primary'
+                                                : 'bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground'
                                                 }`}
                                         >
                                             {cat}

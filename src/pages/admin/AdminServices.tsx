@@ -18,6 +18,7 @@ const DEFAULT_ICONS = ['Globe', 'Bot', 'Zap', 'Smartphone', 'ShoppingCart', 'Roc
 interface ServiceText {
     title: string;
     desc: string;
+    badge: string;
 }
 
 interface UnifiedService {
@@ -29,8 +30,8 @@ interface UnifiedService {
 }
 
 const DEFAULT_ITEM: UnifiedService = {
-    en: { title: '', desc: '' },
-    bn: { title: '', desc: '' },
+    en: { title: '', desc: '', badge: '' },
+    bn: { title: '', desc: '', badge: '' },
     icon: '',
 };
 
@@ -239,6 +240,12 @@ function ServiceCard({
                                 multiline
                                 lang={tab}
                             />
+                            <TextField
+                                label={tab === 'en' ? 'Badge Text (e.g. Premium Solution)' : 'ব্যাজ টেক্সট (যেমন: প্রিমিয়াম সলিউশন)'}
+                                value={item[tab].badge}
+                                onChange={v => updateLoc(tab, 'badge', v)}
+                                lang={tab}
+                            />
                         </div>
 
                         {/* Branding Section */}
@@ -300,6 +307,11 @@ function ServiceCard({
                                                     <div className="h-2 w-full rounded-full bg-foreground/8" />
                                                     <div className="h-2 w-11/12 rounded-full bg-foreground/6" />
                                                     <div className="h-2 w-3/4 rounded-full bg-foreground/5" />
+                                                </div>
+                                                <div className="pt-2 flex justify-end">
+                                                    <span className="text-[7px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm" style={{ backgroundColor: `${accentColor}10`, color: accentColor }}>
+                                                        {item[tab].badge || 'Badge Text'}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -386,8 +398,8 @@ export default function AdminServices() {
             const en = enItems[i] || {};
             const bn = bnItems[i] || {};
             merged.push({
-                en: { title: en.title || '', desc: en.desc || '' },
-                bn: { title: bn.title || '', desc: bn.desc || '' },
+                en: { title: en.title || '', desc: en.desc || '', badge: en.badge || '' },
+                bn: { title: bn.title || '', desc: bn.desc || '', badge: bn.badge || '' },
                 icon: en.icon || bn.icon || '',
                 color: en.color,
                 border: en.border,
@@ -409,12 +421,12 @@ export default function AdminServices() {
             const globalTheme = { titleColor, subtitleColor, cardBorder, iconColor };
 
             const enItems = items.map(m => ({
-                title: m.en.title, desc: m.en.desc,
+                title: m.en.title, desc: m.en.desc, badge: m.en.badge,
                 icon: m.icon, color: m.color, border: m.border
             }));
 
             const bnItems = items.map(m => ({
-                title: m.bn.title, desc: m.bn.desc,
+                title: m.bn.title, desc: m.bn.desc, badge: m.bn.badge,
                 icon: m.icon, color: m.color, border: m.border
             }));
 

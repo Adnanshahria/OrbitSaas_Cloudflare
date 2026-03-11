@@ -109,7 +109,7 @@ function ImageGallery({ images, title, videoUrl, onLightboxChange }: { images: s
                 transition={{ duration: 0.6 }}
                 className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-8"
             >
-                <div className="relative w-full aspect-video bg-muted/10 rounded-2xl overflow-hidden border border-white/[0.08] shadow-[0_0_40px_rgba(108,92,231,0.1),0_8px_32px_rgba(0,0,0,0.4)] group">
+                <div className="relative w-full aspect-video bg-muted/10 rounded-2xl overflow-hidden border border-border group">
                     {/* Main Media */}
                     <div className={`absolute inset-0 ${currentMedia.type === 'image' ? 'cursor-pointer' : ''}`} onClick={currentMedia.type === 'image' ? openLightbox : undefined}>
                         {currentMedia.type === 'video' ? (
@@ -145,14 +145,12 @@ function ImageGallery({ images, title, videoUrl, onLightboxChange }: { images: s
                 {media.length > 1 && (
                     <div className="flex justify-center items-center gap-2 sm:gap-6 mt-8 relative z-10 px-4">
                         {/* Premium Backward Button */}
-                        <motion.button
+                        <button
                             onClick={(e) => { e.stopPropagation(); paginate(-1); }}
-                            whileHover={{ scale: 1.1, backgroundColor: '#16A34A' }}
-                            whileTap={{ scale: 0.95 }}
-                            className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#22C55E] text-white shadow-[0_4px_12px_rgba(34,197,94,0.3)] hover:shadow-[#22C55E]/50 transition-shadow shrink-0"
+                            className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-border bg-card text-foreground hover:bg-muted transition-colors shrink-0"
                         >
                             <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-                        </motion.button>
+                        </button>
 
                         <div className="flex justify-center flex-wrap gap-2 max-w-[60%] sm:max-w-none">
                             {media.map((item, idx) => (
@@ -164,12 +162,8 @@ function ImageGallery({ images, title, videoUrl, onLightboxChange }: { images: s
                                         setCurrentIndex(idx);
                                     }}
                                     className={`h-2 sm:h-2.5 rounded-full transition-all duration-300 shrink-0 ${idx === currentIndex
-                                        ? item.type === 'video'
-                                            ? 'bg-red-500 w-5 sm:w-6 shadow-[0_0_12px_rgba(239,68,68,0.8)]'
-                                            : 'bg-[#FFD700] w-5 sm:w-6 shadow-[0_0_12px_rgba(255,215,0,0.8)]'
-                                        : item.type === 'video'
-                                            ? 'w-2 sm:w-2.5 bg-red-500/30 hover:bg-red-500/50'
-                                            : 'w-2 sm:w-2.5 bg-white/20 hover:bg-white/40'
+                                        ? 'bg-primary w-5 sm:w-6'
+                                        : 'bg-muted-foreground/30 hover:bg-muted-foreground w-2 sm:w-2.5'
                                         }`}
                                     title={item.type === 'video' ? 'Video' : `Image ${idx + 1}`}
                                 />
@@ -177,14 +171,12 @@ function ImageGallery({ images, title, videoUrl, onLightboxChange }: { images: s
                         </div>
 
                         {/* Premium Forward Button */}
-                        <motion.button
+                        <button
                             onClick={(e) => { e.stopPropagation(); paginate(1); }}
-                            whileHover={{ scale: 1.1, backgroundColor: '#16A34A' }}
-                            whileTap={{ scale: 0.95 }}
-                            className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#22C55E] text-white shadow-[0_4px_12px_rgba(34,197,94,0.3)] hover:shadow-[#22C55E]/50 transition-shadow shrink-0"
+                            className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-border bg-card text-foreground hover:bg-muted transition-colors shrink-0"
                         >
                             <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-                        </motion.button>
+                        </button>
                     </div>
                 )}
             </motion.div>
@@ -209,22 +201,18 @@ function ImageGallery({ images, title, videoUrl, onLightboxChange }: { images: s
 
                         {media.length > 1 && (
                             <>
-                                <motion.button
+                                <button
                                     onClick={(e) => { e.stopPropagation(); paginate(-1); }}
-                                    whileHover={{ scale: 1.1, backgroundColor: '#16A34A' }}
-                                    whileTap={{ scale: 0.9 }}
-                                    className="absolute left-4 md:left-8 z-20 p-4 rounded-full bg-[#22C55E] text-white transition-all hidden sm:flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.3)]"
+                                    className="absolute left-4 md:left-8 z-20 p-4 rounded-full border border-border bg-card text-foreground transition-colors hover:bg-muted hidden sm:flex items-center justify-center"
                                 >
                                     <ChevronLeft className="w-8 h-8" />
-                                </motion.button>
-                                <motion.button
+                                </button>
+                                <button
                                     onClick={(e) => { e.stopPropagation(); paginate(1); }}
-                                    whileHover={{ scale: 1.1, backgroundColor: '#16A34A' }}
-                                    whileTap={{ scale: 0.9 }}
-                                    className="absolute right-4 md:right-8 z-20 p-4 rounded-full bg-[#22C55E] text-white transition-all hidden sm:flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.3)]"
+                                    className="absolute right-4 md:right-8 z-20 p-4 rounded-full border border-border bg-card text-foreground transition-colors hover:bg-muted hidden sm:flex items-center justify-center"
                                 >
                                     <ChevronRight className="w-8 h-8" />
-                                </motion.button>
+                                </button>
                             </>
                         )}
 
@@ -253,7 +241,7 @@ function ImageGallery({ images, title, videoUrl, onLightboxChange }: { images: s
 
                         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 group">
                             {/* Premium Golden Gradient Border Wrapper */}
-                            <div className="relative p-[1.5px] rounded-full bg-gradient-to-r from-[#FFD700]/50 via-white/20 to-[#FFD700]/50 shadow-[0_0_20px_rgba(255,215,0,0.2)]">
+                            <div className="relative p-[1.5px] rounded-full border border-border">
                                 <div className="flex items-center gap-4 text-white font-medium bg-[#0A0A0B]/90 px-4 py-2 rounded-full backdrop-blur-xl">
                                     {/* Mobile specific navigation inside indicator row */}
                                     <button
@@ -336,48 +324,29 @@ function CollapsibleCards({ blocks }: { blocks: string[] }) {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.3 + i * 0.08 }}
-                        className="rounded-xl sm:rounded-2xl border border-[#2a2a3e] bg-[#0e0e18]/80 overflow-hidden"
+                        className="rounded-xl sm:rounded-2xl border border-border bg-card overflow-hidden"
                     >
-                        {/* Clickable heading bar - Premium styling */}
+                        {/* Clickable heading bar - Default flat design */}
                         <button
                             type="button"
                             onClick={() => toggle(i)}
-                            className={`w-full flex items-center gap-4 px-6 sm:px-8 py-5 sm:py-6 text-left transition-all duration-500 relative group/toggle ${isExpanded ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'
+                            className={`w-full flex items-center gap-4 px-6 sm:px-8 py-5 sm:py-6 text-left transition-colors duration-300 relative group/toggle ${isExpanded ? 'bg-muted/50' : 'hover:bg-muted/30'
                                 }`}
                         >
-                            {/* Left accent border that glows when expanded */}
-                            <div
-                                className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-500 rounded-r-full ${isExpanded ? 'opacity-100 shadow-[2px_0_15px_rgba(108,92,231,0.4)]' : 'opacity-0'
-                                    }`}
-                                style={{ backgroundColor: headingColor || '#6c5ce7' }}
-                            />
-
-                            <div className="relative flex-shrink-0 group-hover/toggle:scale-105 transition-transform duration-500">
-                                {/* Glowing outer ring - highly reduced */}
-                                <div
-                                    className={`absolute -inset-[1px] rounded-full opacity-30 blur-[1px] transition-all duration-500 ${isExpanded ? 'opacity-60' : 'group-hover/toggle:opacity-50'}`}
-                                    style={{
-                                        background: `linear-gradient(135deg, ${headingColor || '#6c5ce7'}20, transparent, ${headingColor || '#00f5ff'}20)`
-                                    }}
-                                />
+                            <div className="relative flex-shrink-0 group-hover/toggle:scale-105 transition-transform duration-300">
                                 {/* Main circle */}
                                 <div
-                                    className="relative flex items-center justify-center w-9 h-9 rounded-full border border-white/5 bg-[#0e0e18] shadow-inner"
+                                    className="relative flex items-center justify-center w-9 h-9 rounded-full border border-border bg-muted"
                                 >
                                     <ChevronDown
-                                        className={`w-4 h-4 transition-transform duration-500 ${isExpanded ? '' : '-rotate-90'}`}
-                                        style={{ color: headingColor || '#a29bfe', transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+                                        className={`w-4 h-4 text-primary transition-transform duration-300 ${isExpanded ? '' : '-rotate-90'}`}
                                     />
                                 </div>
                             </div>
 
                             <div className="flex flex-col gap-1 min-w-0">
                                 <h3
-                                    className={`text-lg sm:text-2xl font-bold tracking-tight transition-all duration-500`}
-                                    style={{
-                                        color: headingColor || 'inherit',
-                                        textShadow: isExpanded && headingColor ? `0 0 8px ${headingColor}30` : undefined
-                                    }}
+                                    className="text-lg sm:text-2xl font-bold tracking-tight text-foreground transition-colors duration-300 group-hover/toggle:text-primary"
                                 >
                                     {label}
                                 </h3>
@@ -484,12 +453,7 @@ export default function ProjectDetail() {
 
     return (
         <div className="min-h-[100dvh] relative bg-background text-foreground">
-            {/* Neon Background Decorations */}
-            <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(108,92,231,0.12),transparent_50%)] pointer-events-none z-0" />
-            <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(0,245,255,0.08),transparent_50%)] pointer-events-none z-0" />
-            <div className="fixed top-0 right-0 w-[600px] h-[600px] bg-neon-purple/10 rounded-full blur-[150px] -translate-y-1/3 translate-x-1/4 pointer-events-none z-0" />
-            <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-neon-cyan/8 rounded-full blur-[130px] translate-y-1/4 -translate-x-1/4 pointer-events-none z-0" />
-            <div className="fixed top-1/2 left-1/2 w-[400px] h-[400px] bg-neon-pink/5 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0" />
+            {/* Removed Neon Background Decorations */}
             <Helmet>
                 <title data-rh="true">{seoTitle}</title>
                 <meta data-rh="true" name="description" content={seoDesc} />
@@ -523,19 +487,15 @@ export default function ProjectDetail() {
 
 
 
-                        {/* Project Title Card — Premium hero card */}
+                        {/* Project Title Card — Default flat style */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.05 }}
-                            className="rounded-2xl border border-[#2a2a3e] bg-[#0e0e18]/80 px-6 sm:px-10 py-8 sm:py-10 mb-6 relative overflow-hidden"
+                            className="rounded-2xl border border-border bg-card px-6 sm:px-10 py-8 sm:py-10 mb-6 relative overflow-hidden"
                         >
-                            {/* Subtle gradient accent */}
-                            <div className="absolute top-0 left-0 w-48 h-48 bg-[radial-gradient(circle,rgba(108,92,231,0.12),transparent_70%)] pointer-events-none" />
-                            <div className="absolute bottom-0 right-0 w-32 h-32 bg-[radial-gradient(circle,rgba(0,245,255,0.06),transparent_70%)] pointer-events-none" />
-
                             {/* Title — Centered */}
-                            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6 neon-text relative z-10 text-center">
+                            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-foreground mb-6 relative z-10 text-center">
                                 {project.title}
                             </h1>
 
@@ -544,7 +504,7 @@ export default function ProjectDetail() {
                                 {(project.categories || (project.category ? [project.category] : [])).map((cat: string, ci: number) => (
                                     <span
                                         key={`cat-${ci}`}
-                                        className="px-3 py-1.5 rounded-full bg-neon-cyan/10 text-neon-cyan text-sm font-bold uppercase tracking-wider border border-neon-cyan/20 shadow-[0_0_8px_rgba(0,245,255,0.1)]"
+                                        className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-bold uppercase tracking-wider border border-primary/20"
                                     >
                                         {cat}
                                     </span>
@@ -552,15 +512,12 @@ export default function ProjectDetail() {
                                 {project.tags && project.tags.map((tag: string, j: number) => (
                                     <span
                                         key={`tag-${j}`}
-                                        className="px-3 py-1.5 rounded-full bg-neon-purple/10 text-neon-purple text-sm font-medium border border-neon-purple/15"
+                                        className="px-3 py-1.5 rounded-full bg-secondary text-muted-foreground text-sm font-medium border border-border"
                                     >
                                         {tag}
                                     </span>
                                 ))}
                             </div>
-
-                            {/* Bottom accent line */}
-                            <div className="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-[#6c5ce7]/20 to-transparent" />
                         </motion.div>
 
                         {/* Description — each paragraph section in its own collapsible card */}
@@ -592,7 +549,7 @@ export default function ProjectDetail() {
                                     href={ensureAbsoluteUrl(project.link)}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-neon-purple/20 text-neon-purple font-medium border border-neon-purple/30 hover:bg-neon-purple/30 transition-all shadow-[0_0_20px_rgba(108,92,231,0.2)] hover:shadow-[0_0_30px_rgba(108,92,231,0.35)]"
+                                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-all"
                                 >
                                     <ExternalLink className="w-4 h-4" />
                                     Visit Live Project
@@ -637,11 +594,11 @@ export default function ProjectDetail() {
                                         if (projectReviews.length === 0) return null;
                                         return (
                                             <div className="mb-2">
-                                                <h2 className="font-display text-lg font-bold text-foreground mb-4 neon-text">Reviews</h2>
+                                                <h2 className="font-display text-lg font-bold text-foreground mb-4">Reviews</h2>
                                                 <div className="flex flex-col gap-3">
                                                     {projectReviews.map((review: any, ri: number) => (
-                                                        <div key={ri} className="rounded-xl bg-white/[0.03] backdrop-blur-xl border border-[#2a2a3e] p-4 flex flex-col transition-shadow duration-500 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-                                                            {/* Top row: Stars + (no badge needed — we're already on the project page) */}
+                                                        <div key={ri} className="rounded-xl bg-card border border-border p-4 flex flex-col transition-all duration-300 hover:bg-muted/50">
+                                                            {/* Top row: Stars */}
                                                             <div className="flex gap-0.5 mb-2.5">
                                                                 {Array.from({ length: 5 }).map((_, si) => (
                                                                     <Star key={si} className={`w-3.5 h-3.5 ${si < (review.rating || 5) ? 'text-amber-400 fill-amber-400' : 'text-white/10'}`} />
@@ -660,7 +617,7 @@ export default function ProjectDetail() {
                                             </div>
                                         );
                                     })()}
-                                    <h2 className="font-display text-lg font-bold text-foreground mb-4 neon-text mt-8">More Projects</h2>
+                                    <h2 className="font-display text-lg font-bold text-foreground mb-4 mt-8">More Projects</h2>
                                     <div className="flex flex-col gap-3">
                                         {suggested.map((item: any) => {
                                             const routeId = item._id || item._originalIndex;
@@ -671,7 +628,7 @@ export default function ProjectDetail() {
                                                 <Link
                                                     key={routeId}
                                                     to={`/project/${routeId}`}
-                                                    className="group flex gap-3 rounded-xl overflow-hidden border-2 border-neon-purple/20 hover:border-neon-purple/50 bg-white/[0.03] backdrop-blur-xl transition-[shadow,border-color] duration-300 hover:shadow-[0_0_20px_rgba(108,92,231,0.15)] p-2"
+                                                    className="group flex gap-3 rounded-xl overflow-hidden border border-border bg-card transition-all duration-300 hover:border-primary/50 hover:bg-muted p-2"
                                                 >
                                                     <div className="relative w-36 flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-muted">
                                                         <img
@@ -682,7 +639,7 @@ export default function ProjectDetail() {
                                                         />
                                                     </div>
                                                     <div className="flex flex-col justify-center py-0.5 min-w-0">
-                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-neon-cyan neon-text-cyan mb-1 line-clamp-1">
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-primary mb-1 line-clamp-1">
                                                             {itemCats.slice(0, 2).join(' · ')}
                                                         </span>
                                                         <h3 className="font-display text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">

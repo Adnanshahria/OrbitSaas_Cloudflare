@@ -370,7 +370,7 @@ export function TextField({
                                             if (saveBtn) saveBtn.click();
                                             setSelToolbar(null);
                                         }}
-                                        className="w-full bg-primary/20 hover:bg-primary/40 border border-primary/50 text-primary rounded px-2 py-1 text-[10px] font-black uppercase tracking-tighter transition-all shadow-[0_0_10px_rgba(16,185,129,0.2)] active:scale-95"
+                                        className="w-full bg-primary/20 hover:bg-primary/40 border border-primary/50 text-primary rounded px-2 py-1 text-[10px] font-black uppercase tracking-tighter transition-all active:scale-95"
                                     >
                                         Save
                                     </button>

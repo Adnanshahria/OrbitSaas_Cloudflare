@@ -6,19 +6,18 @@ import { Navbar } from './components/orbit/Navbar';
 import { Home } from './components/orbit/Home';
 import { StructuredData } from './components/seo/StructuredData';
 import ScrollToTop from './components/ScrollToTop';
-import { GlobalBackground } from './components/orbit/GlobalBackground';
 import { useContent } from './contexts/ContentContext';
-import { getAudioCtx } from './components/orbit/CollisionSound';
-import { Check, ShieldCheck, Orbit as OrbitIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { HelmetProvider } from 'react-helmet-async';
 import { SEOHead } from './components/seo/SEOHead';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PageCurlContainer } from './components/orbit/PageCurlContainer';
 
 // Lazy load public sections
 const StatsSection = lazy(() => import('./components/orbit/StatsSection').then(m => ({ default: m.StatsSection })));
 const ServicesSection = lazy(() => import('./components/orbit/ServicesSection').then(m => ({ default: m.ServicesSection })));
+const ProcessSection = lazy(() => import('./components/orbit/ProcessSection').then(m => ({ default: m.ProcessSection })));
 const TechStackSection = lazy(() => import('./components/orbit/TechStackSection').then(m => ({ default: m.TechStackSection })));
 const WhyUsSection = lazy(() => import('./components/orbit/WhyUsSection').then(m => ({ default: m.WhyUsSection })));
 const ProjectsSection = lazy(() => import('./components/orbit/ProjectsSection').then(m => ({ default: m.ProjectsSection })));
@@ -41,6 +40,7 @@ const AdminLayout = lazy(() => import('./pages/AdminLayout'));
 const AdminHero = lazy(() => import('./pages/admin/AdminHero'));
 const AdminStats = lazy(() => import('./pages/admin/AdminStats'));
 const AdminServices = lazy(() => import('./pages/admin/AdminServices'));
+const AdminProcess = lazy(() => import('./pages/admin/AdminProcess'));
 const AdminTechStack = lazy(() => import('./pages/admin/AdminTechStack'));
 const AdminWhyUs = lazy(() => import('./pages/admin/AdminWhyUs'));
 const AdminProjects = lazy(() => import('./pages/admin/AdminProjects'));
@@ -59,213 +59,72 @@ const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications')
 
 function AdminLoading() {
   return (
-    <div className="min-h-[100dvh] bg-background flex items-center justify-center">
-      <div className="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center" style={{ background: 'var(--bg-dark)' }}>
+      <div className="w-8 h-8 border-3 rounded-full animate-spin" style={{ borderColor: 'rgba(255,69,0,0.3)', borderTopColor: 'var(--accent)' }} />
     </div>
   );
 }
 
 /**
- * VisitorGateway: A global wrapper for all public-facing routes.
+ * VisitorGateway: Handles push notification subscription on first visit.
  */
 function VisitorGateway({ children }: { children: React.ReactNode }) {
-  const { loading: isDataLoading } = useContent();
   const [hasEntered, setHasEntered] = useState(() => sessionStorage.getItem('orbit_gate_passed') === 'true');
-  const [isChecked, setIsChecked] = useState(false);
 
-  const handleEnter = async () => {
-    // Phase 1: Animate the checkbox tick
-    setIsChecked(true);
+  useEffect(() => {
+    if (hasEntered) return;
 
-    // Phase 2: Request notification permission DURING this user gesture
-    // (must be called synchronously from click handler to avoid browser blocking it)
-    try {
-      if ('Notification' in window && 'serviceWorker' in navigator && localStorage.getItem('orbit_push_subscribed') !== 'true') {
-        let permission = Notification.permission;
-        if (permission === 'default') {
-          permission = await Notification.requestPermission();
+    const handleEnter = async () => {
+      try {
+        if ('Notification' in window && 'serviceWorker' in navigator && localStorage.getItem('orbit_push_subscribed') !== 'true') {
+          let permission = Notification.permission;
+          if (permission === 'default') {
+            permission = await Notification.requestPermission();
+          }
+
+          if (permission === 'granted') {
+            (async () => {
+              try {
+                const registration = await navigator.serviceWorker.ready;
+                const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+                if (!vapidPublicKey) return;
+
+                const padding = '='.repeat((4 - (vapidPublicKey.length % 4)) % 4);
+                const base64 = (vapidPublicKey + padding).replace(/-/g, '+').replace(/_/g, '/');
+                const rawData = atob(base64);
+                const applicationServerKey = new Uint8Array(rawData.length);
+                for (let i = 0; i < rawData.length; i++) applicationServerKey[i] = rawData.charCodeAt(i);
+
+                const subscription = await registration.pushManager.subscribe({
+                  userVisibleOnly: true,
+                  applicationServerKey,
+                });
+
+                const sub = subscription.toJSON();
+                const API_BASE = import.meta.env.VITE_API_URL || '';
+                await fetch(`${API_BASE}/api/notifications?action=subscribe`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ endpoint: sub.endpoint, keys: sub.keys }),
+                });
+
+                localStorage.setItem('orbit_push_subscribed', 'true');
+              } catch (err) {
+                console.error('Push subscription failed:', err);
+              }
+            })();
+          }
         }
+      } catch { }
 
-        if (permission === 'granted') {
-          // Subscribe in the background — don't block the gate transition
-          (async () => {
-            try {
-              const registration = await navigator.serviceWorker.ready;
-              const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-              if (!vapidPublicKey) return;
-
-              const padding = '='.repeat((4 - (vapidPublicKey.length % 4)) % 4);
-              const base64 = (vapidPublicKey + padding).replace(/-/g, '+').replace(/_/g, '/');
-              const rawData = atob(base64);
-              const applicationServerKey = new Uint8Array(rawData.length);
-              for (let i = 0; i < rawData.length; i++) applicationServerKey[i] = rawData.charCodeAt(i);
-
-              const subscription = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey,
-              });
-
-              const sub = subscription.toJSON();
-              const API_BASE = import.meta.env.VITE_API_URL || '';
-              await fetch(`${API_BASE}/api/notifications?action=subscribe`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ endpoint: sub.endpoint, keys: sub.keys }),
-              });
-
-              localStorage.setItem('orbit_push_subscribed', 'true');
-            } catch (err) {
-              console.error('Push subscription failed:', err);
-            }
-          })();
-        }
-      }
-    } catch { }
-
-    // Phase 3: After a brief delay to show the check animation, enter the site
-    setTimeout(() => {
       setHasEntered(true);
       sessionStorage.setItem('orbit_gate_passed', 'true');
-      localStorage.removeItem('orbit_sound_muted');
-      window.dispatchEvent(new Event('orbit-sound-toggle'));
-      try { getAudioCtx().resume(); } catch { }
-    }, 700);
-  };
+    };
 
-  return (
-    <>
-      <AnimatePresence>
-        {!hasEntered && (
-          <motion.div
-            key="preloader"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.8, ease: "easeInOut" } }}
-            className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-background/95 backdrop-blur-md"
-          >
-            <div className="flex flex-col items-center max-w-sm w-full px-6">
-              <div className="mb-8 text-center flex flex-col items-center justify-center">
-                <div className="relative w-16 h-16 mb-4 flex items-center justify-center">
-                  <OrbitIcon className="w-10 h-10 text-primary animate-[spin_8s_linear_infinite] absolute opacity-30" />
-                  <div className="w-14 h-14 rounded-full border-t-2 border-r-2 border-primary animate-[spin_3s_linear_infinite]" />
-                  <ShieldCheck className="w-6 h-6 text-primary absolute" />
-                </div>
-                <h2 className="text-xl font-bold font-display tracking-widest text-foreground uppercase">Initializing Orbit</h2>
-                <p className="text-sm text-muted-foreground mt-1">Checking secure connection...</p>
-              </div>
+    handleEnter();
+  }, [hasEntered]);
 
-              <div className="w-full flex flex-col items-center">
-                {isDataLoading ? (
-                  <div className="flex items-center gap-4 w-full justify-center p-4">
-                    <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin shrink-0" />
-                    <span className="text-sm font-medium animate-pulse text-muted-foreground">Loading Assets & Content...</span>
-                  </div>
-                ) : (
-                  <motion.button
-                    initial={{ opacity: 0, scale: 0.8, y: 15 }}
-                    animate={isChecked
-                      ? { opacity: 1, scale: 1, y: 0 }
-                      : {
-                        opacity: 1,
-                        scale: [1, 1.04, 1],
-                        y: 0,
-                        boxShadow: [
-                          '0 0 8px rgba(16,185,129,0.15), 0 0 15px rgba(245,158,11,0.08)',
-                          '0 0 25px rgba(16,185,129,0.4), 0 0 50px rgba(245,158,11,0.2)',
-                          '0 0 8px rgba(16,185,129,0.15), 0 0 15px rgba(245,158,11,0.08)',
-                        ],
-                      }
-                    }
-                    transition={isChecked
-                      ? { type: 'spring', stiffness: 300, damping: 15 }
-                      : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
-                    }
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.96 }}
-                    onClick={handleEnter}
-                    disabled={isChecked}
-                    className="w-full max-w-[300px] relative group overflow-hidden rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all duration-500 backdrop-blur-md"
-                    style={{
-                      background: isChecked
-                        ? 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(245,158,11,0.15))'
-                        : 'rgba(255,255,255,0.03)',
-                      border: isChecked
-                        ? '1.5px solid rgba(16,185,129,0.6)'
-                        : '1.5px solid rgba(255,255,255,0.1)',
-                      boxShadow: isChecked
-                        ? '0 0 25px rgba(16,185,129,0.3), 0 0 50px rgba(245,158,11,0.15)'
-                        : '0 2px 10px rgba(0,0,0,0.2)',
-                    }}
-                  >
-                    {/* Shimmer sweep effect */}
-                    <motion.div
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      style={{
-                        background: 'linear-gradient(105deg, transparent 40%, rgba(16,185,129,0.08) 50%, transparent 60%)',
-                        backgroundSize: '200% 100%',
-                      }}
-                      animate={{ backgroundPosition: ['200% 0', '-200% 0'] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                    />
-
-                    {/* Checkbox */}
-                    <motion.div
-                      animate={isChecked ? {
-                        scale: [1, 1.3, 1],
-                        borderColor: ['rgba(16,185,129,0.6)', 'rgba(245,158,11,0.8)', 'rgba(16,185,129,0.8)'],
-                        backgroundColor: ['rgba(16,185,129,0.1)', 'rgba(16,185,129,0.2)', 'rgba(16,185,129,0.15)'],
-                      } : {}}
-                      transition={{ duration: 0.5, ease: 'easeOut' }}
-                      className={`relative w-7 h-7 rounded-md flex items-center justify-center shrink-0 transition-all duration-300 ${isChecked
-                        ? 'border-2 border-emerald-500 bg-emerald-500/15 shadow-[0_0_15px_rgba(16,185,129,0.5)]'
-                        : 'border-2 border-muted-foreground/30 group-hover:border-emerald-500/60 group-hover:bg-emerald-500/5'
-                        }`}
-                    >
-                      <AnimatePresence>
-                        {isChecked && (
-                          <motion.div
-                            initial={{ scale: 0, rotate: -45 }}
-                            animate={{ scale: 1, rotate: 0 }}
-                            transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-                          >
-                            <Check className="w-4.5 h-4.5 text-amber-500 drop-shadow-[0_0_6px_rgba(245,158,11,0.8)]" strokeWidth={3} />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                      {!isChecked && (
-                        <Check className="w-4 h-4 text-transparent group-hover:text-amber-500/40 transition-colors duration-300" strokeWidth={3} />
-                      )}
-                    </motion.div>
-
-                    {/* Label */}
-                    <span className={`text-sm font-bold tracking-wide text-left uppercase transition-all duration-500 ${isChecked
-                      ? 'bg-gradient-to-r from-emerald-400 to-amber-400 bg-clip-text text-transparent'
-                      : 'text-foreground group-hover:text-amber-500'
-                      }`}>
-                      {isChecked ? 'Verified ✓' : 'I am not a robot'}
-                    </span>
-
-                    {/* Glow ring on checked */}
-                    {isChecked && (
-                      <motion.div
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1.5, opacity: 0 }}
-                        transition={{ duration: 0.8, ease: 'easeOut' }}
-                        className="absolute inset-0 rounded-xl border-2 border-emerald-500/50 pointer-events-none"
-                      />
-                    )}
-                  </motion.button>
-                )}
-              </div>
-              <p className="text-[10px] text-muted-foreground/50 mt-8 text-center uppercase tracking-widest">
-                Protected by Orbit Security
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {hasEntered ? children : null}
-    </>
-  );
+  return <>{children}</>;
 }
 
 function PublicSite() {
@@ -287,12 +146,8 @@ function PublicSite() {
   }, []);
 
   useEffect(() => {
-    if (isLoaded) return;
-    const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 10500);
-    return () => clearTimeout(timer);
-  }, [isLoaded]);
+    setIsLoaded(true);
+  }, []);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -312,28 +167,73 @@ function PublicSite() {
   }, [isLoaded]);
 
   return (
-    <div className="min-h-[100dvh] text-foreground relative z-0">
+    <>
       {isLoaded && <Navbar />}
-      <main className="pb-24 md:pb-0">
-        <Home />
-        {isLoaded && (
+
+      <PageCurlContainer>
+        {/* Page 1: Hero — DARK */}
+        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
+          <Home />
+        </div>
+
+        {/* Page 2: Services — LIGHT */}
+        <div className="snap-page-light" style={{ width: '100%', height: '100%' }}>
           <Suspense fallback={null}>
-            <StatsSection />
             <ServicesSection />
-            <TechStackSection />
-            <WhyUsSection />
-            <ProjectsSection />
-            <ReviewsSection />
-            <LeadershipSection />
-            <ContactSection />
           </Suspense>
-        )}
-      </main>
-      {isLoaded && (
-        <Suspense fallback={null}>
-          <OrbitFooter />
-        </Suspense>
-      )}
+        </div>
+
+        {/* Page 3: Process — DARK */}
+        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
+          <Suspense fallback={null}>
+            <ProcessSection />
+          </Suspense>
+        </div>
+
+        {/* Page 4: Tech Stack — LIGHT */}
+        <div className="snap-page-light" style={{ width: '100%', height: '100%' }}>
+          <Suspense fallback={null}>
+            <TechStackSection />
+          </Suspense>
+        </div>
+
+        {/* Page 5: Why Us — DARK */}
+        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
+          <Suspense fallback={null}>
+            <WhyUsSection />
+          </Suspense>
+        </div>
+
+        {/* Page 6: Projects — LIGHT */}
+        <div className="snap-page-light" style={{ width: '100%', height: '100%' }}>
+          <Suspense fallback={null}>
+            <ProjectsSection />
+          </Suspense>
+        </div>
+
+        {/* Page 7: Reviews — DARK */}
+        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
+          <Suspense fallback={null}>
+            <ReviewsSection />
+          </Suspense>
+        </div>
+
+        {/* Page 8: Team — LIGHT */}
+        <div className="snap-page-light" style={{ width: '100%', height: '100%' }}>
+          <Suspense fallback={null}>
+            <LeadershipSection />
+          </Suspense>
+        </div>
+
+        {/* Page 9: Contact + Footer — DARK */}
+        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
+          <Suspense fallback={null}>
+            <ContactSection />
+            <OrbitFooter />
+          </Suspense>
+        </div>
+      </PageCurlContainer>
+
       {isLoaded && (
         <Suspense fallback={null}>
           <LeadMagnetPopup />
@@ -344,7 +244,7 @@ function PublicSite() {
           <Chatbot />
         </Suspense>
       )}
-    </div>
+    </>
   );
 }
 
@@ -368,39 +268,33 @@ export default function App() {
               <SEOHead />
               <Suspense fallback={<AdminLoading />}>
                 <Routes>
-                  {/* Public Experience wrapped in Gateway */}
                   <Route path="/" element={
                     <VisitorGateway>
                       <StructuredData />
-                      <GlobalBackground />
                       <PublicSite />
                     </VisitorGateway>
                   } />
                   <Route path="/project" element={
                     <VisitorGateway>
                       <StructuredData />
-                      <GlobalBackground />
                       <ProjectsPage />
                     </VisitorGateway>
                   } />
                   <Route path="/project/:id" element={
                     <VisitorGateway>
                       <StructuredData />
-                      <GlobalBackground />
                       <ProjectDetail />
                     </VisitorGateway>
                   } />
                   <Route path="/privacy" element={
                     <VisitorGateway>
                       <StructuredData />
-                      <GlobalBackground />
                       <PrivacyPolicy />
                     </VisitorGateway>
                   } />
                   <Route path="/terms" element={
                     <VisitorGateway>
                       <StructuredData />
-                      <GlobalBackground />
                       <TermsOfService />
                     </VisitorGateway>
                   } />
@@ -412,6 +306,7 @@ export default function App() {
                     <Route path="hero" element={<AdminHero />} />
                     <Route path="stats" element={<AdminStats />} />
                     <Route path="services" element={<AdminServices />} />
+                    <Route path="process" element={<AdminProcess />} />
                     <Route path="tech-stack" element={<AdminTechStack />} />
                     <Route path="why-us" element={<AdminWhyUs />} />
                     <Route path="project" element={<AdminProjects />} />

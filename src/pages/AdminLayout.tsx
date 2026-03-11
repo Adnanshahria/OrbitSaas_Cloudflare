@@ -7,13 +7,14 @@ import {
     LayoutDashboard, Type, ShoppingCart, Users, FolderOpen,
     MessageCircle, Globe, Shield, LogOut, Menu, PanelLeftClose, PanelLeft,
     Lightbulb, Phone, FileText, Cpu, CloudUpload, Loader2, Link as LinkIcon,
-    Database, Mail, BarChart3, Star, Trash2, CheckCircle2, XCircle, Bell
+    Database, Mail, BarChart3, Star, Trash2, CheckCircle2, XCircle, Bell, Layers
 } from 'lucide-react';
 
 const navItems = [
     { label: 'Hero', path: '/admin/hero', icon: Type },
     { label: 'Stats', path: '/admin/stats', icon: BarChart3 },
     { label: 'Services', path: '/admin/services', icon: ShoppingCart },
+    { label: 'Process', path: '/admin/process', icon: Layers },
     { label: 'Tech Stack', path: '/admin/tech-stack', icon: Cpu },
     { label: 'Why Us', path: '/admin/why-us', icon: Lightbulb },
     { label: 'Projects', path: '/admin/project', icon: FolderOpen },
