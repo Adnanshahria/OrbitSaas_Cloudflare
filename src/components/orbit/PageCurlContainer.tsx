@@ -224,16 +224,15 @@ export function PageCurlContainer({ children }: PageCurlContainerProps) {
         if (targetPage === null) {
           if (i === activePage) { isVisible = true; zIndex = 10; isTopPage = true; }
         } else {
-          const isForward = targetPage > activePage;
           if (i === activePage) {
             isVisible = true;
-            zIndex = isForward ? 10 : 5;
-            isTopPage = isForward;
+            zIndex = 10;
+            isTopPage = true;
           }
           if (i === targetPage) {
             isVisible = true;
-            zIndex = isForward ? 5 : 10;
-            isTopPage = !isForward;
+            zIndex = 5;
+            isTopPage = false;
           }
         }
 
