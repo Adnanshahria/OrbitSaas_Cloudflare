@@ -14,8 +14,17 @@ export function TechStackSection() {
   if (!categories.length) return null;
 
   return (
-    <section id="tech" className="section-light">
-      <div className="section-container">
+    <section id="tech" className="section-light relative overflow-hidden">
+      {/* Ambient background glow */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse, rgba(212,160,23,0.04) 0%, transparent 60%)',
+          filter: 'blur(80px)',
+        }}
+      />
+
+      <div className="section-container relative z-10">
         {/* Header */}
         <div className="text-center mb-12">
           <motion.div
@@ -25,7 +34,7 @@ export function TechStackSection() {
             transition={{ duration: 0.4 }}
             className="flex justify-center mb-4"
           >
-            <span className="pill-badge pill-badge-light">
+            <span className="pill-badge pill-badge-dark">
               <Cpu size={14} />
               {t?.subtitle || 'Technologies We Power Your Vision With'}
             </span>
@@ -36,8 +45,7 @@ export function TechStackSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="section-heading"
-            style={{ color: 'var(--text-dark)' }}
+            className="section-heading text-white"
           >
             {t?.title || 'Our Expertise'}
           </motion.h2>
@@ -55,11 +63,14 @@ export function TechStackSection() {
             <button
               key={i}
               onClick={() => setActiveCategory(i)}
-              className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200"
+              className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 cursor-pointer"
               style={{
-                background: activeCategory === i ? cat.color : 'transparent',
-                color: activeCategory === i ? '#fff' : 'var(--text-dark-secondary)',
-                border: `1px solid ${activeCategory === i ? cat.color : '#e5e7eb'}`,
+                background: activeCategory === i
+                  ? 'linear-gradient(135deg, var(--accent), var(--accent-hover))'
+                  : 'rgba(255,255,255,0.04)',
+                color: activeCategory === i ? '#fff' : 'var(--text-secondary)',
+                border: `1px solid ${activeCategory === i ? 'rgba(212,160,23,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                boxShadow: activeCategory === i ? '0 4px 20px rgba(212,160,23,0.2)' : 'none',
               }}
             >
               {cat.name}
@@ -81,10 +92,10 @@ export function TechStackSection() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.2, delay: i * 0.03 }}
-              className="card-light !p-4 !rounded-xl text-center"
+              className="bento-card !p-4 !rounded-xl text-center cursor-pointer hover-border-glow"
               style={{ minWidth: '120px' }}
             >
-              <span className="text-sm font-medium" style={{ color: 'var(--text-dark)' }}>
+              <span className="text-sm font-medium text-white/80">
                 {item}
               </span>
             </motion.div>

@@ -18,7 +18,7 @@ export function ContactSection() {
       <div
         className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[60%] pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse at 50% 100%, rgba(212,160,23,0.15) 0%, rgba(218,180,50,0.05) 40%, transparent 70%)',
+          background: 'radial-gradient(ellipse at 50% 100%, rgba(212,160,23,0.22) 0%, rgba(245,197,66,0.08) 40%, transparent 70%)',
         }}
       />
 
@@ -68,14 +68,14 @@ export function ContactSection() {
               href={whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-primary"
+              className="btn-primary cursor-pointer"
             >
               <MessageCircle size={18} />
               {t?.cta || 'Book a Free Consultation'}
             </a>
             <a
               href={`mailto:contact@orbitsaas.com`}
-              className="btn-secondary btn-secondary-dark"
+              className="btn-secondary btn-secondary-dark cursor-pointer"
             >
               Send Email <ArrowRight size={16} />
             </a>

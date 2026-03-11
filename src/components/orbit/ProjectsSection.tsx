@@ -61,7 +61,7 @@ export function ProjectsSection() {
               >
                 <Link
                   to={`/project/${project.id || i}`}
-                  className="block bento-card group overflow-hidden"
+                  className="block bento-card group overflow-hidden cursor-pointer hover-border-glow"
                 >
                   {/* Image */}
                   {project.image && (
@@ -94,7 +94,7 @@ export function ProjectsSection() {
                     </div>
                   )}
 
-                  <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
+                  <h3 className="text-lg font-semibold text-white mb-2" style={{ fontFamily: 'var(--font-display)' }}>{project.title}</h3>
                   <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
                     {project.desc?.substring(0, 100)}...
                   </p>

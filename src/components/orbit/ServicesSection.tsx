@@ -142,11 +142,11 @@ function ServiceCard({
           }}
         />
 
-        {/* ── Full-border green glow (all edges) ── */}
+        {/* ── Full-border golden glow (all edges) ── */}
         <div
           className="pointer-events-none absolute -inset-px z-20"
           style={{
-            background: 'linear-gradient(180deg, rgba(0,230,118,0.45) 0%, rgba(0,200,83,0.18) 40%, rgba(0,230,118,0.12) 100%)',
+            background: 'linear-gradient(180deg, rgba(212,160,23,0.40) 0%, rgba(212,160,23,0.15) 40%, rgba(212,160,23,0.08) 100%)',
             maskImage: 'linear-gradient(#000,#000),linear-gradient(#000,#000)',
             WebkitMaskImage: 'linear-gradient(#000,#000),linear-gradient(#000,#000)',
             maskClip: 'content-box,border-box',
@@ -162,7 +162,7 @@ function ServiceCard({
         <div
           className="pointer-events-none absolute inset-0 z-20"
           style={{
-            boxShadow: 'inset 0 0 30px rgba(0,230,118,0.06), inset 0 -15px 40px rgba(0,230,118,0.03)',
+            boxShadow: 'inset 0 0 30px rgba(212,160,23,0.05), inset 0 -15px 40px rgba(212,160,23,0.03)',
             borderRadius: 'inherit',
           }}
         />
@@ -268,13 +268,13 @@ function CenterHub({ item }: { item?: any }) {
         <div
           className="absolute inset-0 rounded-full pointer-events-none"
           style={{
-            background: 'linear-gradient(to bottom, rgba(0,230,118,0.20) 0%, rgba(0,230,118,0.06) 25%, transparent 50%)',
+            background: 'linear-gradient(to bottom, rgba(212,160,23,0.22) 0%, rgba(212,160,23,0.06) 25%, transparent 50%)',
           }}
         />
         <div
           className="absolute -inset-[1px] rounded-full pointer-events-none"
           style={{
-            background: 'linear-gradient(to bottom, rgba(0,230,118,0.35) 0%, transparent 30%)',
+            background: 'linear-gradient(to bottom, rgba(212,160,23,0.35) 0%, transparent 30%)',
             maskImage: 'linear-gradient(#000,#000),linear-gradient(#000,#000)',
             WebkitMaskImage: 'linear-gradient(#000,#000),linear-gradient(#000,#000)',
             maskClip: 'content-box,border-box',

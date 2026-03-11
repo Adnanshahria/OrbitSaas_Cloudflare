@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { HelmetProvider } from 'react-helmet-async';
 import { SEOHead } from './components/seo/SEOHead';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PageCurlContainer } from './components/orbit/PageCurlContainer';
 
 // Lazy load public sections
 const StatsSection = lazy(() => import('./components/orbit/StatsSection').then(m => ({ default: m.StatsSection })));
@@ -166,27 +167,73 @@ function PublicSite() {
   }, [isLoaded]);
 
   return (
-    <div className="min-h-[100dvh] relative z-0">
+    <>
       {isLoaded && <Navbar />}
-      <main>
-        <Home />
-        {isLoaded && (
+
+      <PageCurlContainer>
+        {/* Page 1: Hero — DARK */}
+        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
+          <Home />
+        </div>
+
+        {/* Page 2: Services — LIGHT */}
+        <div className="snap-page-light" style={{ width: '100%', height: '100%' }}>
+          <Suspense fallback={null}>
+            <ServicesSection />
+          </Suspense>
+        </div>
+
+        {/* Page 3: Process — DARK */}
+        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
           <Suspense fallback={null}>
             <ProcessSection />
-            <TechStackSection />
-            <WhyUsSection />
-            <ProjectsSection />
-            <ReviewsSection />
-            <LeadershipSection />
-            <ContactSection />
           </Suspense>
-        )}
-      </main>
-      {isLoaded && (
-        <Suspense fallback={null}>
-          <OrbitFooter />
-        </Suspense>
-      )}
+        </div>
+
+        {/* Page 4: Tech Stack — LIGHT */}
+        <div className="snap-page-light" style={{ width: '100%', height: '100%' }}>
+          <Suspense fallback={null}>
+            <TechStackSection />
+          </Suspense>
+        </div>
+
+        {/* Page 5: Why Us — DARK */}
+        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
+          <Suspense fallback={null}>
+            <WhyUsSection />
+          </Suspense>
+        </div>
+
+        {/* Page 6: Projects — LIGHT */}
+        <div className="snap-page-light" style={{ width: '100%', height: '100%' }}>
+          <Suspense fallback={null}>
+            <ProjectsSection />
+          </Suspense>
+        </div>
+
+        {/* Page 7: Reviews — DARK */}
+        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
+          <Suspense fallback={null}>
+            <ReviewsSection />
+          </Suspense>
+        </div>
+
+        {/* Page 8: Team — LIGHT */}
+        <div className="snap-page-light" style={{ width: '100%', height: '100%' }}>
+          <Suspense fallback={null}>
+            <LeadershipSection />
+          </Suspense>
+        </div>
+
+        {/* Page 9: Contact + Footer — DARK */}
+        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
+          <Suspense fallback={null}>
+            <ContactSection />
+            <OrbitFooter />
+          </Suspense>
+        </div>
+      </PageCurlContainer>
+
       {isLoaded && (
         <Suspense fallback={null}>
           <LeadMagnetPopup />
@@ -197,7 +244,7 @@ function PublicSite() {
           <Chatbot />
         </Suspense>
       )}
-    </div>
+    </>
   );
 }
 

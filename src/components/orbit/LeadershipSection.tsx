@@ -57,10 +57,10 @@ export function LeadershipSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-50px' }}
                 transition={{ duration: 0.4, delay: i * 0.08 }}
-                className="bento-card text-center group"
+                className="bento-card text-center group cursor-pointer hover-border-glow"
               >
                 {/* Avatar */}
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden">
+                <div className="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden ring-2 ring-[rgba(212,160,23,0.20)] group-hover:ring-[rgba(212,160,23,0.40)] transition-all duration-300">
                   {member.image || member.avatar ? (
                     <img
                       src={member.image || member.avatar}
@@ -71,14 +71,14 @@ export function LeadershipSection() {
                   ) : (
                     <div
                       className="w-full h-full flex items-center justify-center text-white font-bold text-xl"
-                      style={{ background: 'var(--accent)' }}
+                      style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-deep))' }}
                     >
                       {member.name?.charAt(0) || 'M'}
                     </div>
                   )}
                 </div>
 
-                <h3 className="text-base font-semibold text-white mb-1">{member.name}</h3>
+                <h3 className="text-base font-semibold text-white mb-1" style={{ fontFamily: 'var(--font-display)' }}>{member.name}</h3>
                 <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                   {member.role || member.position}
                 </p>

@@ -45,81 +45,86 @@ function HeroBeamInner() {
                 zIndex: 2,
             }}
         >
+            {/* Outer diffuse golden glow */}
             <svg viewBox="0 0 1200 1200" preserveAspectRatio="none"
                 style={{
                     ...SVG_STYLE_BASE,
-                    filter: 'blur(80px)', opacity: 0.7, mixBlendMode: 'screen',
+                    filter: 'blur(80px)', opacity: 0.65, mixBlendMode: 'screen',
                 }}
             >
                 <defs>
                     <linearGradient id="sg4" x1="0.5" y1="1" x2="0.5" y2="0">
-                        <stop offset="0%" stopColor="#00e676" stopOpacity="0.35" />
-                        <stop offset="30%" stopColor="#00c853" stopOpacity="0.25" />
-                        <stop offset="60%" stopColor="#00c853" stopOpacity="0.18" />
-                        <stop offset="85%" stopColor="#1b5e20" stopOpacity="0.10" />
-                        <stop offset="100%" stopColor="#1b5e20" stopOpacity="0.06" />
+                        <stop offset="0%" stopColor="#F5C542" stopOpacity="0.40" />
+                        <stop offset="30%" stopColor="#D4A017" stopOpacity="0.28" />
+                        <stop offset="60%" stopColor="#D4A017" stopOpacity="0.18" />
+                        <stop offset="85%" stopColor="#A37B10" stopOpacity="0.10" />
+                        <stop offset="100%" stopColor="#8B6914" stopOpacity="0.05" />
                     </linearGradient>
                 </defs>
                 <path d={SPIKE_PATH} fill="url(#sg4)" />
             </svg>
 
+            {/* Mid-layer golden beam */}
             <svg viewBox="0 0 1200 1200" preserveAspectRatio="none"
                 style={{
                     ...SVG_STYLE_BASE,
-                    filter: 'blur(35px)', opacity: 0.8, mixBlendMode: 'screen',
+                    filter: 'blur(35px)', opacity: 0.75, mixBlendMode: 'screen',
                 }}
             >
                 <defs>
                     <linearGradient id="sg1" x1="0.5" y1="1" x2="0.5" y2="0">
-                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.45" />
-                        <stop offset="10%" stopColor="#b9f6ca" stopOpacity="0.35" />
-                        <stop offset="35%" stopColor="#00e676" stopOpacity="0.20" />
-                        <stop offset="65%" stopColor="#00c853" stopOpacity="0.12" />
-                        <stop offset="90%" stopColor="#00c853" stopOpacity="0.06" />
-                        <stop offset="100%" stopColor="#00c853" stopOpacity="0.03" />
+                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.50" />
+                        <stop offset="10%" stopColor="#FFF8E1" stopOpacity="0.38" />
+                        <stop offset="35%" stopColor="#F5C542" stopOpacity="0.22" />
+                        <stop offset="65%" stopColor="#D4A017" stopOpacity="0.12" />
+                        <stop offset="90%" stopColor="#D4A017" stopOpacity="0.05" />
+                        <stop offset="100%" stopColor="#A37B10" stopOpacity="0.02" />
                     </linearGradient>
                 </defs>
                 <path d={SPIKE_CORE} fill="url(#sg1)" />
             </svg>
 
+            {/* Sharp inner beam */}
             <svg viewBox="0 0 1200 1200" preserveAspectRatio="none"
                 style={{
                     ...SVG_STYLE_BASE,
-                    filter: 'blur(14px)', opacity: 0.65, mixBlendMode: 'screen',
+                    filter: 'blur(14px)', opacity: 0.6, mixBlendMode: 'screen',
                 }}
             >
                 <defs>
                     <linearGradient id="sg2" x1="0.5" y1="1" x2="0.5" y2="0">
-                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.7" />
-                        <stop offset="8%" stopColor="#e8f5e9" stopOpacity="0.45" />
-                        <stop offset="30%" stopColor="#69f0ae" stopOpacity="0.20" />
-                        <stop offset="60%" stopColor="#00e676" stopOpacity="0.10" />
-                        <stop offset="90%" stopColor="#00c853" stopOpacity="0.04" />
-                        <stop offset="100%" stopColor="#00c853" stopOpacity="0.02" />
+                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.75" />
+                        <stop offset="8%" stopColor="#FFF8E1" stopOpacity="0.50" />
+                        <stop offset="30%" stopColor="#F5C542" stopOpacity="0.22" />
+                        <stop offset="60%" stopColor="#D4A017" stopOpacity="0.10" />
+                        <stop offset="90%" stopColor="#A37B10" stopOpacity="0.04" />
+                        <stop offset="100%" stopColor="#8B6914" stopOpacity="0.01" />
                     </linearGradient>
                 </defs>
                 <path d={SPIKE_CORE} fill="url(#sg2)" />
             </svg>
 
+            {/* Core bright spike */}
             <svg viewBox="0 0 1200 1200" preserveAspectRatio="none"
                 style={{
                     ...SVG_STYLE_BASE,
-                    filter: 'blur(5px)', opacity: 0.85, mixBlendMode: 'screen',
+                    filter: 'blur(5px)', opacity: 0.8, mixBlendMode: 'screen',
                 }}
             >
                 <defs>
                     <linearGradient id="sg3" x1="0.5" y1="1" x2="0.5" y2="0">
-                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
-                        <stop offset="5%" stopColor="#ffffff" stopOpacity="0.6" />
-                        <stop offset="15%" stopColor="#b9f6ca" stopOpacity="0.25" />
-                        <stop offset="40%" stopColor="#00e676" stopOpacity="0.12" />
-                        <stop offset="70%" stopColor="#00c853" stopOpacity="0.06" />
-                        <stop offset="100%" stopColor="#00c853" stopOpacity="0.02" />
+                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+                        <stop offset="5%" stopColor="#ffffff" stopOpacity="0.65" />
+                        <stop offset="15%" stopColor="#FFF8E1" stopOpacity="0.30" />
+                        <stop offset="40%" stopColor="#F5C542" stopOpacity="0.14" />
+                        <stop offset="70%" stopColor="#D4A017" stopOpacity="0.06" />
+                        <stop offset="100%" stopColor="#A37B10" stopOpacity="0.02" />
                     </linearGradient>
                 </defs>
                 <path d={SPIKE_CORE} fill="url(#sg3)" />
             </svg>
 
+            {/* Base radial glow at beam foot */}
             <div style={{
                 position: 'absolute',
                 left: '50%',
@@ -128,11 +133,12 @@ function HeroBeamInner() {
                 width: '400px',
                 height: '250px',
                 borderRadius: '50%',
-                background: 'radial-gradient(ellipse, rgba(0,230,118,0.30) 0%, rgba(0,200,83,0.10) 35%, transparent 70%)',
+                background: 'radial-gradient(ellipse, rgba(212,160,23,0.35) 0%, rgba(245,197,66,0.12) 35%, transparent 70%)',
                 filter: 'blur(30px)',
                 mixBlendMode: 'screen',
             }} />
 
+            {/* Wide ambient glow */}
             <div style={{
                 position: 'absolute',
                 left: '50%',
@@ -140,7 +146,7 @@ function HeroBeamInner() {
                 transform: 'translateX(-50%)',
                 width: '700px',
                 height: '300px',
-                background: 'radial-gradient(ellipse at 50% 100%, rgba(0,230,118,0.14) 0%, rgba(0,200,83,0.05) 45%, transparent 75%)',
+                background: 'radial-gradient(ellipse at 50% 100%, rgba(212,160,23,0.18) 0%, rgba(163,123,16,0.06) 45%, transparent 75%)',
                 filter: 'blur(45px)',
                 mixBlendMode: 'screen',
             }} />

@@ -1,76 +1,86 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ══════════════════════════════════════════════════════════
-   ORBIT SaaS — GCore-Inspired Design System
-   Clean, minimal, alternating dark/light sections
+   ORBIT SaaS — Premium Dark Design System
+   Luxury obsidian base, liquid gold accents, cinematic depth
    ══════════════════════════════════════════════════════════ */
 
 :root {
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
   --font-size: 16px;
   --radius: 0.75rem;
 
-  /* ── Core palette ── */
-  --bg-dark: #0a0a0a;
-  --bg-darker: #050505;
+  /* ── Core palette — layered dark ── */
+  --bg-dark: #060606;
+  --bg-darker: #030303;
+  --bg-elevated: #0B0B0F;
+  --bg-surface: #111118;
   --bg-light: #ffffff;
   --bg-light-alt: #fafafa;
 
   /* ── Text ── */
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255,255,255,0.55);
-  --text-tertiary: rgba(255,255,255,0.35);
+  --text-primary: #F0F0F0;
+  --text-secondary: rgba(240,240,240,0.55);
+  --text-tertiary: rgba(240,240,240,0.30);
   --text-dark: #111111;
   --text-dark-secondary: #6b7280;
   --text-dark-tertiary: #9ca3af;
 
-  /* ── Accent (Golden) ── */
+  /* ── Accent (Liquid Gold) ── */
   --accent: #D4A017;
-  --accent-hover: #C4941A;
-  --accent-light: rgba(212,160,23,0.12);
-  --accent-glow: rgba(212,160,23,0.30);
+  --accent-hover: #E8B423;
+  --accent-light: rgba(212,160,23,0.10);
+  --accent-glow: rgba(212,160,23,0.35);
+  --accent-luminous: #F5C542;
+  --accent-deep: #A37B10;
 
-  /* ── Cards & Borders ── */
-  --card-bg: rgba(255,255,255,0.03);
-  --card-bg-hover: rgba(255,255,255,0.06);
-  --card-border: rgba(255,255,255,0.08);
-  --card-border-hover: rgba(255,255,255,0.15);
+  /* ── Cards & Borders (Glass) ── */
+  --card-bg: rgba(255,255,255,0.025);
+  --card-bg-hover: rgba(255,255,255,0.055);
+  --card-border: rgba(255,255,255,0.07);
+  --card-border-hover: rgba(255,255,255,0.14);
   --card-light-bg: #ffffff;
   --card-light-border: #e5e7eb;
   --card-light-border-hover: #d1d5db;
 
+  /* ── Glass Surface ── */
+  --glass-bg: rgba(255,255,255,0.03);
+  --glass-border: rgba(255,255,255,0.08);
+  --glass-blur: blur(20px) saturate(1.3);
+
   /* ── Navbar ── */
-  --navbar-dark-bg: rgba(10,10,10,0.75);
-  --navbar-light-bg: rgba(255,255,255,0.85);
-  --navbar-border-dark: rgba(255,255,255,0.08);
-  --navbar-border-light: rgba(0,0,0,0.08);
+  --navbar-dark-bg: rgba(6,6,6,0.80);
+  --navbar-border-dark: rgba(212,160,23,0.12);
 
   /* ── Shadows ── */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
-  --shadow-card-hover: 0 8px 24px rgba(0,0,0,0.15);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.15);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.25);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.35);
+  --shadow-card-hover: 0 16px 40px rgba(0,0,0,0.4);
+  --shadow-golden: 0 8px 32px rgba(212,160,23,0.15);
 
   /* ── Misc (Tailwind theme compat) ── */
-  --background: #0a0a0a;
-  --foreground: #ffffff;
+  --background: #060606;
+  --foreground: #F0F0F0;
   --primary: #D4A017;
   --primary-foreground: #ffffff;
-  --secondary: #141414;
-  --secondary-foreground: #ffffff;
-  --muted: #141414;
-  --muted-foreground: rgba(255,255,255,0.5);
-  --border: rgba(255,255,255,0.08);
-  --input: #141414;
+  --secondary: #111118;
+  --secondary-foreground: #F0F0F0;
+  --muted: #111118;
+  --muted-foreground: rgba(240,240,240,0.45);
+  --border: rgba(255,255,255,0.07);
+  --input: #111118;
   --ring: #D4A017;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --card: #0d0d0d;
-  --card-foreground: #ffffff;
-  --popover: #111111;
-  --popover-foreground: #ffffff;
+  --card: #0B0B0F;
+  --card-foreground: #F0F0F0;
+  --popover: #0B0B0F;
+  --popover-foreground: #F0F0F0;
   --accent-foreground: #ffffff;
 }
 
@@ -86,13 +96,17 @@
 
   body {
     @apply bg-background text-foreground overflow-x-hidden;
-    font-family: 'Inter', sans-serif;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-family: var(--font-body);
     width: 100%;
     max-width: 100vw;
-    color: rgba(255,255,255,0.6);
+    color: rgba(240,240,240,0.55);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
   }
 
   .font-bengali {
@@ -106,7 +120,7 @@
 }
 
 /* ══════════════════════════════════════════════════════════
-   SECTION PATTERNS (Dark ↔ Light alternation)
+   SECTION PATTERNS (All-dark with depth variation)
    ══════════════════════════════════════════════════════════ */
 
 .section-dark {
@@ -114,9 +128,10 @@
   color: var(--text-primary);
 }
 
+/* Previously light sections → now dark with subtle elevation */
 .section-light {
-  background-color: var(--bg-light);
-  color: var(--text-dark);
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
 }
 
 .section-container {
@@ -132,6 +147,204 @@
 }
 
 /* ══════════════════════════════════════════════════════════
+   2D SVG PAGE CURL — Mathematically perfect paper fold
+   ══════════════════════════════════════════════════════════ */
+
+/* The viewport container — fills screen, hides overflow */
+.page-curl-viewport {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  background-color: #000;
+}
+
+/* Each page is simply absolutely positioned */
+.curl-page {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Page indicator dots — floating on the right side */
+.flip-page-dots {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flip-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.flip-dot:hover {
+  background: rgba(212, 160, 23, 0.5);
+  transform: scale(1.3);
+}
+
+.flip-dot-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(212, 160, 23, 0.4);
+  transform: scale(1.2);
+}
+
+/* ── Snap-page themes carry over ── */
+.snap-page-dark {
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+.snap-page-light {
+  background-color: #FAFAFA;
+  color: #1A1A1A;
+}
+
+/* Mobile: hide dots on small screens */
+@media (max-width: 768px) {
+  .flip-page-dots {
+    right: 8px;
+    gap: 8px;
+  }
+
+  .flip-dot {
+    width: 7px;
+    height: 7px;
+  }
+}
+
+/* ── Dark pages ── */
+.snap-page-dark {
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+/* ── Light pages ── */
+.snap-page-light {
+  background-color: #FAFAFA;
+  color: #1A1A1A;
+}
+
+/* Override section backgrounds inside alternating pages */
+.snap-page-dark > section,
+.snap-page-dark > section.section-dark,
+.snap-page-dark > section.section-light {
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+.snap-page-light > section,
+.snap-page-light > section.section-dark,
+.snap-page-light > section.section-light {
+  background-color: transparent;
+  color: #1A1A1A;
+}
+
+/* ── Light page typography ── */
+.snap-page-light .section-heading {
+  color: #0A0A0A !important;
+}
+
+.snap-page-light .section-subheading,
+.snap-page-light .section-subheading-dark {
+  color: #555 !important;
+}
+
+.snap-page-light h3,
+.snap-page-light h4 {
+  color: #0A0A0A !important;
+}
+
+.snap-page-light p,
+.snap-page-light span:not(.pill-badge):not(.pill-badge-accent):not(.pill-badge-dark) {
+  color: #444;
+}
+
+/* ── Light page cards (glass → soft white) ── */
+.snap-page-light .bento-card {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.snap-page-light .bento-card:hover {
+  border-color: rgba(212, 160, 23, 0.30);
+  box-shadow: 0 8px 30px rgba(212, 160, 23, 0.08), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Light page badges ── */
+.snap-page-light .pill-badge,
+.snap-page-light .pill-badge-dark {
+  background: rgba(0, 0, 0, 0.06);
+  color: #333;
+  border-color: rgba(0, 0, 0, 0.10);
+}
+
+.snap-page-light .pill-badge-accent {
+  background: linear-gradient(135deg, rgba(212,160,23,0.12), rgba(245,197,66,0.08));
+  color: var(--accent-deep);
+  border-color: rgba(212,160,23,0.25);
+}
+
+/* ── Light page buttons ── */
+.snap-page-light .btn-secondary,
+.snap-page-light .btn-secondary-dark {
+  background: transparent;
+  color: #333;
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.snap-page-light .btn-secondary:hover,
+.snap-page-light .btn-secondary-dark:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.25);
+}
+
+/* ── Light page icon containers ── */
+.snap-page-light [style*="rgba(212,160,23,0.10)"] {
+  background: rgba(212, 160, 23, 0.08) !important;
+}
+
+/* ── Light page specific text overrides ── */
+.snap-page-light .text-white {
+  color: #0A0A0A !important;
+}
+
+.snap-page-light .text-white\/80 {
+  color: rgba(26, 26, 26, 0.75) !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   NOISE / GRAIN TEXTURE OVERLAY
+   ══════════════════════════════════════════════════════════ */
+
+.noise-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+}
+
+/* ══════════════════════════════════════════════════════════
    PILL BADGE (Section labels above headings)
    ══════════════════════════════════════════════════════════ */
 
@@ -143,25 +356,27 @@
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  font-family: var(--font-body);
 }
 
 .pill-badge-dark {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7);
 }
 
 .pill-badge-light {
-  background: rgba(0,0,0,0.04);
-  border: 1px solid rgba(0,0,0,0.08);
-  color: #374151;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7);
 }
 
 .pill-badge-accent {
   background: var(--accent-light);
-  border: 1px solid rgba(212,160,23,0.2);
-  color: var(--accent);
+  border: 1px solid rgba(212,160,23,0.18);
+  color: var(--accent-luminous);
+  box-shadow: 0 0 20px rgba(212,160,23,0.08);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -169,18 +384,20 @@
    ══════════════════════════════════════════════════════════ */
 
 .section-heading {
+  font-family: var(--font-display);
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.03em;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
   margin-top: 16px;
   margin-bottom: 16px;
 }
 
 .section-subheading {
   font-size: clamp(1rem, 2vw, 1.15rem);
-  line-height: 1.6;
+  line-height: 1.7;
   max-width: 600px;
+  font-family: var(--font-body);
 }
 
 .section-subheading-dark {
@@ -188,7 +405,7 @@
 }
 
 .section-subheading-light {
-  color: var(--text-dark-secondary);
+  color: var(--text-secondary);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -201,21 +418,23 @@
   justify-content: center;
   gap: 8px;
   padding: 12px 28px;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
   color: #fff;
   font-weight: 600;
   font-size: 0.95rem;
+  font-family: var(--font-body);
   border-radius: 999px;
   border: none;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
   text-decoration: none;
+  box-shadow: 0 4px 15px rgba(212,160,23,0.2);
 }
 
 .btn-primary:hover {
-  background: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px var(--accent-glow);
+  background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-luminous) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px var(--accent-glow);
 }
 
 .btn-secondary {
@@ -227,34 +446,37 @@
   background: transparent;
   font-weight: 500;
   font-size: 0.95rem;
+  font-family: var(--font-body);
   border-radius: 999px;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
   text-decoration: none;
 }
 
 .btn-secondary-dark {
-  color: rgba(255,255,255,0.8);
-  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(240,240,240,0.7);
+  border: 1px solid rgba(255,255,255,0.12);
 }
 
 .btn-secondary-dark:hover {
-  border-color: rgba(255,255,255,0.4);
-  background: rgba(255,255,255,0.05);
+  border-color: rgba(212,160,23,0.4);
+  color: var(--accent-luminous);
+  background: rgba(212,160,23,0.06);
 }
 
 .btn-secondary-light {
-  color: var(--text-dark);
-  border: 1px solid rgba(0,0,0,0.15);
+  color: rgba(240,240,240,0.7);
+  border: 1px solid rgba(255,255,255,0.12);
 }
 
 .btn-secondary-light:hover {
-  border-color: rgba(0,0,0,0.3);
-  background: rgba(0,0,0,0.03);
+  border-color: rgba(212,160,23,0.4);
+  color: var(--accent-luminous);
+  background: rgba(212,160,23,0.06);
 }
 
 /* ══════════════════════════════════════════════════════════
-   CARDS — Dark (Bento)
+   CARDS — Dark Glass (Bento)
    ══════════════════════════════════════════════════════════ */
 
 .bento-card {
@@ -262,28 +484,32 @@
   border: 1px solid var(--card-border);
   border-radius: 16px;
   padding: 32px;
-  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+  backdrop-filter: blur(12px);
 }
 
 .bento-card:hover {
   background: var(--card-bg-hover);
   border-color: var(--card-border-hover);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover);
 }
 
-/* ── Cards — Light ── */
+/* ── Cards — Light → Now Dark Glass ── */
 .card-light {
-  background: var(--card-light-bg);
-  border: 1px solid var(--card-light-border);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: 16px;
   padding: 32px;
-  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+  backdrop-filter: blur(12px);
 }
 
 .card-light:hover {
-  border-color: var(--card-light-border-hover);
+  background: var(--card-bg-hover);
+  border-color: var(--card-border-hover);
   box-shadow: var(--shadow-card-hover);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -300,17 +526,17 @@
     box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Orange ambient glow for hero */
+/* Golden ambient glow */
 @keyframes ambientGlow {
   0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.6; }
+  50% { opacity: 0.65; }
 }
 
 .ambient-glow {
   animation: ambientGlow 6s ease-in-out infinite;
 }
 
-/* Text shimmer for accented words */
+/* Text shimmer with golden accent */
 @keyframes textShimmerSweep {
   0% { background-position: 0% 50%; }
   100% { background-position: -200% 50%; }
@@ -320,9 +546,9 @@
   background: linear-gradient(
     to right,
     var(--accent) 0%,
-    #ff6b35 25%,
+    var(--accent-luminous) 25%,
     #ffffff 50%,
-    #ff6b35 75%,
+    var(--accent-luminous) 75%,
     var(--accent) 100%
   );
   background-size: 200% auto;
@@ -330,6 +556,31 @@
   -webkit-background-clip: text;
   background-clip: text;
   animation: textShimmerSweep 4s linear infinite;
+}
+
+/* Pill badge shimmer border */
+@keyframes shimmerBorder {
+  0% { opacity: 0.3; transform: translateX(-100%) skewX(-15deg); }
+  50% { opacity: 0.7; }
+  100% { opacity: 0.3; transform: translateX(200%) skewX(-15deg); }
+}
+
+/* Fade-slide-up reveal */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Card float hover */
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 /* Accordion animation */
@@ -344,24 +595,24 @@
 }
 
 /* ══════════════════════════════════════════════════════════
-   SCROLLBAR
+   SCROLLBAR — Premium Dark
    ══════════════════════════════════════════════════════════ */
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-dark);
+  background: var(--bg-darker);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
+  background: rgba(212,160,23,0.2);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.25);
+  background: rgba(212,160,23,0.4);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -409,7 +660,7 @@
 
 @keyframes newsletterPulse {
   0%, 100% { box-shadow: 0 0 10px rgba(212,160,23,0.2); transform: scale(1); }
-  50% { box-shadow: 0 0 20px rgba(212,160,23,0.4); transform: scale(1.03); }
+  50% { box-shadow: 0 0 25px rgba(212,160,23,0.45); transform: scale(1.03); }
 }
 
 /* Upward-rising aura animation for service cards */
@@ -438,13 +689,13 @@
 .chatbot-overlay-blur {
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  background: rgba(10, 10, 10, 0.7);
+  background: rgba(6, 6, 6, 0.75);
 }
 
 .leadmagnet-overlay-blur {
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  background: rgba(10, 10, 10, 0.7);
+  background: rgba(6, 6, 6, 0.75);
 }
 
 /* Low-perf mode */
@@ -452,9 +703,31 @@ html.low-perf .chatbot-overlay-blur,
 html.low-perf .leadmagnet-overlay-blur {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
-  background: rgba(10, 10, 15, 0.85) !important;
+  background: rgba(6, 6, 10, 0.88) !important;
 }
 
 html.low-perf .gentle-animation {
   transition-duration: 0.15s !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   GOLDEN GLOW UTILITIES
+   ══════════════════════════════════════════════════════════ */
+
+.golden-glow-sm {
+  box-shadow: 0 0 15px rgba(212,160,23,0.08);
+}
+
+.golden-glow-md {
+  box-shadow: 0 0 30px rgba(212,160,23,0.12);
+}
+
+.golden-glow-lg {
+  box-shadow: 0 0 50px rgba(212,160,23,0.18);
+}
+
+/* Border glow on hover */
+.hover-border-glow:hover {
+  border-color: rgba(212,160,23,0.25) !important;
+  box-shadow: 0 0 20px rgba(212,160,23,0.08);
 }

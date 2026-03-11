@@ -4,8 +4,7 @@ import { useLang } from '@/contexts/LanguageContext';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import HeroBeam from './HeroBeam';
-import { ServicesSection } from './ServicesSection';
-import { lazy, Suspense } from 'react';
+import { scrollToPageFlipSection } from './PageCurlContainer';
 import {
   Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket, Code, Database, Shield, Cloud,
   Cpu, Monitor, Wifi, Mail, Camera, Music, Heart, Star, Target, Briefcase,
@@ -19,7 +18,7 @@ const ICON_MAP: Record<string, any> = {
   Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, Eye, Palette, Brain, Wrench
 };
 
-const EnergyCanvas = lazy(() => import('./EnergyCanvas'));
+
 
 /* ─── Floating Feature Card ─── */
 function FeatureCard({
@@ -41,7 +40,7 @@ function FeatureCard({
       animate={{ opacity: 1, y: 0, rotate }}
       whileHover={{ scale: 1.02, rotate: rotate === 0 ? 0 : rotate > 0 ? rotate + 1 : rotate - 1 }}
       transition={{ duration: 0.8, delay, ease: [0.25, 0.1, 0.25, 1] }}
-      className={`absolute cursor-pointer bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] backdrop-blur-md border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.15)] rounded-2xl p-5 shadow-2xl hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors duration-300 ${className}`}
+      className={`absolute cursor-pointer bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.06)] backdrop-blur-xl border border-[rgba(212,160,23,0.10)] hover:border-[rgba(212,160,23,0.25)] rounded-2xl p-5 shadow-2xl hover:shadow-[0_20px_50px_-10px_rgba(212,160,23,0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-all duration-400 ${className}`}
       style={{ minWidth: '220px' }}
     >
       <div className="flex items-center gap-3">
@@ -101,27 +100,17 @@ export function Home() {
   };
 
   const scrollToContact = () => {
-    const el = document.getElementById('contact');
-    if (el) {
-      const offset = 80;
-      const top = el.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ top, behavior: 'smooth' });
-    }
+    scrollToPageFlipSection('contact');
   };
 
   const scrollToServices = () => {
-    const el = document.getElementById('services');
-    if (el) {
-      const offset = 80;
-      const top = el.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ top, behavior: 'smooth' });
-    }
+    scrollToPageFlipSection('services');
   };
 
   return (
     <section
       id="hero"
-      className="section-dark relative overflow-visible z-20"
+      className="section-dark relative overflow-visible z-20 noise-overlay"
     >
       {/* ── Hero content wrapper (full viewport height) ── */}
       <div className="relative min-h-[100dvh] flex items-center">
@@ -151,10 +140,11 @@ export function Home() {
                 initial={{ opacity: 0, y: 25 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-                className="text-white mb-6 leading-[1.08] tracking-[-0.03em]"
+                className="text-white mb-6 leading-[1.05] tracking-[-0.04em]"
                 style={{
                   fontSize: 'clamp(2.8rem, 5.5vw, 4.5rem)',
-                  fontWeight: 400,
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-display)',
                 }}
               >
                 {title}
@@ -235,14 +225,6 @@ export function Home() {
           </div>
         </div>
       </div> {/* end hero content wrapper */}
-
-      {/* ── Services cards merged into same section ── */}
-      <ServicesSection embedded />
-
-      {/* ── Canvas particle overlay (spans full section: funnel + cards) ── */}
-      <Suspense fallback={null}>
-        <EnergyCanvas />
-      </Suspense>
     </section>
   );
 }

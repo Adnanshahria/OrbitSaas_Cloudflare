@@ -10,8 +10,17 @@ export function ReviewsSection() {
     const items = t?.items || [];
 
     return (
-        <section id="reviews" className="section-light">
-            <div className="section-container">
+        <section id="reviews" className="section-light relative overflow-hidden">
+            {/* Ambient glow */}
+            <div
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] pointer-events-none"
+                style={{
+                    background: 'radial-gradient(ellipse at 50% 100%, rgba(212,160,23,0.04) 0%, transparent 60%)',
+                    filter: 'blur(80px)',
+                }}
+            />
+
+            <div className="section-container relative z-10">
                 {/* Header */}
                 <div className="text-center mb-16">
                     <motion.div
@@ -21,7 +30,7 @@ export function ReviewsSection() {
                         transition={{ duration: 0.4 }}
                         className="flex justify-center mb-4"
                     >
-                        <span className="pill-badge pill-badge-light">
+                        <span className="pill-badge pill-badge-accent">
                             <Star size={14} />
                             Testimonials
                         </span>
@@ -32,8 +41,7 @@ export function ReviewsSection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.4, delay: 0.1 }}
-                        className="section-heading"
-                        style={{ color: 'var(--text-dark)' }}
+                        className="section-heading text-white"
                     >
                         {t?.title || 'Client Reviews'}
                     </motion.h2>
@@ -42,7 +50,7 @@ export function ReviewsSection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.4, delay: 0.15 }}
-                        className="section-subheading section-subheading-light mx-auto"
+                        className="section-subheading section-subheading-dark mx-auto"
                     >
                         {t?.subtitle || ''}
                     </motion.p>
@@ -58,37 +66,36 @@ export function ReviewsSection() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, margin: '-50px' }}
                                 transition={{ duration: 0.4, delay: i * 0.1 }}
-                                className="card-light"
+                                className="bento-card group cursor-pointer hover-border-glow"
                             >
-                                <Quote size={24} style={{ color: 'var(--accent)', opacity: 0.5 }} className="mb-4" />
-                                <p
-                                    className="text-sm mb-6 leading-relaxed"
-                                    style={{ color: 'var(--text-dark-secondary)' }}
-                                >
+                                <Quote size={24} className="mb-4 text-[var(--accent)] opacity-40 group-hover:opacity-70 transition-opacity duration-300" />
+                                <p className="text-sm mb-6 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                                     "{review.text || review.review}"
                                 </p>
                                 <div className="flex items-center gap-3">
                                     {review.avatar && (
-                                        <img
-                                            src={review.avatar}
-                                            alt={review.name}
-                                            className="w-10 h-10 rounded-full object-cover"
-                                        />
+                                        <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-[rgba(212,160,23,0.20)]">
+                                            <img
+                                                src={review.avatar}
+                                                alt={review.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
                                     )}
                                     {!review.avatar && (
                                         <div
-                                            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                                            style={{ background: 'var(--accent)' }}
+                                            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ring-2 ring-[rgba(212,160,23,0.20)]"
+                                            style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-deep))' }}
                                         >
                                             {review.name?.charAt(0) || 'U'}
                                         </div>
                                     )}
                                     <div>
-                                        <div className="text-sm font-semibold" style={{ color: 'var(--text-dark)' }}>
+                                        <div className="text-sm font-semibold text-white">
                                             {review.name}
                                         </div>
                                         {review.role && (
-                                            <div className="text-xs" style={{ color: 'var(--text-dark-tertiary)' }}>
+                                            <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                                                 {review.role}
                                             </div>
                                         )}
@@ -111,7 +118,7 @@ export function ReviewsSection() {
                         whileInView={{ opacity: 1 }}
                         viewport={{ once: true }}
                         className="text-center py-12"
-                        style={{ color: 'var(--text-dark-tertiary)' }}
+                        style={{ color: 'var(--text-tertiary)' }}
                     >
                         Reviews coming soon...
                     </motion.div>
