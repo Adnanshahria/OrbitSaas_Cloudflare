@@ -306,7 +306,7 @@ export function ProcessSection() {
 
               {/* Final Premium Arrow Mark (Connecting step 4 to Delivery) */}
               <AnimatePresence>
-                {step >= 5 && (
+                {step >= 4 && (
                   <motion.g
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
