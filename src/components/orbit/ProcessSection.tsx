@@ -1,7 +1,7 @@
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Search, PenTool, Code, CheckCircle2 } from 'lucide-react';
 
@@ -36,7 +36,7 @@ function ProcessCard({ card, icon: Icon, isPeak, node }: any) {
 
   return (
     <motion.div
-      layoutId={`process-card-${card.id}`}
+      layoutId={`orbit-process-step-${card.id}`}
       initial={{ 
         opacity: 0, scale: 0.8, x: '-50%', y: '-50%', 
         left: node.x, top: `calc(${node.y} + ${desktopOffset}px)` 
@@ -113,6 +113,12 @@ export function ProcessSection() {
   const navigate = useNavigate();
   const t = (content[lang] as any)?.process;
   
+  const sortedSteps = useMemo(() => {
+    return [...(t?.steps || [])].sort((a: any, b: any) => 
+      String(a.id).localeCompare(String(b.id), undefined, { numeric: true })
+    );
+  }, [t?.steps]);
+  
   const sectionRef = useRef<HTMLDivElement>(null);
   const stepRef = useRef(0);
   const [step, setStep] = useState(0);
@@ -141,12 +147,12 @@ export function ProcessSection() {
     return () => window.removeEventListener('resize', checkSize);
   }, []);
 
-  // Desktop Node Positions
+  // Desktop Node Positions - Mathematically Symmetric
   const nodes = [
-    { x: '15%', y: '44%' },
-    { x: '35%', y: '56%' },
-    { x: '59%', y: '44%' },
-    { x: '82%', y: '56%' },
+    { x: '14%', y: '44%' },
+    { x: '38%', y: '56%' },
+    { x: '62%', y: '44%' },
+    { x: '86%', y: '56%' },
   ];
 
   // Handle scroll and touch to advance steps
@@ -282,20 +288,20 @@ export function ProcessSection() {
                 </filter>
               </defs>
               <path
-                d="M0,200 C100,200 100,176 150,176 C230,176 260,224 350,224 C440,224 490,176 590,176 C690,176 740,224 820,224 C920,224 950,200 1000,200"
+                d="M0,200 C80,200 80,176 140,176 C230,176 290,224 380,224 C470,224 530,176 620,176 C710,176 770,224 860,224 C940,224 960,200 1000,200"
                 stroke="#00ff80" strokeOpacity="0.2" strokeWidth="2" strokeDasharray="6 6"
                 mask="url(#pathMask)"
               />
               <motion.path
-                d="M0,200 C100,200 100,176 150,176 C230,176 260,224 350,224 C440,224 490,176 590,176 C690,176 740,224 820,224"
+                d="M0,200 C80,200 80,176 140,176 C230,176 290,224 380,224 C470,224 530,176 620,176 C710,176 770,224 860,224"
                 stroke="#00ff80" strokeWidth="3" filter="url(#glow)"
                 initial={{ pathLength: 0 }}
-                animate={{ pathLength: hasMounted ? ([0, 0.18, 0.42, 0.68, 1.0][step] || 0) : 0 }}
+                animate={{ pathLength: hasMounted ? ([0, 0.165, 0.425, 0.685, 0.945][step] || 0) : 0 }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}
                 mask="url(#pathMask)"
               />
-              {nodes.map((node, i) => {
-                const nodeX = [150, 350, 590, 820][i];
+              {nodes.map((_, i) => {
+                const nodeX = [140, 380, 620, 860][i];
                 const nodeY = [176, 224, 176, 224][i];
                 return (
                   <motion.circle
@@ -313,11 +319,11 @@ export function ProcessSection() {
           </div>
 
           <AnimatePresence mode="popLayout">
-            {t?.steps?.map((card: any, cardIdx: number) => {
-              const targetNodeIdx = step - 1 - cardIdx;
-              if (targetNodeIdx < 0 || targetNodeIdx >= 4) return null;
-              const node = nodes[targetNodeIdx];
-              const Icon = icons[cardIdx];
+            {sortedSteps.map((card: any, cardIdx: number) => {
+              // Stable reveal logic: card[i] is permanently bound to nodes[i]
+              if (step <= cardIdx) return null;
+              const node = nodes[cardIdx];
+              const Icon = icons[cardIdx] || icons[0];
               const isPeak = (cardIdx + 1) % 2 !== 0; 
               
               return (
