@@ -36,7 +36,6 @@ function ProcessCard({ card, icon: Icon, isPeak, node }: any) {
 
   return (
     <motion.div
-      layoutId={`orbit-process-step-${card.id}`}
       initial={{ 
         opacity: 0, scale: 0.8, x: '-50%', y: '-50%', 
         left: node.x, top: `calc(${node.y} + ${desktopOffset}px)` 
@@ -123,12 +122,14 @@ export function ProcessSection() {
   const stepRef = useRef(0);
   const [step, setStep] = useState(0);
   const [hasMounted, setHasMounted] = useState(false);
+  const mountTime = useRef(Date.now());
   const lastStepTime = useRef(0);
 
   // Reset state when entering the section
   useEffect(() => {
     setHasMounted(true);
     setStep(0);
+    mountTime.current = Date.now();
   }, []);
 
   // Sync ref with state
@@ -166,6 +167,9 @@ export function ProcessSection() {
       e.stopPropagation(); // Prevent PageCurlTransition from seeing this event
       
       const now = Date.now();
+      // Safety: Ignore scroll momentum from previous pages for 800ms after mount
+      if (now - mountTime.current < 800) return;
+
       // Ignore rapid firing and inertia jitter
       if (now - lastStepTime.current < 1000) {
         if (Math.abs(e.deltaY) > 2) e.preventDefault();
@@ -211,6 +215,7 @@ export function ProcessSection() {
     const handleTouchEnd = (e: TouchEvent) => {
       e.stopPropagation();
       const now = Date.now();
+      if (now - mountTime.current < 800) return;
       if (now - lastStepTime.current < 1000) return;
 
       const deltaY = touchStartY - e.changedTouches[0].clientY;
