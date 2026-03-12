@@ -5,7 +5,55 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Search, PenTool, Code, CheckCircle2 } from 'lucide-react';
 
-function ProcessCard({ card, icon: Icon, isPeak, node }: any) {
+function ConnectionBeam({ isPeak, node, step, cardIdx }: any) {
+  const isVisible = step > cardIdx;
+  
+  return (
+    <div className="absolute z-20 pointer-events-none overflow-visible" 
+      style={{ left: node.x, top: node.y, width: '1px', height: '1px' }}
+    >
+      <svg className="absolute overflow-visible" style={{ [isPeak ? 'bottom' : 'top']: 0, left: '50%', transform: 'translateX(-50%)' }}>
+        <motion.line
+          x1="0" y1="0" x2="0" y2={isPeak ? -120 : 120}
+          stroke="rgba(0, 255, 128, 0.3)"
+          strokeWidth="1.5"
+          strokeDasharray="4 4"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ 
+            pathLength: isVisible ? 1 : 0,
+            opacity: isVisible ? 1 : 0
+          }}
+          transition={{ duration: 0.8 }}
+        />
+        {isVisible && (
+          <>
+            <motion.circle
+              r="2"
+              fill="#00ff80"
+              animate={{ 
+                cy: isPeak ? [0, -120] : [0, 120],
+                opacity: [0, 1, 0]
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            />
+            <motion.circle
+              r="4"
+              fill="#00ff80"
+              filter="blur(4px)"
+              animate={{ 
+                cy: isPeak ? [0, -120] : [0, 120],
+                opacity: [0, 0.5, 0]
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.2 }}
+            />
+          </>
+        )}
+      </svg>
+    </div>
+  );
+}
+
+function ProcessCard({ card, icon: Icon, isPeak, node, step, cardIdx }: any) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -46,25 +94,23 @@ function ProcessCard({ card, icon: Icon, isPeak, node }: any) {
       transition={{ type: "spring", stiffness: 140, damping: 28 }}
       className="absolute z-30 w-64 perspective-[1000px]"
     >
-      <div className="absolute left-1/2 -translate-x-1/2 w-[1.5px] bg-gradient-to-b from-[var(--accent)]/0 via-[var(--accent)]/30 to-[var(--accent)]/0"
-        style={{ height: '110px', [isPeak ? 'bottom' : 'top']: '-70px', opacity: 0.4 }}
-      />
+      <ConnectionBeam isPeak={isPeak} node={node} step={step} cardIdx={cardIdx} />
       <motion.div 
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-        className="relative group p-[1px] rounded-[1.5rem] bg-gradient-to-br from-[var(--accent)]/40 via-white/5 to-transparent hover:from-[var(--accent)] transition-all duration-500 overflow-hidden shadow-2xl"
+        className="relative group p-[1px] rounded-[1.5rem] bg-gradient-to-br from-[#00ff80]/40 via-white/5 to-transparent hover:from-[#00ff80] transition-all duration-500 overflow-hidden shadow-[0_0_30px_rgba(0,255,128,0.1)] hover:shadow-[0_0_50px_rgba(0,255,128,0.2)]"
       >
-        <div className="relative bg-[var(--bg-dark)]/90 backdrop-blur-3xl rounded-[1.45rem] p-5 overflow-hidden border border-white/5">
-          <div className="absolute -top-1 -right-1 w-10 h-10 bg-[var(--accent)]/15 rounded-bl-2xl flex items-center justify-center border-l border-b border-[var(--accent)]/30 text-[var(--accent)] font-display font-black text-base italic shadow-[0_0_15px_rgba(var(--accent-rgb),0.1)]">{card.id}</div>
+        <div className="relative bg-[#05100a]/90 backdrop-blur-3xl rounded-[1.45rem] p-5 overflow-hidden border border-white/5">
+          <div className="absolute -top-1 -right-1 w-10 h-10 bg-[#00ff80]/15 rounded-bl-2xl flex items-center justify-center border-l border-b border-[#00ff80]/30 text-[#00ff80] font-display font-black text-base italic shadow-[0_0_15px_rgba(0,255,128,0.1)]">{card.id}</div>
           <div className="relative z-10 flex flex-col gap-3" style={{ transform: "translateZ(30px)" }}>
-            <div className="w-10 h-10 rounded-lg bg-[var(--accent)]/15 flex items-center justify-center border border-[var(--accent)]/30 text-[var(--accent)] transition-all duration-500 shadow-[inset_0_0_10px_rgba(var(--accent-rgb),0.1)]"><Icon size={20} /></div>
+            <div className="w-10 h-10 rounded-lg bg-[#00ff80]/15 flex items-center justify-center border border-[#00ff80]/30 text-[#00ff80] transition-all duration-500 shadow-[inset_0_0_10px_rgba(0,255,128,0.1)]"><Icon size={20} /></div>
             <div>
-              <h3 className="text-lg font-black text-white mb-1 tracking-tight leading-tight">{card.title}</h3>
+              <h3 className="text-lg font-black text-white mb-1 tracking-tight leading-tight uppercase">{card.title}</h3>
               <p className="text-[12px] leading-snug font-medium opacity-70" style={{ color: 'var(--text-secondary)' }}>{card.desc}</p>
             </div>
           </div>
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,128,0.1),transparent)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
         </div>
       </motion.div>
     </motion.div>
@@ -204,8 +250,8 @@ export function ProcessSection() {
       id="process" 
       className="section-dark relative overflow-hidden min-h-[100dvh] flex flex-col items-center pt-6 pb-12 lg:pt-4 touch-none"
     >
-      <div className="absolute top-0 left-1/4 w-full h-1/2 bg-[var(--accent)]/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-[var(--accent)]/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 left-1/4 w-full h-1/2 bg-[#00ff80]/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-[#00ff80]/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="section-container relative z-10 w-full flex flex-col items-center px-4 h-full">
         {/* Header */}
@@ -224,6 +270,15 @@ export function ProcessSection() {
           <div className="absolute inset-0 pointer-events-none overflow-visible">
             <svg viewBox="0 0 1000 400" preserveAspectRatio="none" className="w-full h-full" fill="none">
               <defs>
+                <linearGradient id="pathFade" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="white" stopOpacity="0" />
+                  <stop offset="10%" stopColor="white" stopOpacity="1" />
+                  <stop offset="90%" stopColor="white" stopOpacity="1" />
+                  <stop offset="100%" stopColor="white" stopOpacity="0" />
+                </linearGradient>
+                <mask id="pathMask">
+                  <rect width="100%" height="100%" fill="url(#pathFade)" />
+                </mask>
                 <filter id="glow">
                   <feGaussianBlur stdDeviation="3" result="coloredBlur" />
                   <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
@@ -231,14 +286,16 @@ export function ProcessSection() {
               </defs>
               <path
                 d="M0,200 C100,200 100,176 150,176 C250,176 280,224 380,224 C480,224 520,176 620,176 C720,176 750,224 850,224 C950,224 950,200 1000,200"
-                stroke="var(--accent)" strokeOpacity="0.3" strokeWidth="2" strokeDasharray="6 6"
+                stroke="#00ff80" strokeOpacity="0.2" strokeWidth="2" strokeDasharray="6 6"
+                mask="url(#pathMask)"
               />
               <motion.path
                 d="M0,200 C100,200 100,176 150,176 C250,176 280,224 380,224 C480,224 520,176 620,176 C720,176 750,224 850,224 C950,224 950,200 1000,200"
-                stroke="var(--accent)" strokeWidth="3" filter="url(#glow)"
+                stroke="#00ff80" strokeWidth="3" filter="url(#glow)"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: [0, 0.15, 0.38, 0.62, 0.85][step] || 0 }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}
+                mask="url(#pathMask)"
               />
               {nodes.map((node, i) => {
                 const nodeX = [150, 380, 620, 850][i];
@@ -249,9 +306,9 @@ export function ProcessSection() {
                     animate={{ 
                       opacity: step > i ? 1 : 0.4, 
                       scale: step > i ? 1.1 : 0.9,
-                      fill: step > i ? "var(--accent)" : "transparent"
+                      fill: step > i ? "#00ff80" : "transparent"
                     }}
-                    stroke="var(--accent)" strokeWidth="2" filter={step > i ? "url(#glow)" : "none"}
+                    stroke="#00ff80" strokeWidth="2" filter={step > i ? "url(#glow)" : "none"}
                   />
                 );
               })}
@@ -273,6 +330,8 @@ export function ProcessSection() {
                   icon={Icon} 
                   isPeak={isPeak} 
                   node={node} 
+                  step={step}
+                  cardIdx={cardIdx}
                 />
               );
             })}
