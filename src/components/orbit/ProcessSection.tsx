@@ -5,55 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Search, PenTool, Code, CheckCircle2 } from 'lucide-react';
 
-function ConnectionBeam({ isPeak, node, step, cardIdx }: any) {
-  const isVisible = step > cardIdx;
-  
-  return (
-    <div className="absolute z-20 pointer-events-none overflow-visible" 
-      style={{ left: node.x, top: node.y, width: '1px', height: '1px' }}
-    >
-      <svg className="absolute overflow-visible" style={{ [isPeak ? 'bottom' : 'top']: 0, left: '50%', transform: 'translateX(-50%)' }}>
-        <motion.line
-          x1="0" y1="0" x2="0" y2={isPeak ? -120 : 120}
-          stroke="rgba(0, 255, 128, 0.3)"
-          strokeWidth="1.5"
-          strokeDasharray="4 4"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ 
-            pathLength: isVisible ? 1 : 0,
-            opacity: isVisible ? 1 : 0
-          }}
-          transition={{ duration: 0.8 }}
-        />
-        {isVisible && (
-          <>
-            <motion.circle
-              r="2"
-              fill="#00ff80"
-              animate={{ 
-                cy: isPeak ? [0, -120] : [0, 120],
-                opacity: [0, 1, 0]
-              }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            />
-            <motion.circle
-              r="4"
-              fill="#00ff80"
-              filter="blur(4px)"
-              animate={{ 
-                cy: isPeak ? [0, -120] : [0, 120],
-                opacity: [0, 0.5, 0]
-              }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.2 }}
-            />
-          </>
-        )}
-      </svg>
-    </div>
-  );
-}
-
-function ProcessCard({ card, icon: Icon, isPeak, node, step, cardIdx }: any) {
+function ProcessCard({ card, icon: Icon, isPeak, node }: any) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -85,16 +37,54 @@ function ProcessCard({ card, icon: Icon, isPeak, node, step, cardIdx }: any) {
   return (
     <motion.div
       layoutId={`card-${card.id}`}
-      initial={{ opacity: 0, scale: 0.8, x: '-50%', y: '-50%', top: '50%', left: '0%' }}
+      initial={{ 
+        opacity: 0, scale: 0.8, x: '-50%', y: '-50%', 
+        left: node.x, top: `calc(${node.y} + ${desktopOffset}px)` 
+      }}
       animate={{ 
-        opacity: 1, scale: 1, left: node.x, top: `calc(${node.y} + ${desktopOffset}px)`,
+        opacity: 1, scale: 1, 
+        left: node.x, top: `calc(${node.y} + ${desktopOffset}px)`,
         x: '-50%', y: '-50%'
       }}
       exit={{ opacity: 0, scale: 0.8 }}
       transition={{ type: "spring", stiffness: 140, damping: 28 }}
       className="absolute z-30 w-64 perspective-[1000px]"
     >
-      <ConnectionBeam isPeak={isPeak} node={node} step={step} cardIdx={cardIdx} />
+      {/* Connection Beam (Pulser) - Perfectly Centered on Card Origin */}
+      <div className="absolute top-1/2 left-1/2 flex items-center justify-center pointer-events-none overflow-visible">
+        <svg className="overflow-visible" width="1" height="1">
+          <motion.line
+            x1="0" y1="0" 
+            x2="0" y2={-desktopOffset}
+            stroke="rgba(0, 255, 128, 0.4)"
+            strokeWidth="2"
+            strokeDasharray="4 4"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          />
+          <motion.circle
+            r="2.5"
+            fill="#00ff80"
+            animate={{ 
+              cy: [0, -desktopOffset],
+              opacity: [0, 1, 0]
+            }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.circle
+            r="6"
+            fill="#00ff80"
+            filter="blur(4px)"
+            animate={{ 
+              cy: [0, -desktopOffset],
+              opacity: [0, 0.5, 0]
+            }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.2 }}
+          />
+        </svg>
+      </div>
+
       <motion.div 
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -102,15 +92,15 @@ function ProcessCard({ card, icon: Icon, isPeak, node, step, cardIdx }: any) {
         className="relative group p-[1px] rounded-[1.5rem] bg-gradient-to-br from-[#00ff80]/40 via-white/5 to-transparent hover:from-[#00ff80] transition-all duration-500 overflow-hidden shadow-[0_0_30px_rgba(0,255,128,0.1)] hover:shadow-[0_0_50px_rgba(0,255,128,0.2)]"
       >
         <div className="relative bg-[#05100a]/90 backdrop-blur-3xl rounded-[1.45rem] p-5 overflow-hidden border border-white/5">
-          <div className="absolute -top-1 -right-1 w-10 h-10 bg-[#00ff80]/15 rounded-bl-2xl flex items-center justify-center border-l border-b border-[#00ff80]/30 text-[#00ff80] font-display font-black text-base italic shadow-[0_0_15px_rgba(0,255,128,0.1)]">{card.id}</div>
+          <div className="absolute -top-1 -right-1 w-10 h-10 bg-[#00ff80]/15 rounded-bl-2xl flex items-center justify-center border-l border-b border-[#00ff80]/30 text-[#00ff80] font-display font-black text-base italic shadow-[0_0_15px_rgba(0,255,128,0.1)] italic">{card.id}</div>
           <div className="relative z-10 flex flex-col gap-3" style={{ transform: "translateZ(30px)" }}>
             <div className="w-10 h-10 rounded-lg bg-[#00ff80]/15 flex items-center justify-center border border-[#00ff80]/30 text-[#00ff80] transition-all duration-500 shadow-[inset_0_0_10px_rgba(0,255,128,0.1)]"><Icon size={20} /></div>
             <div>
-              <h3 className="text-lg font-black text-white mb-1 tracking-tight leading-tight uppercase">{card.title}</h3>
-              <p className="text-[12px] leading-snug font-medium opacity-70" style={{ color: 'var(--text-secondary)' }}>{card.desc}</p>
+              <h3 className="text-lg font-black text-white mb-1 tracking-tight leading-tight uppercase italic">{card.title}</h3>
+              <p className="text-[12px] font-medium opacity-70" style={{ color: 'var(--text-secondary)' }}>{card.desc}</p>
             </div>
           </div>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,128,0.1),transparent)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,128,0.15),transparent)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
         </div>
       </motion.div>
     </motion.div>
@@ -317,9 +307,9 @@ export function ProcessSection() {
 
           <AnimatePresence mode="popLayout">
             {t?.steps?.map((card: any, cardIdx: number) => {
-              const targetNodeIdx = step - 1 - cardIdx;
-              if (targetNodeIdx < 0 || targetNodeIdx >= 4) return null;
-              const node = nodes[targetNodeIdx];
+              // Ensure Step 01 is always at Node 0, etc.
+              if (cardIdx >= step) return null;
+              const node = nodes[cardIdx];
               const Icon = icons[cardIdx];
               const isPeak = (cardIdx + 1) % 2 !== 0; 
               
@@ -330,8 +320,6 @@ export function ProcessSection() {
                   icon={Icon} 
                   isPeak={isPeak} 
                   node={node} 
-                  step={step}
-                  cardIdx={cardIdx}
                 />
               );
             })}
