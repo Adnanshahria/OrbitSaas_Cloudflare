@@ -292,12 +292,12 @@ export function ProcessSection() {
               </defs>
               <path
                 d="M0,200 C40,200 50,176 100,176 C170,176 250,224 320,224 C390,224 470,176 540,176 C610,176 690,224 760,224"
-                fill="none" stroke="#00ff80" strokeOpacity="0.2" strokeWidth="2" strokeDasharray="6 6"
+                fill="none" stroke="#00ff80" strokeOpacity="0.2" strokeWidth="3" strokeDasharray="6 6"
                 mask="url(#pathMask)"
               />
               <motion.path
                 d="M0,200 C40,200 50,176 100,176 C170,176 250,224 320,224 C390,224 470,176 540,176 C610,176 690,224 760,224"
-                fill="none" stroke="#00ff80" strokeWidth="3" filter="url(#glow)"
+                fill="none" stroke="#00ff80" strokeWidth="4" filter="url(#glow)"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: hasMounted ? ([0, 0.13, 0.42, 0.71, 1.0, 1.0][step] || 0) : 0 }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}
@@ -313,13 +313,13 @@ export function ProcessSection() {
                     exit={{ opacity: 0 }}
                   >
                     <defs>
-                      <marker id="premiumArrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orientation="auto">
-                        <polygon points="0 0, 10 3.5, 0 7" fill="#00ff80" />
+                      <marker id="premiumArrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                        <polygon points="0 0, 6 3, 0 6" fill="#00ff80" />
                       </marker>
                     </defs>
                     <motion.path 
-                      d="M760,224 C800,224 810,200 850,200"
-                      fill="none" stroke="#00ff80" strokeWidth="2" strokeDasharray="4 2"
+                      d="M760,224 C800,224 810,200 875,200"
+                      fill="none" stroke="#00ff80" strokeWidth="4" filter="url(#glow)"
                       markerEnd="url(#premiumArrowhead)"
                       initial={{ pathLength: 0 }}
                       animate={{ pathLength: 1 }}
@@ -340,7 +340,7 @@ export function ProcessSection() {
                       scale: step > i ? 1.1 : 0.9,
                       fill: step > i ? "#00ff80" : "transparent"
                     }}
-                    stroke="#00ff80" strokeWidth="2" filter={step > i ? "url(#glow)" : "none"}
+                    stroke="#00ff80" strokeWidth="3" filter={step > i ? "url(#glow)" : "none"}
                   />
                 );
               })}
