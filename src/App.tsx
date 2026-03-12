@@ -162,6 +162,10 @@ function PublicSite() {
 
   useEffect(() => {
     setIsLoaded(true);
+    // Signal to the prerenderer that the app is ready for snapshot
+    setTimeout(() => {
+      document.dispatchEvent(new Event('custom-render-trigger'));
+    }, 1500); // Give fonts & Lotties a moment to settle
   }, []);
 
   useEffect(() => {

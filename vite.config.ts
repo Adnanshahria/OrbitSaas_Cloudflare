@@ -3,7 +3,8 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
-
+import prerender from "@prerenderer/rollup-plugin";
+import PuppeteerRenderer from "@prerenderer/renderer-puppeteer";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   base: '/',
@@ -104,6 +105,30 @@ export default defineConfig(({ mode }) => ({
           },
         ],
       },
+    }),
+    mode === "production" && prerender({
+      routes: [
+        '/',
+        '/services',
+        '/process',
+        '/techstack',
+        '/why-us',
+        '/projects',
+        '/reviews',
+        '/leadership',
+        '/contact'
+      ],
+      renderer: new PuppeteerRenderer({
+        renderAfterDocumentEvent: 'custom-render-trigger',
+        // Optional: wait for a specific time just to be safe if event fails
+        renderAfterTime: 5000, 
+        timeout: 60000, // Important for Lottie/3D loading
+        maxConcurrentRoutes: 4, 
+      }),
+      postProcess(renderedRoute) {
+        // Strip out any scripts that aren't needed for SEO to keep payload light
+        // The object is mutated in place, return void
+      }
     }),
   ].filter(Boolean),
   build: {

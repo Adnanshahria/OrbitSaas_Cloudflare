@@ -51,23 +51,23 @@ function ProcessCard({ card, icon: Icon, isPeak, node }: any) {
       className="absolute z-30 w-64 perspective-[1000px]"
     >
       {/* Connection Beam (Pulser) - Perfectly Centered on Card Origin */}
-      <div className="absolute top-1/2 left-1/2 flex items-center justify-center pointer-events-none overflow-visible">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none overflow-visible">
         <svg className="overflow-visible" width="1" height="1">
           <motion.line
             x1="0" y1="0" 
-            x2="0" y2={-desktopOffset}
+            x2="0" y2={-desktopOffset * 0.9} // Slight gap to avoid overlap with icon
             stroke="rgba(0, 255, 128, 0.4)"
-            strokeWidth="2"
+            strokeWidth="1.5"
             strokeDasharray="4 4"
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
           />
           <motion.circle
-            r="2.5"
+            r="2"
             fill="#00ff80"
             animate={{ 
-              cy: [0, -desktopOffset],
+              cy: [0, -desktopOffset * 0.9],
               opacity: [0, 1, 0]
             }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
@@ -77,7 +77,7 @@ function ProcessCard({ card, icon: Icon, isPeak, node }: any) {
             fill="#00ff80"
             filter="blur(4px)"
             animate={{ 
-              cy: [0, -desktopOffset],
+              cy: [0, -desktopOffset * 0.9],
               opacity: [0, 0.5, 0]
             }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.2 }}
@@ -92,11 +92,11 @@ function ProcessCard({ card, icon: Icon, isPeak, node }: any) {
         className="relative group p-[1px] rounded-[1.5rem] bg-gradient-to-br from-[#00ff80]/40 via-white/5 to-transparent hover:from-[#00ff80] transition-all duration-500 overflow-hidden shadow-[0_0_30px_rgba(0,255,128,0.1)] hover:shadow-[0_0_50px_rgba(0,255,128,0.2)]"
       >
         <div className="relative bg-[#05100a]/90 backdrop-blur-3xl rounded-[1.45rem] p-5 overflow-hidden border border-white/5">
-          <div className="absolute -top-1 -right-1 w-10 h-10 bg-[#00ff80]/15 rounded-bl-2xl flex items-center justify-center border-l border-b border-[#00ff80]/30 text-[#00ff80] font-display font-black text-base italic shadow-[0_0_15px_rgba(0,255,128,0.1)] italic">{card.id}</div>
+          <div className="absolute -top-1 -right-1 w-10 h-10 bg-[#00ff80]/15 rounded-bl-2xl flex items-center justify-center border-l border-b border-[#00ff80]/30 text-[#00ff80] font-display font-black text-base italic shadow-[0_0_15px_rgba(0,255,128,0.1)]">{card.id}</div>
           <div className="relative z-10 flex flex-col gap-3" style={{ transform: "translateZ(30px)" }}>
             <div className="w-10 h-10 rounded-lg bg-[#00ff80]/15 flex items-center justify-center border border-[#00ff80]/30 text-[#00ff80] transition-all duration-500 shadow-[inset_0_0_10px_rgba(0,255,128,0.1)]"><Icon size={20} /></div>
             <div>
-              <h3 className="text-lg font-black text-white mb-1 tracking-tight leading-tight uppercase italic">{card.title}</h3>
+              <h3 className="text-lg font-black text-white mb-1 tracking-tight leading-tight uppercase">{card.title}</h3>
               <p className="text-[12px] font-medium opacity-70" style={{ color: 'var(--text-secondary)' }}>{card.desc}</p>
             </div>
           </div>
@@ -137,9 +137,9 @@ export function ProcessSection() {
   // Desktop Node Positions
   const nodes = [
     { x: '15%', y: '44%' },
-    { x: '38%', y: '56%' },
-    { x: '62%', y: '44%' },
-    { x: '85%', y: '56%' },
+    { x: '35%', y: '56%' },
+    { x: '59%', y: '44%' },
+    { x: '82%', y: '56%' },
   ];
 
   // Handle scroll and touch to advance steps
@@ -275,20 +275,20 @@ export function ProcessSection() {
                 </filter>
               </defs>
               <path
-                d="M0,200 C100,200 100,176 150,176 C250,176 280,224 380,224 C480,224 520,176 620,176 C720,176 750,224 850,224 C950,224 950,200 1000,200"
+                d="M0,200 C100,200 100,176 150,176 C230,176 260,224 350,224 C440,224 490,176 590,176 C690,176 740,224 820,224 C920,224 950,200 1000,200"
                 stroke="#00ff80" strokeOpacity="0.2" strokeWidth="2" strokeDasharray="6 6"
                 mask="url(#pathMask)"
               />
               <motion.path
-                d="M0,200 C100,200 100,176 150,176 C250,176 280,224 380,224 C480,224 520,176 620,176 C720,176 750,224 850,224 C950,224 950,200 1000,200"
+                d="M0,200 C100,200 100,176 150,176 C230,176 260,224 350,224 C440,224 490,176 590,176 C690,176 740,224 820,224"
                 stroke="#00ff80" strokeWidth="3" filter="url(#glow)"
                 initial={{ pathLength: 0 }}
-                animate={{ pathLength: [0, 0.15, 0.38, 0.62, 0.85][step] || 0 }}
+                animate={{ pathLength: [0, 0.18, 0.42, 0.68, 1.0][step] || 0 }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}
                 mask="url(#pathMask)"
               />
               {nodes.map((node, i) => {
-                const nodeX = [150, 380, 620, 850][i];
+                const nodeX = [150, 350, 590, 820][i];
                 const nodeY = [176, 224, 176, 224][i];
                 return (
                   <motion.circle
@@ -307,9 +307,9 @@ export function ProcessSection() {
 
           <AnimatePresence mode="popLayout">
             {t?.steps?.map((card: any, cardIdx: number) => {
-              // Ensure Step 01 is always at Node 0, etc.
-              if (cardIdx >= step) return null;
-              const node = nodes[cardIdx];
+              const targetNodeIdx = step - 1 - cardIdx;
+              if (targetNodeIdx < 0 || targetNodeIdx >= 4) return null;
+              const node = nodes[targetNodeIdx];
               const Icon = icons[cardIdx];
               const isPeak = (cardIdx + 1) % 2 !== 0; 
               
