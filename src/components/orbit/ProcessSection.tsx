@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Search, PenTool, Code, CheckCircle2, Truck } from 'lucide-react';
 
-function ProcessCard({ card, icon: Icon, isPeak, node }: any) {
+function ProcessCard({ card, icon: Icon, isPeak, node, isDelivery }: any) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -32,7 +32,7 @@ function ProcessCard({ card, icon: Icon, isPeak, node }: any) {
     y.set(0);
   };
 
-  const desktopOffset = isPeak ? -170 : 170;
+  const desktopOffset = isDelivery ? 0 : (isPeak ? -170 : 170);
 
   return (
     <motion.div
@@ -50,39 +50,35 @@ function ProcessCard({ card, icon: Icon, isPeak, node }: any) {
       className="absolute z-30 w-64 perspective-[1000px]"
     >
       {/* Connection Beam (Pulser) - Perfectly Centered on Card Origin */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none overflow-visible">
-        <svg className="overflow-visible" width="1" height="1">
-          <motion.line
-            x1="0" y1="0" 
-            x2="0" y2={-desktopOffset * 0.9} // Slight gap to avoid overlap with icon
-            stroke="rgba(0, 255, 128, 0.4)"
-            strokeWidth="1.5"
-            strokeDasharray="4 4"
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          />
-          <motion.circle
-            r="2"
-            fill="#00ff80"
-            animate={{ 
-              cy: [0, -desktopOffset * 0.9],
-              opacity: [0, 1, 0]
-            }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          />
-          <motion.circle
-            r="6"
-            fill="#00ff80"
-            filter="blur(4px)"
-            animate={{ 
-              cy: [0, -desktopOffset * 0.9],
-              opacity: [0, 0.5, 0]
-            }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.2 }}
-          />
-        </svg>
-      </div>
+      {!isDelivery && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none overflow-visible">
+          <svg className="overflow-visible" width="1" height="1">
+            <motion.line
+              x1="0" y1="0" 
+              x2="0" y2={-desktopOffset * 0.9}
+              stroke="rgba(0, 255, 128, 0.4)"
+              strokeWidth="1.5"
+              strokeDasharray="4 4"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            />
+            <motion.circle
+              r="2"
+              fill="#00ff80"
+              animate={{ cy: [0, -desktopOffset * 0.9], opacity: [0, 1, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            />
+            <motion.circle
+              r="6"
+              fill="#00ff80"
+              filter="blur(4px)"
+              animate={{ cy: [0, -desktopOffset * 0.9], opacity: [0, 0.5, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.2 }}
+            />
+          </svg>
+        </div>
+      )}
 
       <motion.div 
         onMouseMove={handleMouseMove}
@@ -150,11 +146,11 @@ export function ProcessSection() {
 
   // Desktop Node Positions - Mathematically Symmetric
   const nodes = [
-    { x: '11%', y: '44%' }, // Shifted slightly left "leftify"
-    { x: '36%', y: '56%' },
-    { x: '61%', y: '44%' },
-    { x: '86%', y: '56%' },
-    { x: '92%', y: '44%' }, // Slot for Delivery card
+    { x: '10%', y: '44%' },
+    { x: '32%', y: '56%' },
+    { x: '54%', y: '44%' },
+    { x: '76%', y: '56%' },
+    { x: '90%', y: '50%' }, // Position for Delivery card (no target node, perfectly centered)
   ];
 
   // Handle scroll and touch to advance steps
@@ -295,15 +291,15 @@ export function ProcessSection() {
                 </filter>
               </defs>
               <path
-                d="M0,200 C80,200 80,176 140,176 C230,176 290,224 380,224 C470,224 530,176 620,176 C710,176 770,224 860,224 C940,224 960,200 1000,200"
-                stroke="#00ff80" strokeOpacity="0.2" strokeWidth="2" strokeDasharray="6 6"
+                d="M0,200 C40,200 50,176 100,176 C170,176 250,224 320,224 C390,224 470,176 540,176 C610,176 690,224 760,224"
+                fill="none" stroke="#00ff80" strokeOpacity="0.2" strokeWidth="2" strokeDasharray="6 6"
                 mask="url(#pathMask)"
               />
               <motion.path
-                d="M0,200 C80,200 80,176 140,176 C230,176 290,224 380,224 C470,224 530,176 620,176 C710,176 770,224 860,224"
-                stroke="#00ff80" strokeWidth="3" filter="url(#glow)"
+                d="M0,200 C40,200 50,176 100,176 C170,176 250,224 320,224 C390,224 470,176 540,176 C610,176 690,224 760,224"
+                fill="none" stroke="#00ff80" strokeWidth="3" filter="url(#glow)"
                 initial={{ pathLength: 0 }}
-                animate={{ pathLength: hasMounted ? ([0, 0.165, 0.445, 0.725, 1.0, 1.0][step] || 0) : 0 }}
+                animate={{ pathLength: hasMounted ? ([0, 0.13, 0.42, 0.71, 1.0, 1.0][step] || 0) : 0 }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}
                 mask="url(#pathMask)"
               />
@@ -322,7 +318,7 @@ export function ProcessSection() {
                       </marker>
                     </defs>
                     <motion.path 
-                      d="M860,224 C880,224 890,200 920,200"
+                      d="M760,224 C800,224 810,200 850,200"
                       fill="none" stroke="#00ff80" strokeWidth="2" strokeDasharray="4 2"
                       markerEnd="url(#premiumArrowhead)"
                       initial={{ pathLength: 0 }}
@@ -334,7 +330,7 @@ export function ProcessSection() {
               </AnimatePresence>
 
               {nodes.slice(0, 4).map((_, i) => {
-                const nodeX = [140, 380, 620, 860][i];
+                const nodeX = [100, 320, 540, 760][i];
                 const nodeY = [176, 224, 176, 224][i];
                 return (
                   <motion.circle
@@ -366,6 +362,7 @@ export function ProcessSection() {
                   icon={Icon} 
                   isPeak={isPeak} 
                   node={node} 
+                  isDelivery={cardIdx === 4}
                 />
               );
             })}
