@@ -221,7 +221,7 @@ export function AIEnhanceButton({
     );
 }
 
-import { parseRichText as parseRichSegments } from '@/lib/utils';
+import { RichText } from '@/components/ui/RichText';
 
 /* ─── Text Field ─── */
 export function TextField({
@@ -382,23 +382,7 @@ export function TextField({
                     {hasRichMarkers && (
                         <div className="mt-2 px-3 py-2 rounded-lg bg-background/50 border border-border/50 text-sm text-muted-foreground leading-relaxed">
                             <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 font-bold block mb-1">Preview</span>
-                            {parseRichSegments(value).map((seg, i) => {
-                                if (!seg.bold && !seg.card && !seg.whiteCard && !seg.color && !seg.greenCard) return <span key={i}>{seg.text}</span>;
-
-                                const classes = [
-                                    seg.bold && !seg.color ? 'font-bold text-white' : '',
-                                    seg.bold && seg.color ? 'font-bold' : '',
-                                    seg.card ? 'word-card' : '',
-                                    seg.whiteCard ? 'word-card-white' : '',
-                                    seg.greenCard ? 'word-card-green' : '',
-                                    seg.color === 'green' ? '!text-emerald-400' : '',
-                                    seg.color === 'gold' ? '!text-amber-500' : '',
-                                    seg.color === 'white' ? '!text-white' : '',
-                                    (!seg.color && !seg.card && !seg.whiteCard && seg.bold && !seg.greenCard) ? 'text-foreground' : ''
-                                ].filter(Boolean).join(' ');
-
-                                return <span key={i} className={classes}>{seg.text}</span>;
-                            })}
+                            <RichText text={value} />
                         </div>
                     )}
                 </div>

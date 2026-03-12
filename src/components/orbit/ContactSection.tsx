@@ -13,7 +13,7 @@ export function ContactSection() {
     : '#';
 
   return (
-    <section id="contact" className="section-dark relative overflow-hidden min-h-[100dvh] flex flex-col justify-center">
+    <section id="contact" className="section-dark relative overflow-visible min-h-[100dvh] flex flex-col justify-center">
       {/* Orange gradient glow at bottom — like GCore's contact section */}
       <div
         className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[60%] pointer-events-none"

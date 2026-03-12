@@ -9,7 +9,7 @@ export function ProcessSection() {
   const t = (content[lang] as any)?.process;
 
   return (
-    <section id="process" className="section-dark relative overflow-hidden min-h-[100dvh] flex flex-col justify-center">
+    <section id="process" className="section-dark relative overflow-visible min-h-[100dvh] flex flex-col justify-center">
       <div className="section-container flex flex-col items-center justify-center">
         {/* Header */}
         <motion.div

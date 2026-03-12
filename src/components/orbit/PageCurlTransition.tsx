@@ -165,6 +165,14 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
     return () => cancelAnimationFrame(rAF);
   }, [targetPage, activePage]);
 
+  // Break state: tracks if we've hit an edge and when
+  const reachedEdgeBreak = useRef<{ dir: 'up' | 'down' | null; time: number }>({ dir: null, time: 0 });
+
+  // Reset break state when page changes
+  useEffect(() => {
+    reachedEdgeBreak.current = { dir: null, time: 0 };
+  }, [activePage]);
+
   // Handle Scroll Locking (from previous implementation)
   useEffect(() => {
     const container = containerRef.current;
@@ -190,9 +198,49 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
       const target = e.target as HTMLElement;
 
-      if (activePage !== 0) {
-        if (e.deltaY > 0 && isScrollableBottom(target)) return;
-        if (e.deltaY < 0 && isScrollableTop(target)) return;
+      // Internal scrolling check: if target is scrollable, stay within section
+      if (e.deltaY > 0 && isScrollableBottom(target)) return;
+      if (e.deltaY < 0 && isScrollableTop(target)) return;
+
+      const now = performance.now();
+      const scrollDown = e.deltaY > 0;
+      const scrollUp = e.deltaY < 0;
+
+      // 1. Bottom Edge Break (scrolling down to next page)
+      if (scrollDown && !isScrollableBottom(target)) {
+        if (reachedEdgeBreak.current.dir !== 'down') {
+          e.preventDefault();
+          reachedEdgeBreak.current = { dir: 'down', time: now };
+          wheelAccum.current = 0;
+          return;
+        }
+        // Cooldown check (delta time must be at least 400ms)
+        if (now - reachedEdgeBreak.current.time < 400) {
+          e.preventDefault();
+          wheelAccum.current = 0;
+          return;
+        }
+      }
+
+      // 2. Top Edge Break (scrolling up to prev page)
+      if (scrollUp && !isScrollableTop(target)) {
+        if (reachedEdgeBreak.current.dir !== 'up') {
+          e.preventDefault();
+          reachedEdgeBreak.current = { dir: 'up', time: now };
+          wheelAccum.current = 0;
+          return;
+        }
+        if (now - reachedEdgeBreak.current.time < 400) {
+          e.preventDefault();
+          wheelAccum.current = 0;
+          return;
+        }
+      }
+
+      // Clear break if scrolling away from edge
+      if ((reachedEdgeBreak.current.dir === 'down' && scrollUp) || 
+          (reachedEdgeBreak.current.dir === 'up' && scrollDown)) {
+        reachedEdgeBreak.current = { dir: null, time: 0 };
       }
 
       e.preventDefault();
@@ -223,10 +271,8 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
 
       if (Math.abs(deltaX) > Math.abs(deltaY)) return;
 
-      if (activePage !== 0) {
-        if (deltaY > 0 && isScrollableBottom(target)) return;
-        if (deltaY < 0 && isScrollableTop(target)) return;
-      }
+      if (deltaY > 0 && isScrollableBottom(target)) return;
+      if (deltaY < 0 && isScrollableTop(target)) return;
 
       if (e.cancelable) e.preventDefault();
     };
@@ -239,14 +285,30 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
 
       if (Math.abs(deltaX) > Math.abs(deltaY)) return;
 
+      const now = performance.now();
       if (Math.abs(deltaY) > 80) {
-        if (deltaY > 0) {
-          if (activePage === 0 || !isScrollableBottom(target)) goToPage(activePage + 1);
-        } else {
-          if (activePage === 0 || !isScrollableTop(target)) goToPage(activePage - 1);
+        if (deltaY > 0) { // Swiping up -> scroll down
+          if (!isScrollableBottom(target)) {
+            if (reachedEdgeBreak.current.dir !== 'down') {
+              reachedEdgeBreak.current = { dir: 'down', time: now };
+              return;
+            }
+            if (now - reachedEdgeBreak.current.time < 400) return;
+          }
+          goToPage(activePage + 1);
+        } else { // Swiping down -> scroll up
+          if (!isScrollableTop(target)) {
+            if (reachedEdgeBreak.current.dir !== 'up') {
+              reachedEdgeBreak.current = { dir: 'up', time: now };
+              return;
+            }
+            if (now - reachedEdgeBreak.current.time < 400) return;
+          }
+          goToPage(activePage - 1);
         }
       }
     };
+
 
     container.addEventListener('wheel', onWheel, { passive: false });
     container.addEventListener('touchstart', onTouchStart, { passive: true });

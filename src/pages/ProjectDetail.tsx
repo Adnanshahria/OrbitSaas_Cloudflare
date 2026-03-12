@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ensureAbsoluteUrl } from '@/lib/utils';
 import DOMPurify from 'dompurify';
+import { RichText } from '@/components/ui/RichText';
 
 type MediaItem = { type: 'image'; url: string } | { type: 'video'; url: string };
 
@@ -366,9 +367,10 @@ function CollapsibleCards({ blocks }: { blocks: string[] }) {
                                     className="overflow-hidden"
                                 >
                                     <div
-                                        className="px-5 sm:px-8 pb-5 sm:pb-7 pt-2 text-muted-foreground text-base sm:text-lg leading-relaxed space-y-4 [&_b]:font-bold [&_b]:text-foreground [&_i]:italic [&_span]:inline"
-                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(bodyHtml) }}
-                                    />
+                                        className="px-5 sm:px-8 pb-5 sm:pb-7 pt-2 text-muted-foreground text-base sm:text-lg leading-relaxed space-y-4"
+                                    >
+                                        <RichText text={bodyHtml} />
+                                    </div>
                                 </motion.div>
                             )}
                         </AnimatePresence>

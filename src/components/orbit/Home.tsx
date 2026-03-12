@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import HeroBeam from './HeroBeam';
 import { useNavigate } from 'react-router-dom';
+import { RichText } from '@/components/ui/RichText';
 import {
   Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket, Code, Database, Shield, Cloud,
   Cpu, Monitor, Wifi, Mail, Camera, Music, Heart, Star, Target, Briefcase,
@@ -111,15 +112,15 @@ export function Home() {
   return (
     <section
       id="hero"
-      className="section-dark relative overflow-visible z-20 noise-overlay"
+      className="section-dark relative overflow-hidden min-h-[100dvh] z-20 noise-overlay flex flex-col justify-center"
     >
       {/* ── Hero content wrapper (full viewport height) ── */}
-      <div className="relative min-h-[100dvh] flex items-center">
+      <div className="relative flex items-center">
         {/* ── Huly-style Animated Glowing Beam ── */}
         <HeroBeam />
 
         {/* ── Content ── */}
-        <div className="relative z-10 section-container !py-32 lg:!py-40 w-full">
+        <div className="relative z-10 section-container !py-20 lg:!py-28 w-full">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left side — Text */}
             <div>
@@ -172,7 +173,7 @@ export function Home() {
                 className="text-base md:text-lg max-w-lg mb-10"
                 style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}
               >
-                {subtitle}
+                <RichText text={subtitle} />
               </motion.p>
 
               {/* Buttons */}

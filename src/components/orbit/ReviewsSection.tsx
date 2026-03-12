@@ -10,7 +10,7 @@ export function ReviewsSection() {
     const items = t?.items || [];
 
     return (
-        <section id="reviews" className="section-light relative overflow-hidden min-h-[100dvh] flex flex-col justify-center">
+        <section id="reviews" className="section-light relative overflow-visible min-h-[100dvh] flex flex-col justify-center">
             {/* Ambient glow */}
             <div
                 className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] pointer-events-none"

@@ -11,7 +11,7 @@ export function ProjectsSection() {
   const items = t?.items || [];
 
   return (
-    <section id="project" className="section-light relative overflow-hidden flex flex-col min-h-[100dvh] pt-20 pb-12 sm:pt-24 sm:pb-16 z-20 bg-white">
+    <section id="project" className="section-light relative overflow-visible flex flex-col min-h-[100dvh] pt-20 pb-12 sm:pt-24 sm:pb-16 z-20 bg-white">
       {/* Immersive Light Background Aesthetics */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[var(--accent)]/[0.04] rounded-full blur-[100px] pointer-events-none translate-x-1/3 -translate-y-1/3" />
       <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-[var(--accent)]/[0.02] rounded-full blur-[120px] pointer-events-none -translate-x-1/3 translate-y-1/3" />

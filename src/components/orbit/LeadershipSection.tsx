@@ -10,7 +10,7 @@ export function LeadershipSection() {
   const members = t?.members || [];
 
   return (
-    <section id="leadership" className="section-dark min-h-[100dvh] flex flex-col justify-center">
+    <section id="leadership" className="section-dark relative overflow-visible min-h-[100dvh] flex flex-col justify-center">
       <div className="section-container">
         {/* Header */}
         <div className="text-center mb-16">
