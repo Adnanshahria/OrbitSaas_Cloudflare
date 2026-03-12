@@ -153,6 +153,11 @@ export const translations = {
           title: 'Testing',
           desc: 'Rigorous QA and performance optimization ensuring your product is flawless and ready for launch.',
         },
+        {
+          id: '05',
+          title: 'Delivery',
+          desc: 'Your project is live! We ensure a smooth handover and provide ongoing support for continued success.',
+        },
       ],
     },
   },
@@ -307,6 +312,11 @@ export const translations = {
           id: '০৪',
           title: 'পরীক্ষণ (Testing)',
           desc: 'লঞ্চ করার আগে প্রতিটি ফিচার নিখুঁতভাবে পরীক্ষা এবং পারফরম্যান্স অপ্টিমাইজেশন নিশ্চিত করি।',
+        },
+        {
+          id: '০৫',
+          title: 'ডেলিভারি (Delivery)',
+          desc: 'আপনার প্রজেক্ট সফলভাবে লাইভ! আমরা একটি মসৃণ হ্যান্ডওভার এবং প্রজেক্ট পরবর্তী সাপোর্ট নিশ্চিত করি।',
         },
       ],
     },

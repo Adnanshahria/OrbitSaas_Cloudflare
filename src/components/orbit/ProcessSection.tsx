@@ -3,7 +3,7 @@ import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Search, PenTool, Code, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Search, PenTool, Code, CheckCircle2, Truck } from 'lucide-react';
 
 function ProcessCard({ card, icon: Icon, isPeak, node }: any) {
   const x = useMotionValue(0);
@@ -137,7 +137,7 @@ export function ProcessSection() {
     stepRef.current = step;
   }, [step]);
   
-  const icons = [Search, PenTool, Code, CheckCircle2];
+  const icons = [Search, PenTool, Code, CheckCircle2, Truck];
   
   const [isDesktop, setIsDesktop] = useState(false);
 
@@ -150,10 +150,11 @@ export function ProcessSection() {
 
   // Desktop Node Positions - Mathematically Symmetric
   const nodes = [
-    { x: '14%', y: '44%' },
-    { x: '38%', y: '56%' },
-    { x: '62%', y: '44%' },
+    { x: '11%', y: '44%' }, // Shifted slightly left "leftify"
+    { x: '36%', y: '56%' },
+    { x: '61%', y: '44%' },
     { x: '86%', y: '56%' },
+    { x: '92%', y: '44%' }, // Slot for Delivery card
   ];
 
   // Handle scroll and touch to advance steps
@@ -183,6 +184,7 @@ export function ProcessSection() {
       const isScrollingDown = e.deltaY > 0;
       const isScrollingUp = e.deltaY < 0;
 
+      const stepsCount = sortedSteps.length;
       if (isScrollingDown) {
         if (stepRef.current < stepsCount) {
           setStep(prev => prev + 1);
@@ -222,7 +224,7 @@ export function ProcessSection() {
       // Higher threshold for deliberate swipe
       if (Math.abs(deltaY) > 60) {
         if (deltaY > 0) {
-          if (stepRef.current < stepsCount) {
+          if (stepRef.current < sortedSteps.length) {
             setStep(prev => prev + 1);
             lastStepTime.current = now;
           } else {
@@ -301,11 +303,37 @@ export function ProcessSection() {
                 d="M0,200 C80,200 80,176 140,176 C230,176 290,224 380,224 C470,224 530,176 620,176 C710,176 770,224 860,224"
                 stroke="#00ff80" strokeWidth="3" filter="url(#glow)"
                 initial={{ pathLength: 0 }}
-                animate={{ pathLength: hasMounted ? ([0, 0.165, 0.425, 0.685, 0.945][step] || 0) : 0 }}
+                animate={{ pathLength: hasMounted ? ([0, 0.165, 0.445, 0.725, 1.0, 1.0][step] || 0) : 0 }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}
                 mask="url(#pathMask)"
               />
-              {nodes.map((_, i) => {
+
+              {/* Final Premium Arrow Mark (Connecting step 4 to Delivery) */}
+              <AnimatePresence>
+                {step >= 5 && (
+                  <motion.g
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <defs>
+                      <marker id="premiumArrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orientation="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#00ff80" />
+                      </marker>
+                    </defs>
+                    <motion.path 
+                      d="M860,224 C880,224 890,200 920,200"
+                      fill="none" stroke="#00ff80" strokeWidth="2" strokeDasharray="4 2"
+                      markerEnd="url(#premiumArrowhead)"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                    />
+                  </motion.g>
+                )}
+              </AnimatePresence>
+
+              {nodes.slice(0, 4).map((_, i) => {
                 const nodeX = [140, 380, 620, 860][i];
                 const nodeY = [176, 224, 176, 224][i];
                 return (
@@ -433,7 +461,7 @@ export function ProcessSection() {
             />
           </div>
           <span className="text-[var(--accent)] text-[9px] md:text-[10px] tracking-[0.4em] font-black uppercase">
-            {step === 4 ? "Proceed" : step === 0 ? "Explore" : "Scroll"}
+            {step === sortedSteps.length ? "Proceed" : step === 0 ? "Explore" : "Scroll"}
           </span>
         </motion.div>
       </div>
