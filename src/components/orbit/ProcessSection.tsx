@@ -116,7 +116,14 @@ export function ProcessSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const stepRef = useRef(0);
   const [step, setStep] = useState(0);
+  const [hasMounted, setHasMounted] = useState(false);
   const lastStepTime = useRef(0);
+
+  // Reset state when entering the section
+  useEffect(() => {
+    setHasMounted(true);
+    setStep(0);
+  }, []);
 
   // Sync ref with state
   useEffect(() => {
@@ -283,7 +290,7 @@ export function ProcessSection() {
                 d="M0,200 C100,200 100,176 150,176 C230,176 260,224 350,224 C440,224 490,176 590,176 C690,176 740,224 820,224"
                 stroke="#00ff80" strokeWidth="3" filter="url(#glow)"
                 initial={{ pathLength: 0 }}
-                animate={{ pathLength: [0, 0.18, 0.42, 0.68, 1.0][step] || 0 }}
+                animate={{ pathLength: hasMounted ? ([0, 0.18, 0.42, 0.68, 1.0][step] || 0) : 0 }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}
                 mask="url(#pathMask)"
               />
