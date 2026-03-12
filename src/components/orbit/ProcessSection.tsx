@@ -144,13 +144,13 @@ export function ProcessSection() {
     return () => window.removeEventListener('resize', checkSize);
   }, []);
 
-  // Desktop Node Positions - Mathematically Symmetric
+  // Distinct & Even Desktop Node Positions (20% Interval Symmetry)
   const nodes = [
     { x: '10%', y: '44%' },
-    { x: '32%', y: '56%' },
-    { x: '54%', y: '44%' },
-    { x: '76%', y: '56%' },
-    { x: '90%', y: '50%' }, // Position for Delivery card (no target node, perfectly centered)
+    { x: '30%', y: '56%' },
+    { x: '50%', y: '44%' },
+    { x: '70%', y: '56%' },
+    { x: '90%', y: '50%' }, // Position for Delivery card perfectly centered on right wing
   ];
 
   // Handle scroll and touch to advance steps
@@ -291,15 +291,15 @@ export function ProcessSection() {
                 </filter>
               </defs>
               <path
-                d="M0,200 C40,200 50,176 100,176 C170,176 250,224 320,224 C390,224 470,176 540,176 C610,176 690,224 760,224"
+                d="M0,200 C40,200 50,176 100,176 C200,176 200,224 300,224 C400,224 400,176 500,176 C600,176 600,224 700,224"
                 fill="none" stroke="#00ff80" strokeOpacity="0.2" strokeWidth="3" strokeDasharray="6 6"
                 mask="url(#pathMask)"
               />
               <motion.path
-                d="M0,200 C40,200 50,176 100,176 C170,176 250,224 320,224 C390,224 470,176 540,176 C610,176 690,224 760,224"
+                d="M0,200 C40,200 50,176 100,176 C200,176 200,224 300,224 C400,224 400,176 500,176 C600,176 600,224 700,224"
                 fill="none" stroke="#00ff80" strokeWidth="4" filter="url(#glow)"
                 initial={{ pathLength: 0 }}
-                animate={{ pathLength: hasMounted ? ([0, 0.13, 0.42, 0.71, 1.0, 1.0][step] || 0) : 0 }}
+                animate={{ pathLength: hasMounted ? ([0, 0.145, 0.43, 0.715, 1.0, 1.0][step] || 0) : 0 }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}
                 mask="url(#pathMask)"
               />
@@ -312,14 +312,9 @@ export function ProcessSection() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    <defs>
-                      <marker id="premiumArrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                        <polygon points="0 0, 6 3, 0 6" fill="#00ff80" />
-                      </marker>
-                    </defs>
                     <motion.path 
-                      d="M760,224 C800,224 810,200 875,200"
-                      fill="none" stroke="#00ff80" strokeWidth="4" filter="url(#glow)"
+                      d="M700,224 C760,224 760,200 820,200"
+                      fill="none" stroke="url(#premiumArrowGradient)" strokeWidth="4" filter="url(#glow)"
                       markerEnd="url(#premiumArrowhead)"
                       initial={{ pathLength: 0 }}
                       animate={{ pathLength: 1 }}
@@ -330,7 +325,7 @@ export function ProcessSection() {
               </AnimatePresence>
 
               {nodes.slice(0, 4).map((_, i) => {
-                const nodeX = [100, 320, 540, 760][i];
+                const nodeX = [100, 300, 500, 700][i];
                 const nodeY = [176, 224, 176, 224][i];
                 return (
                   <motion.circle
