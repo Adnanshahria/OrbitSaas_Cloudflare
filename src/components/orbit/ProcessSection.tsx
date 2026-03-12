@@ -158,40 +158,37 @@ export function ProcessSection() {
           <div className="absolute inset-0 pointer-events-none overflow-visible">
             <svg viewBox="0 0 1000 400" preserveAspectRatio="none" className="w-full h-full" fill="none">
               <defs>
-                <linearGradient id="goldPathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="var(--accent)" stopOpacity="0" />
-                  <stop offset="20%" stopColor="var(--accent)" stopOpacity="0.4" />
-                  <stop offset="80%" stopColor="var(--accent)" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-                </linearGradient>
                 <filter id="glow">
                   <feGaussianBlur stdDeviation="3" result="coloredBlur" />
                   <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
                 </filter>
               </defs>
-
               <path
                 d="M0,200 C100,200 100,176 150,176 C250,176 280,224 380,224 C480,224 520,176 620,176 C720,176 750,224 850,224 C950,224 950,200 1000,200"
-                stroke="url(#goldPathGradient)" strokeWidth="2" strokeDasharray="6 6"
+                stroke="var(--accent)" strokeOpacity="0.3" strokeWidth="2" strokeDasharray="6 6"
               />
               <motion.path
                 d="M0,200 C100,200 100,176 150,176 C250,176 280,224 380,224 C480,224 520,176 620,176 C720,176 750,224 850,224 C950,224 950,200 1000,200"
                 stroke="var(--accent)" strokeWidth="3" filter="url(#glow)"
                 initial={{ pathLength: 0 }}
-                animate={{ pathLength: step / 4 }}
+                animate={{ pathLength: [0, 0.15, 0.38, 0.62, 0.85][step] || 0 }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}
               />
-              {nodes.map((node, i) => (
-                <motion.circle
-                  key={i} cx={`${parseFloat(node.x) * 10}`} cy={`${parseFloat(node.y) * 4}`} r="5"
-                  animate={{ 
-                    opacity: step > i ? 1 : 0.4, 
-                    scale: step > i ? 1 : 0.8,
-                    fill: step > i ? "var(--accent)" : "transparent"
-                  }}
-                  stroke="var(--accent)" strokeWidth="2" filter={step > i ? "url(#glow)" : "none"}
-                />
-              ))}
+              {nodes.map((node, i) => {
+                const nodeX = [150, 380, 620, 850][i];
+                const nodeY = [176, 224, 176, 224][i];
+                return (
+                  <motion.circle
+                    key={i} cx={nodeX} cy={nodeY} r="6"
+                    animate={{ 
+                      opacity: step > i ? 1 : 0.4, 
+                      scale: step > i ? 1.1 : 0.9,
+                      fill: step > i ? "var(--accent)" : "transparent"
+                    }}
+                    stroke="var(--accent)" strokeWidth="2" filter={step > i ? "url(#glow)" : "none"}
+                  />
+                );
+              })}
             </svg>
           </div>
 
