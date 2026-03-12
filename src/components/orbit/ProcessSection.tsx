@@ -36,7 +36,7 @@ function ProcessCard({ card, icon: Icon, isPeak, node }: any) {
 
   return (
     <motion.div
-      layoutId={`card-${card.id}`}
+      layoutId={`process-card-${card.id}`}
       initial={{ 
         opacity: 0, scale: 0.8, x: '-50%', y: '-50%', 
         left: node.x, top: `calc(${node.y} + ${desktopOffset}px)` 
