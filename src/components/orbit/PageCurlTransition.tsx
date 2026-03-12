@@ -165,99 +165,119 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
     return () => cancelAnimationFrame(rAF);
   }, [targetPage, activePage]);
 
-  // Break state: tracks if we've hit an edge and when
-  const reachedEdgeBreak = useRef<{ dir: 'up' | 'down' | null; time: number }>({ dir: null, time: 0 });
+  // ─── MOBILE: Count-based swipe thresholds per page ───
+  // How many swipes (in the same direction) are needed before the next page transition fires.
+  // e.g. Services (1) = 3 means: swipe 1 scrolls, swipe 2 scrolls, swipe 3 triggers transition.
+  const MOBILE_FORWARD_SWIPES: Record<number, number> = {
+    0: 1,   // Home — no overflow, transition immediately
+    1: 3,   // Services — exactly 3 swipes
+    2: 5,   // Process — exactly 5 swipes
+    3: 2,   // TechStack
+    4: 2,   // Why Us
+    5: 2,   // Projects
+    6: 2,   // Reviews
+    7: 2,   // Leadership
+    8: 2,   // Contact
+  };
+  const MOBILE_BACKWARD_SWIPES = 2; // For going to previous page, always 2
 
-  // Reset break state when page changes
+  const mobileSwipeCount = useRef(0);
+  const mobileSwipeDir = useRef<'up' | 'down' | null>(null);
+  
+  // Track when the user last scrolled inside a scrollable area for desktop
+  const lastInternalScrollTime = useRef(0);
+
+  // Reset swipe counter and scroll times when page changes
   useEffect(() => {
-    reachedEdgeBreak.current = { dir: null, time: 0 };
+    mobileSwipeCount.current = 0;
+    mobileSwipeDir.current = null;
+    lastInternalScrollTime.current = 0;
   }, [activePage]);
 
-  // Handle Scroll Locking (from previous implementation)
+  // Handle Scroll Locking & Touch
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const isScrollableTop = (el: HTMLElement): boolean => {
-      if (el === container || el === document.body || el === document.documentElement) return false;
-      const style = window.getComputedStyle(el);
-      const isScrollable = (style.overflowY === 'auto' || style.overflowY === 'scroll') && el.scrollHeight > el.clientHeight;
-      if (isScrollable && el.scrollTop > 1) return true;
-      return el.parentElement ? isScrollableTop(el.parentElement) : false;
+    // Check if any ancestor (up to container) can scroll down
+    const canScrollDown = (el: HTMLElement): boolean => {
+      let node: HTMLElement | null = el;
+      while (node && node !== container) {
+        const style = window.getComputedStyle(node);
+        const hasOverflow = (style.overflowY === 'auto' || style.overflowY === 'scroll') && node.scrollHeight > node.clientHeight;
+        if (hasOverflow && Math.ceil(node.scrollTop + node.clientHeight) < node.scrollHeight - 2) return true;
+        node = node.parentElement;
+      }
+      return false;
     };
 
-    const isScrollableBottom = (el: HTMLElement): boolean => {
-      if (el === container || el === document.body || el === document.documentElement) return false;
-      const style = window.getComputedStyle(el);
-      const isScrollable = (style.overflowY === 'auto' || style.overflowY === 'scroll') && el.scrollHeight > el.clientHeight;
-      if (isScrollable && Math.ceil(el.scrollTop + el.clientHeight) < el.scrollHeight - 1) return true;
-      return el.parentElement ? isScrollableBottom(el.parentElement) : false;
+    // Check if any ancestor (up to container) can scroll up
+    const canScrollUp = (el: HTMLElement): boolean => {
+      let node: HTMLElement | null = el;
+      while (node && node !== container) {
+        const style = window.getComputedStyle(node);
+        const hasOverflow = (style.overflowY === 'auto' || style.overflowY === 'scroll') && node.scrollHeight > node.clientHeight;
+        if (hasOverflow && node.scrollTop > 2) return true;
+        node = node.parentElement;
+      }
+      return false;
     };
 
+    // ─── Desktop Wheel ───
     const onWheel = (e: WheelEvent) => {
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
       const target = e.target as HTMLElement;
 
-      // Internal scrolling check: if target is scrollable, stay within section
-      if (e.deltaY > 0 && isScrollableBottom(target)) return;
-      if (e.deltaY < 0 && isScrollableTop(target)) return;
-
-      const now = performance.now();
-      const scrollDown = e.deltaY > 0;
-      const scrollUp = e.deltaY < 0;
-
-      // 1. Bottom Edge Break (scrolling down to next page)
-      if (scrollDown && !isScrollableBottom(target)) {
-        if (reachedEdgeBreak.current.dir !== 'down') {
-          e.preventDefault();
-          reachedEdgeBreak.current = { dir: 'down', time: now };
-          wheelAccum.current = 0;
-          return;
-        }
-        // Cooldown check (delta time must be at least 400ms)
-        if (now - reachedEdgeBreak.current.time < 400) {
-          e.preventDefault();
-          wheelAccum.current = 0;
-          return;
-        }
+      // If there's room to scroll inside the page, allow native scroll
+      if (e.deltaY > 0 && canScrollDown(target)) {
+        lastInternalScrollTime.current = performance.now();
+        return;
       }
-
-      // 2. Top Edge Break (scrolling up to prev page)
-      if (scrollUp && !isScrollableTop(target)) {
-        if (reachedEdgeBreak.current.dir !== 'up') {
-          e.preventDefault();
-          reachedEdgeBreak.current = { dir: 'up', time: now };
-          wheelAccum.current = 0;
-          return;
-        }
-        if (now - reachedEdgeBreak.current.time < 400) {
-          e.preventDefault();
-          wheelAccum.current = 0;
-          return;
-        }
-      }
-
-      // Clear break if scrolling away from edge
-      if ((reachedEdgeBreak.current.dir === 'down' && scrollUp) || 
-          (reachedEdgeBreak.current.dir === 'up' && scrollDown)) {
-        reachedEdgeBreak.current = { dir: null, time: 0 };
+      if (e.deltaY < 0 && canScrollUp(target)) {
+        lastInternalScrollTime.current = performance.now();
+        return;
       }
 
       e.preventDefault();
       if (targetPage !== null) return;
 
+      // Cooldown: if the user was just scrolling inside the page content,
+      // ignore wheel events for 600ms to prevent momentum bleed
+      const now = performance.now();
+      if (now - lastInternalScrollTime.current < 600) {
+        wheelAccum.current = 0;
+        return;
+      }
+
       wheelAccum.current += e.deltaY;
       if (wheelTimer.current) clearTimeout(wheelTimer.current);
       wheelTimer.current = setTimeout(() => { wheelAccum.current = 0; }, 200);
 
-      if (wheelAccum.current > 100) {
+      if (wheelAccum.current > 300) {
         wheelAccum.current = 0;
         goToPage(activePage + 1);
-      } else if (wheelAccum.current < -100) {
+      } else if (wheelAccum.current < -300) {
         wheelAccum.current = 0;
         goToPage(activePage - 1);
       }
     };
+
+    // ─── Mobile Touch: Pure count-based (NO scroll detection) ───
+    const MOBILE_FORWARD_SWIPES: Record<number, number> = {
+      0: 1,   // Home
+      1: 3,   // Services — exactly 3 swipes
+      2: 5,   // Process — exactly 5 swipes
+      3: 2,   // TechStack
+      4: 2,   // Why Us
+      5: 2,   // Projects
+      6: 2,   // Reviews
+      7: 2,   // Leadership
+      8: 2,   // Contact
+    };
+    const MOBILE_BACKWARD_SWIPES = 2; // For going to previous page, always 2
+    
+    // Default required forward swipes if page not found
+    const requiredForward = MOBILE_FORWARD_SWIPES[activePage] ?? 2;
 
     const onTouchStart = (e: TouchEvent) => {
       touchStartY.current = e.touches[0].clientY;
@@ -265,50 +285,45 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
     };
 
     const onTouchMove = (e: TouchEvent) => {
-      const deltaY = touchStartY.current - e.touches[0].clientY;
-      const deltaX = touchStartX.current - e.touches[0].clientX;
-      const target = e.target as HTMLElement;
-
-      if (Math.abs(deltaX) > Math.abs(deltaY)) return;
-
-      if (deltaY > 0 && isScrollableBottom(target)) return;
-      if (deltaY < 0 && isScrollableTop(target)) return;
-
-      if (e.cancelable) e.preventDefault();
+      // By completely preventing default on touchmove, we disable native browser scrolling
+      // This ensures the browser NEVER swallows our swipe events, making the counter 100% reliable.
+      if (e.cancelable) {
+        e.preventDefault();
+      }
     };
 
     const onTouchEnd = (e: TouchEvent) => {
       if (targetPage !== null) return;
       const deltaY = touchStartY.current - e.changedTouches[0].clientY;
       const deltaX = touchStartX.current - e.changedTouches[0].clientX;
-      const target = e.target as HTMLElement;
 
-      if (Math.abs(deltaX) > Math.abs(deltaY)) return;
+      if (Math.abs(deltaX) > Math.abs(deltaY)) return; // Ignore horizontal swipes
+      if (Math.abs(deltaY) < 40) return; // Lowered threshold to 40px for easier detection
 
-      const now = performance.now();
-      if (Math.abs(deltaY) > 80) {
-        if (deltaY > 0) { // Swiping up -> scroll down
-          if (!isScrollableBottom(target)) {
-            if (reachedEdgeBreak.current.dir !== 'down') {
-              reachedEdgeBreak.current = { dir: 'down', time: now };
-              return;
-            }
-            if (now - reachedEdgeBreak.current.time < 400) return;
-          }
+      const dir: 'up' | 'down' = deltaY > 0 ? 'up' : 'down';
+
+      // Direction changed → reset counter
+      if (dir !== mobileSwipeDir.current) {
+        mobileSwipeCount.current = 0;
+        mobileSwipeDir.current = dir;
+      }
+
+      mobileSwipeCount.current++;
+
+      if (dir === 'up') {
+        // Swiping up → wants NEXT page
+        if (mobileSwipeCount.current >= requiredForward) {
+          mobileSwipeCount.current = 0;
           goToPage(activePage + 1);
-        } else { // Swiping down -> scroll up
-          if (!isScrollableTop(target)) {
-            if (reachedEdgeBreak.current.dir !== 'up') {
-              reachedEdgeBreak.current = { dir: 'up', time: now };
-              return;
-            }
-            if (now - reachedEdgeBreak.current.time < 400) return;
-          }
+        }
+      } else {
+        // Swiping down → wants PREV page
+        if (mobileSwipeCount.current >= MOBILE_BACKWARD_SWIPES) {
+          mobileSwipeCount.current = 0;
           goToPage(activePage - 1);
         }
       }
     };
-
 
     container.addEventListener('wheel', onWheel, { passive: false });
     container.addEventListener('touchstart', onTouchStart, { passive: true });

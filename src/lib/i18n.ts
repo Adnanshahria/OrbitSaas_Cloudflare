@@ -129,6 +129,32 @@ export const translations = {
       systemPrompt: '',
       qaPairs: [] as { question: string; answer: string }[],
     },
+    process: {
+      subtitle: 'Our Methodology',
+      title: 'How We Transform Your Vision',
+      steps: [
+        {
+          id: '01',
+          title: 'Discovery',
+          desc: 'We dive deep into your vision, target audience, and business goals to lay a solid foundation for success.',
+        },
+        {
+          id: '02',
+          title: 'Planning',
+          desc: 'Developing technical architecture, wireframes, and a comprehensive roadmap to guide the build.',
+        },
+        {
+          id: '03',
+          title: 'Development',
+          desc: 'Bringing ideas to life with high-performance code, scalable solutions, and iterative milestones.',
+        },
+        {
+          id: '04',
+          title: 'Testing',
+          desc: 'Rigorous QA and performance optimization ensuring your product is flawless and ready for launch.',
+        },
+      ],
+    },
   },
   bn: {
     nav: {
@@ -257,6 +283,32 @@ export const translations = {
       greeting: 'হ্যালো! আমি ORBIT-এর এআই সহকারী। আমি কীভাবে সাহায্য করতে পারি?',
       systemPrompt: '',
       qaPairs: [] as { question: string; answer: string }[],
+    },
+    process: {
+      subtitle: 'কার্যপ্রণালী',
+      title: 'আমরা যেভাবে আপনার লক্ষ্য পূরণ করি',
+      steps: [
+        {
+          id: '০১',
+          title: 'আবিষ্কার (Discovery)',
+          desc: 'আপনার লক্ষ্য, টার্গেট অডিয়েন্স এবং ব্যবসায়িক লক্ষ্যগুলো গভীরভাবে বিশ্লেষণ করে আমরা একটি মজবুত ভিত্তি তৈরি করি।',
+        },
+        {
+          id: '০২',
+          title: 'পরিকল্পনা (Planning)',
+          desc: 'প্রজেক্ট রোডের ম্যাপ, টেকনিক্যাল আর্কিটেকচার এবং ওয়্যারফ্রেম তৈরির মাধ্যমে সঠিক দিকনির্দেশনা নিশ্চিত করি।',
+        },
+        {
+          id: '০৩',
+          title: 'উন্নয়ন (Development)',
+          desc: 'পরিচ্ছন্ন কোড এবং স্কেলেবল আর্কিটেকচারের মাধ্যমে আপনার ভাবনাকে বাস্তবে রূপ দান করি।',
+        },
+        {
+          id: '০৪',
+          title: 'পরীক্ষণ (Testing)',
+          desc: 'লঞ্চ করার আগে প্রতিটি ফিচার নিখুঁতভাবে পরীক্ষা এবং পারফরম্যান্স অপ্টিমাইজেশন নিশ্চিত করি।',
+        },
+      ],
     },
   },
 } as const;
