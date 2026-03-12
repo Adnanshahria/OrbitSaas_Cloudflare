@@ -4,7 +4,7 @@ import { useLang } from '@/contexts/LanguageContext';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import HeroBeam from './HeroBeam';
-import { scrollToPageFlipSection } from './PageCurlContainer';
+import { useNavigate } from 'react-router-dom';
 import {
   Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket, Code, Database, Shield, Cloud,
   Cpu, Monitor, Wifi, Mail, Camera, Music, Heart, Star, Target, Briefcase,
@@ -65,6 +65,7 @@ function FeatureCard({
 export function Home() {
   const { content } = useContent();
   const { lang } = useLang();
+  const navigate = useNavigate();
   const t = (content[lang] as any)?.hero;
 
   const [email, setEmail] = useState('');
@@ -100,11 +101,11 @@ export function Home() {
   };
 
   const scrollToContact = () => {
-    scrollToPageFlipSection('contact');
+    navigate('/contact');
   };
 
   const scrollToServices = () => {
-    scrollToPageFlipSection('services');
+    navigate('/services');
   };
 
   return (

@@ -2,27 +2,33 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { scrollToPageFlipSection, SECTION_PAGE_MAP } from './PageCurlContainer';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import orbitLogo from '@/assets/orbit-logo.png';
 
 const NAV_SECTIONS = [
-  { href: '#hero', label: 'Home' },
-  { href: '#services', label: 'Services' },
-  { href: '#process', label: 'Process' },
-  { href: '#tech', label: 'Tech Stack' },
-  { href: '#why-us', label: 'Why Us' },
-  { href: '#project', label: 'Projects' },
-  { href: '#reviews', label: 'Reviews' },
-  { href: '#leadership', label: 'Team' },
-  { href: '#contact', label: 'Contact' },
+  { path: '/', label: 'Home' },
+  { path: '/services', label: 'Services' },
+  { path: '/process', label: 'Process' },
+  { path: '/techstack', label: 'Tech Stack' },
+  { path: '/why-us', label: 'Why Us' },
+  { path: '/projects', label: 'Projects' },
+  { path: '/reviews', label: 'Reviews' },
+  { path: '/leadership', label: 'Team' },
+  { path: '/contact', label: 'Contact' },
 ];
 
-// Reverse mapping: page index → section id
-const PAGE_TO_SECTION = Object.entries(SECTION_PAGE_MAP).reduce(
-  (acc, [key, val]) => { acc[val] = key; return acc; },
-  {} as Record<number, string>
-);
+const PATH_TO_SECTION: Record<string, string> = {
+  '/': 'hero',
+  '/services': 'services',
+  '/process': 'process',
+  '/techstack': 'tech',
+  '/why-us': 'why-us',
+  '/projects': 'project',
+  '/reviews': 'reviews',
+  '/leadership': 'leadership',
+  '/contact': 'contact',
+};
 
 export function Navbar() {
   const { content } = useContent();
@@ -30,37 +36,15 @@ export function Navbar() {
   const t = content[lang] as any;
 
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('hero');
+  const location = useLocation();
+  const activeSection = PATH_TO_SECTION[location.pathname] || 'hero';
   const navRef = useRef<HTMLElement>(null);
 
-  // Listen for page changes from PageFlipContainer
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (typeof detail?.pageIndex === 'number') {
-        const sectionId = PAGE_TO_SECTION[detail.pageIndex] || 'hero';
-        setActiveSection(sectionId);
-      }
-    };
-    window.addEventListener('pageflip:pagechange', handler);
-    return () => window.removeEventListener('pageflip:pagechange', handler);
-  }, []);
+  // Determine if the current section uses Light Mode based on App.tsx structure
+  const isLightMode = ['services', 'tech', 'project', 'leadership'].includes(activeSection);
 
-  // Lock body scroll when mobile menu is open
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [mobileOpen]);
-
-  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    e.preventDefault();
-    setMobileOpen(false);
-    const id = href.replace('#', '');
-    scrollToPageFlipSection(id);
-  };
-
-  const textColor = 'rgba(240,240,240,0.65)';
-  const activeColor = '#F0F0F0';
+  const textColor = isLightMode ? 'var(--nav-text-light-muted)' : 'var(--nav-text-dark-muted)';
+  const activeColor = isLightMode ? 'var(--nav-text-light)' : 'var(--nav-text-dark)';
 
   return (
     <>
@@ -69,20 +53,20 @@ export function Navbar() {
         className="fixed top-4 left-1/2 -translate-x-1/2 z-[999] navbar-transition"
         style={{
           width: 'min(92vw, 1100px)',
-          background: 'rgba(6,6,6,0.82)',
+          background: isLightMode ? 'var(--navbar-light-bg)' : 'var(--navbar-dark-bg)',
           backdropFilter: 'blur(24px) saturate(1.5)',
           WebkitBackdropFilter: 'blur(24px) saturate(1.5)',
           borderRadius: '999px',
-          border: '1px solid rgba(212,160,23,0.10)',
+          border: `1px solid ${isLightMode ? 'var(--navbar-border-light)' : 'var(--navbar-border-dark)'}`,
           padding: '10px 24px',
-          boxShadow: '0 4px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)',
+          boxShadow: isLightMode ? '0 4px 30px rgba(0,0,0,0.06)' : '0 4px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)',
         }}
       >
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <a
-            href="#hero"
-            onClick={(e) => scrollToSection(e, '#hero')}
+          <Link
+            to="/"
+            onClick={() => setMobileOpen(false)}
             className="flex items-center gap-2"
           >
             <img
@@ -90,13 +74,13 @@ export function Navbar() {
               alt="Orbit"
               className="h-9 w-auto object-contain transition-transform duration-300 hover:scale-105"
             />
-            <span className="hidden sm:inline" style={{ fontFamily: '"Abril Fatface", serif', color: 'var(--accent-luminous)', fontSize: '1.4rem', letterSpacing: '1px' }}>ORBIT</span>
-          </a>
+            <span className="hidden sm:inline" style={{ fontFamily: 'var(--font-display)', color: isLightMode ? 'var(--nav-text-light)' : 'var(--nav-text-dark)', fontSize: '1.4rem', letterSpacing: '1px', fontWeight: 700 }}>ORBIT</span>
+          </Link>
 
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-1">
-            {NAV_SECTIONS.filter(s => s.href !== '#hero').slice(0, 6).map((item) => {
-              const sectionId = item.href.replace('#', '');
+            {NAV_SECTIONS.filter(s => s.path !== '/').slice(0, 6).map((item) => {
+              const sectionId = PATH_TO_SECTION[item.path];
               const isActive = activeSection === sectionId;
               // Use translated labels where available
               const label = (() => {
@@ -112,28 +96,27 @@ export function Navbar() {
               })();
 
               return (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={(e) => scrollToSection(e, item.href)}
+                <Link
+                  key={item.path}
+                  to={item.path}
                   className="relative px-3 py-1.5 rounded-full text-sm transition-all duration-300 cursor-pointer"
                   style={{
                     color: isActive ? activeColor : textColor,
-                    fontWeight: isActive ? 600 : 400,
+                    fontWeight: isActive ? 600 : 500,
                     fontFamily: 'var(--font-body)',
                   }}
                 >
                   {label}
-                  {/* Active golden underline */}
+                  {/* Active accent underline */}
                   {isActive && (
                     <motion.div
                       layoutId="nav-underline"
                       className="absolute -bottom-0.5 left-3 right-3 h-[2px] rounded-full"
-                      style={{ background: 'linear-gradient(90deg, transparent, var(--accent), transparent)' }}
+                      style={{ background: 'var(--nav-accent)' }}
                       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     />
                   )}
-                </a>
+                </Link>
               );
             })}
           </div>
@@ -146,26 +129,30 @@ export function Navbar() {
               className="text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-200 cursor-pointer"
               style={{
                 color: textColor,
-                border: '1px solid rgba(255,255,255,0.10)',
+                border: `1px solid ${isLightMode ? 'rgba(30,41,59,0.15)' : 'rgba(255,255,255,0.15)'}`,
               }}
             >
               {lang === 'en' ? 'বাং' : 'EN'}
             </button>
 
             {/* CTA */}
-            <a
-              href="#contact"
-              onClick={(e) => scrollToSection(e, '#contact')}
-              className="hidden sm:inline-flex btn-primary !py-2 !px-5 !text-sm"
+            <Link
+              to="/contact"
+              className="hidden sm:inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-300 hover:-translate-y-0.5 !py-2 !px-5 !text-sm"
+              style={{
+                background: 'var(--nav-accent)',
+                color: '#ffffff',
+                boxShadow: '0 4px 15px rgba(34, 197, 94, 0.25)',
+              }}
             >
               {t?.hero?.cta || 'Book a Call'}
-            </a>
+            </Link>
 
             {/* Mobile Hamburger */}
             <button
-              className="lg:hidden p-1.5 cursor-pointer"
+              className="lg:hidden p-1.5 cursor-pointer transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
-              style={{ color: '#F0F0F0' }}
+              style={{ color: isLightMode ? 'var(--nav-text-light)' : 'var(--nav-text-dark)' }}
             >
               {mobileOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
@@ -183,41 +170,43 @@ export function Navbar() {
             transition={{ duration: 0.25 }}
             className="fixed inset-0 z-[998] flex flex-col items-center justify-center gap-6"
             style={{
-              background: 'rgba(6,6,6,0.96)',
+              background: isLightMode ? 'rgba(248,250,252,0.96)' : 'rgba(15,23,42,0.96)',
               backdropFilter: 'blur(30px)',
             }}
           >
             {NAV_SECTIONS.map((item, i) => {
-              const sectionId = item.href.replace('#', '');
+              const sectionId = PATH_TO_SECTION[item.path];
               const isActive = activeSection === sectionId;
               return (
-                <motion.a
-                  key={item.href}
-                  href={item.href}
-                  onClick={(e) => scrollToSection(e, item.href)}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="text-2xl font-medium transition-colors cursor-pointer"
-                  style={{
-                    color: isActive ? 'var(--accent-luminous)' : 'rgba(240,240,240,0.6)',
-                    fontFamily: 'var(--font-display)',
-                  }}
-                >
-                  {item.label}
-                </motion.a>
+                <motion.div key={item.path} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                  <Link
+                    to={item.path}
+                    onClick={() => setMobileOpen(false)}
+                    className="text-2xl font-medium transition-colors cursor-pointer"
+                    style={{
+                      color: isActive ? 'var(--nav-accent)' : textColor,
+                      fontFamily: 'var(--font-display)',
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                </motion.div>
               );
             })}
-            <motion.a
-              href="#contact"
-              onClick={(e) => scrollToSection(e, '#contact')}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: NAV_SECTIONS.length * 0.05 }}
-              className="btn-primary mt-4 cursor-pointer"
-            >
-              {t?.hero?.cta || 'Book a Call'}
-            </motion.a>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: NAV_SECTIONS.length * 0.05 }}>
+              <Link
+                to="/contact"
+                onClick={() => setMobileOpen(false)}
+                className="mt-4 cursor-pointer rounded-full font-semibold transition-all duration-300 hover:-translate-y-0.5 px-8 py-3 flex items-center justify-center"
+                style={{
+                  background: 'var(--nav-accent)',
+                  color: '#ffffff',
+                  boxShadow: '0 4px 15px rgba(34, 197, 94, 0.25)'
+                }}
+              >
+                {t?.hero?.cta || 'Book a Call'}
+              </Link>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

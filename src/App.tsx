@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { HelmetProvider } from 'react-helmet-async';
 import { SEOHead } from './components/seo/SEOHead';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { PageCurlContainer } from './components/orbit/PageCurlContainer';
+import { PageCurlTransition } from './components/orbit/PageCurlTransition';
 
 // Lazy load public sections
 const StatsSection = lazy(() => import('./components/orbit/StatsSection').then(m => ({ default: m.StatsSection })));
@@ -127,6 +127,21 @@ function VisitorGateway({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function PublicPageContent({ index }: { index: number }) {
+  switch (index) {
+    case 0: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Home /></div>;
+    case 1: return <div className="snap-page-light" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ServicesSection /></Suspense></div>;
+    case 2: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ProcessSection /></Suspense></div>;
+    case 3: return <div className="snap-page-light" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><TechStackSection /></Suspense></div>;
+    case 4: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><WhyUsSection /></Suspense></div>;
+    case 5: return <div className="snap-page-light" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ProjectsSection /></Suspense></div>;
+    case 6: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ReviewsSection /></Suspense></div>;
+    case 7: return <div className="snap-page-light" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><LeadershipSection /></Suspense></div>;
+    case 8: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ContactSection /><OrbitFooter /></Suspense></div>;
+    default: return null;
+  }
+}
+
 function PublicSite() {
   const [showChatbot, setShowChatbot] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -151,17 +166,6 @@ function PublicSite() {
 
   useEffect(() => {
     if (!isLoaded) return;
-    const hash = window.location.hash;
-    if (!hash || hash === '#hero') return;
-    const timer = setTimeout(() => {
-      const el = document.getElementById(hash.substring(1));
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [isLoaded]);
-
-  useEffect(() => {
-    if (!isLoaded) return;
     const timer = setTimeout(() => setShowChatbot(true), 2000);
     return () => clearTimeout(timer);
   }, [isLoaded]);
@@ -170,69 +174,9 @@ function PublicSite() {
     <>
       {isLoaded && <Navbar />}
 
-      <PageCurlContainer>
-        {/* Page 1: Hero — DARK */}
-        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
-          <Home />
-        </div>
-
-        {/* Page 2: Services — LIGHT */}
-        <div className="snap-page-light" style={{ width: '100%', height: '100%' }}>
-          <Suspense fallback={null}>
-            <ServicesSection />
-          </Suspense>
-        </div>
-
-        {/* Page 3: Process — DARK */}
-        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
-          <Suspense fallback={null}>
-            <ProcessSection />
-          </Suspense>
-        </div>
-
-        {/* Page 4: Tech Stack — LIGHT */}
-        <div className="snap-page-light" style={{ width: '100%', height: '100%' }}>
-          <Suspense fallback={null}>
-            <TechStackSection />
-          </Suspense>
-        </div>
-
-        {/* Page 5: Why Us — DARK */}
-        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
-          <Suspense fallback={null}>
-            <WhyUsSection />
-          </Suspense>
-        </div>
-
-        {/* Page 6: Projects — LIGHT */}
-        <div className="snap-page-light" style={{ width: '100%', height: '100%' }}>
-          <Suspense fallback={null}>
-            <ProjectsSection />
-          </Suspense>
-        </div>
-
-        {/* Page 7: Reviews — DARK */}
-        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
-          <Suspense fallback={null}>
-            <ReviewsSection />
-          </Suspense>
-        </div>
-
-        {/* Page 8: Team — LIGHT */}
-        <div className="snap-page-light" style={{ width: '100%', height: '100%' }}>
-          <Suspense fallback={null}>
-            <LeadershipSection />
-          </Suspense>
-        </div>
-
-        {/* Page 9: Contact + Footer — DARK */}
-        <div className="snap-page-dark" style={{ width: '100%', height: '100%' }}>
-          <Suspense fallback={null}>
-            <ContactSection />
-            <OrbitFooter />
-          </Suspense>
-        </div>
-      </PageCurlContainer>
+      <PageCurlTransition>
+        {(index) => <PublicPageContent index={index} />}
+      </PageCurlTransition>
 
       {isLoaded && (
         <Suspense fallback={null}>
@@ -247,6 +191,7 @@ function PublicSite() {
     </>
   );
 }
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -268,12 +213,15 @@ export default function App() {
               <SEOHead />
               <Suspense fallback={<AdminLoading />}>
                 <Routes>
-                  <Route path="/" element={
-                    <VisitorGateway>
-                      <StructuredData />
-                      <PublicSite />
-                    </VisitorGateway>
-                  } />
+                  {/* Public Core Pages with PageFlip Transitions */}
+                  {['/', '/services', '/process', '/techstack', '/why-us', '/projects', '/reviews', '/leadership', '/contact'].map(path => (
+                    <Route key={path} path={path} element={
+                      <VisitorGateway>
+                        <StructuredData />
+                        <PublicSite />
+                      </VisitorGateway>
+                    } />
+                  ))}
                   <Route path="/project" element={
                     <VisitorGateway>
                       <StructuredData />

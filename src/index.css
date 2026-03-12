@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,7 +9,7 @@
    ══════════════════════════════════════════════════════════ */
 
 :root {
-  --font-display: 'Syne', sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'DM Sans', sans-serif;
   --font-size: 16px;
   --radius: 0.75rem;
@@ -53,8 +53,16 @@
   --glass-blur: blur(20px) saturate(1.3);
 
   /* ── Navbar ── */
-  --navbar-dark-bg: rgba(6,6,6,0.80);
-  --navbar-border-dark: rgba(212,160,23,0.12);
+  --navbar-dark-bg: rgba(15,23,42,0.85); /* #0F172A base */
+  --navbar-border-dark: rgba(255,255,255,0.08); /* subtle dark mode border */
+  --navbar-light-bg: rgba(248,250,252,0.90); /* #F8FAFC base */
+  --navbar-border-light: rgba(30,41,59,0.12); /* subtle light mode border */
+  
+  --nav-text-dark: #F8FAFC;
+  --nav-text-dark-muted: rgba(248,250,252,0.65);
+  --nav-text-light: #0F172A;
+  --nav-text-light-muted: rgba(15,23,42,0.65);
+  --nav-accent: #22C55E; /* Vibrant Green CTA */
 
   /* ── Shadows ── */
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.15);
@@ -128,10 +136,8 @@
   color: var(--text-primary);
 }
 
-/* Previously light sections → now dark with subtle elevation */
 .section-light {
-  background-color: var(--bg-elevated);
-  color: var(--text-primary);
+  background-color: transparent; /* Let the parent container's theme handle it */
 }
 
 .section-container {
@@ -165,8 +171,24 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
+
+/* Default dark theme scrollbar */
+.curl-page::-webkit-scrollbar { width: 5px; }
+.curl-page::-webkit-scrollbar-track { background: transparent; }
+.curl-page::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+.curl-page::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, 0.2); }
+
+/* Light theme overrides for scrollbar */
+.snap-page-light::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.1); }
+.snap-page-light::-webkit-scrollbar-thumb:hover { background-color: rgba(0, 0, 0, 0.2); }
+.snap-page-light { scrollbar-color: rgba(0, 0, 0, 0.1) transparent; }
+.snap-page-dark { scrollbar-color: rgba(255, 255, 255, 0.1) transparent; }
 
 /* Page indicator dots — floating on the right side */
 .flip-page-dots {
@@ -207,11 +229,15 @@
 .snap-page-dark {
   background-color: var(--bg-dark);
   color: var(--text-primary);
+  min-height: 100%;
+  width: 100%;
 }
 
 .snap-page-light {
   background-color: #FAFAFA;
   color: #1A1A1A;
+  min-height: 100%;
+  width: 100%;
 }
 
 /* Mobile: hide dots on small screens */
@@ -730,4 +756,57 @@ html.low-perf .gentle-animation {
 .hover-border-glow:hover {
   border-color: rgba(212,160,23,0.25) !important;
   box-shadow: 0 0 20px rgba(212,160,23,0.08);
+}
+
+/* ══════════════════════════════════════════════════════════
+   RICH TEXT MARKER STYLES (LUXURY TOOLTIPS)
+   ══════════════════════════════════════════════════════════ */
+
+.word-card-white {
+  display: inline-block;
+  padding: 0 0.4rem;
+  margin: 0 0.1rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(245, 245, 245, 0.9) 100%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 0.4rem;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 0.9em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 2px 4px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.word-card-green {
+  display: inline-block;
+  padding: 0 0.4rem;
+  margin: 0 0.1rem;
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 0.4rem;
+  color: #14532d;
+  font-weight: 600;
+  font-size: 0.9em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 2px 4px rgba(34, 197, 94, 0.05);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.word-card-gold {
+  display: inline-block;
+  padding: 0 0.4rem;
+  margin: 0 0.1rem;
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.05) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 0.4rem;
+  color: #78350f;
+  font-weight: 600;
+  font-size: 0.9em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 2px 4px rgba(245, 158, 11, 0.05);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.word-card-white:hover,
+.word-card-green:hover,
+.word-card-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 4px 12px rgba(0, 0, 0, 0.06);
 }

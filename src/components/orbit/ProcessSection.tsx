@@ -9,8 +9,8 @@ export function ProcessSection() {
   const t = (content[lang] as any)?.process;
 
   return (
-    <section id="process" className="section-dark relative overflow-hidden">
-      <div className="section-container flex flex-col items-center justify-center min-h-[60vh]">
+    <section id="process" className="section-dark relative overflow-hidden min-h-[100dvh] flex flex-col justify-center">
+      <div className="section-container flex flex-col items-center justify-center">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}

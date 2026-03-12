@@ -1,33 +1,66 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-interface PageCurlContainerProps {
-  children: React.ReactNode[];
+const SECTION_ROUTE_MAP: Record<string, number> = {
+  '/': 0,
+  '/services': 1,
+  '/process': 2,
+  '/techstack': 3,
+  '/why-us': 4,
+  '/projects': 5,
+  '/reviews': 6,
+  '/leadership': 7,
+  '/contact': 8,
+};
+
+const INDEX_TO_ROUTE = Object.entries(SECTION_ROUTE_MAP).reduce((acc, [route, idx]) => {
+  acc[idx] = route;
+  return acc;
+}, {} as Record<number, string>);
+
+interface PageCurlTransitionProps {
+  children: (index: number) => ReactNode;
 }
 
-export function PageCurlContainer({ children }: PageCurlContainerProps) {
-  const [activePage, setActivePage] = useState(0);
+export function PageCurlTransition({ children }: PageCurlTransitionProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  const currentPath = location.pathname;
+  const currentIndex = SECTION_ROUTE_MAP[currentPath] ?? 0;
+  
+  const [activePage, setActivePage] = useState(currentIndex);
   const [targetPage, setTargetPage] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  
   const wheelAccum = useRef(0);
   const wheelTimer = useRef<ReturnType<typeof setTimeout>>();
   const touchStartY = useRef(0);
-  const totalPages = children.length;
+  const touchStartX = useRef(0);
+  
+  const totalPages = Object.keys(SECTION_ROUTE_MAP).length;
 
   const goToPage = useCallback(
     (newTarget: number) => {
-      if (targetPage !== null) return; // Currently animating
+      if (targetPage !== null) return;
       if (newTarget < 0 || newTarget >= totalPages || newTarget === activePage) return;
-      setTargetPage(newTarget);
       
-      // Notify listeners (like Navbar) of the impending page change
-      window.dispatchEvent(
-        new CustomEvent('pageflip:pagechange', { detail: { pageIndex: newTarget } })
-      );
+      const route = INDEX_TO_ROUTE[newTarget];
+      if (route) {
+        navigate(route);
+      }
     },
-    [activePage, targetPage, totalPages]
+    [activePage, targetPage, totalPages, navigate]
   );
 
-  // Animation Loop for gorgeous 2D geometric fold
+  // Sync activePage with route changes if not already animating
+  useEffect(() => {
+    if (currentIndex !== activePage && targetPage === null) {
+      setTargetPage(currentIndex);
+    }
+  }, [currentIndex, activePage, targetPage]);
+
+  // Animation Loop (Standard Page Curl Geometry)
   useEffect(() => {
     if (targetPage === null) return;
     const container = containerRef.current;
@@ -35,7 +68,7 @@ export function PageCurlContainer({ children }: PageCurlContainerProps) {
 
     const isForward = targetPage > activePage;
     let start = performance.now();
-    const duration = 1200; // Deep, slow, premium paper fold
+    const duration = 1200; 
     let rAF: number;
 
     const animate = (now: number) => {
@@ -46,7 +79,6 @@ export function PageCurlContainer({ children }: PageCurlContainerProps) {
         return;
       }
 
-      // Smooth custom easing
       const p = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
       
       const W = container.offsetWidth;
@@ -58,7 +90,6 @@ export function PageCurlContainer({ children }: PageCurlContainerProps) {
       const gradient = container.querySelector('#curl-gradient');
       
       if (isForward) {
-        // --- FORWARD: Peels from Bottom-Right to Top-Left ---
         if (K <= 0) {
           clipPathStr = `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`;
         } else if (K >= W + H) {
@@ -88,7 +119,6 @@ export function PageCurlContainer({ children }: PageCurlContainerProps) {
           }
         }
       } else {
-        // --- BACKWARD: Peels from Top-Left to Bottom-Right ---
         if (K <= 0) {
           clipPathStr = `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`;
         } else if (K >= W + H) {
@@ -123,7 +153,6 @@ export function PageCurlContainer({ children }: PageCurlContainerProps) {
       const topPageEl = container.querySelector('.curl-top-page') as HTMLElement;
       if (topPageEl) topPageEl.style.clipPath = clipPathStr;
       
-      // Hide polygon at extremes to prevent 1px glitch
       if (polygonEl) {
         if (K <= 0 || K >= W + H) polygonEl.setAttribute('opacity', '0');
         else polygonEl.setAttribute('opacity', '1');
@@ -136,22 +165,36 @@ export function PageCurlContainer({ children }: PageCurlContainerProps) {
     return () => cancelAnimationFrame(rAF);
   }, [targetPage, activePage]);
 
-  // Clean up inline clip-paths AFTER React has unmounted the old page
-  useEffect(() => {
-    if (targetPage === null && containerRef.current) {
-      const remainingPages = containerRef.current.querySelectorAll('.curl-page');
-      remainingPages.forEach(p => {
-        (p as HTMLElement).style.clipPath = '';
-      });
-    }
-  }, [targetPage]);
-
-  // Event Handlers (Wheel, Touch, Keyboard)
+  // Handle Scroll Locking (from previous implementation)
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
+    const isScrollableTop = (el: HTMLElement): boolean => {
+      if (el === container || el === document.body || el === document.documentElement) return false;
+      const style = window.getComputedStyle(el);
+      const isScrollable = (style.overflowY === 'auto' || style.overflowY === 'scroll') && el.scrollHeight > el.clientHeight;
+      if (isScrollable && el.scrollTop > 1) return true;
+      return el.parentElement ? isScrollableTop(el.parentElement) : false;
+    };
+
+    const isScrollableBottom = (el: HTMLElement): boolean => {
+      if (el === container || el === document.body || el === document.documentElement) return false;
+      const style = window.getComputedStyle(el);
+      const isScrollable = (style.overflowY === 'auto' || style.overflowY === 'scroll') && el.scrollHeight > el.clientHeight;
+      if (isScrollable && Math.ceil(el.scrollTop + el.clientHeight) < el.scrollHeight - 1) return true;
+      return el.parentElement ? isScrollableBottom(el.parentElement) : false;
+    };
+
     const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      const target = e.target as HTMLElement;
+
+      if (activePage !== 0) {
+        if (e.deltaY > 0 && isScrollableBottom(target)) return;
+        if (e.deltaY < 0 && isScrollableTop(target)) return;
+      }
+
       e.preventDefault();
       if (targetPage !== null) return;
 
@@ -159,101 +202,87 @@ export function PageCurlContainer({ children }: PageCurlContainerProps) {
       if (wheelTimer.current) clearTimeout(wheelTimer.current);
       wheelTimer.current = setTimeout(() => { wheelAccum.current = 0; }, 200);
 
-      if (wheelAccum.current > 80) {
+      if (wheelAccum.current > 100) {
         wheelAccum.current = 0;
         goToPage(activePage + 1);
-      } else if (wheelAccum.current < -80) {
+      } else if (wheelAccum.current < -100) {
         wheelAccum.current = 0;
         goToPage(activePage - 1);
       }
     };
 
-    const onTouchStart = (e: TouchEvent) => { touchStartY.current = e.touches[0].clientY; };
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartY.current = e.touches[0].clientY;
+      touchStartX.current = e.touches[0].clientX;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      const deltaY = touchStartY.current - e.touches[0].clientY;
+      const deltaX = touchStartX.current - e.touches[0].clientX;
+      const target = e.target as HTMLElement;
+
+      if (Math.abs(deltaX) > Math.abs(deltaY)) return;
+
+      if (activePage !== 0) {
+        if (deltaY > 0 && isScrollableBottom(target)) return;
+        if (deltaY < 0 && isScrollableTop(target)) return;
+      }
+
+      if (e.cancelable) e.preventDefault();
+    };
+
     const onTouchEnd = (e: TouchEvent) => {
       if (targetPage !== null) return;
       const deltaY = touchStartY.current - e.changedTouches[0].clientY;
-      if (Math.abs(deltaY) > 60) {
-        if (deltaY > 0) goToPage(activePage + 1);
-        else goToPage(activePage - 1);
+      const deltaX = touchStartX.current - e.changedTouches[0].clientX;
+      const target = e.target as HTMLElement;
+
+      if (Math.abs(deltaX) > Math.abs(deltaY)) return;
+
+      if (Math.abs(deltaY) > 80) {
+        if (deltaY > 0) {
+          if (activePage === 0 || !isScrollableBottom(target)) goToPage(activePage + 1);
+        } else {
+          if (activePage === 0 || !isScrollableTop(target)) goToPage(activePage - 1);
+        }
       }
     };
 
     container.addEventListener('wheel', onWheel, { passive: false });
     container.addEventListener('touchstart', onTouchStart, { passive: true });
+    container.addEventListener('touchmove', onTouchMove, { passive: false });
     container.addEventListener('touchend', onTouchEnd, { passive: true });
     
     return () => {
       container.removeEventListener('wheel', onWheel);
       container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchmove', onTouchMove);
       container.removeEventListener('touchend', onTouchEnd);
     };
   }, [activePage, targetPage, goToPage]);
 
-  // Global key and event navigation
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowDown' || e.key === 'PageDown') {
-        e.preventDefault(); goToPage(activePage + 1);
-      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
-        e.preventDefault(); goToPage(activePage - 1);
-      }
-    };
-    const navHandler = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (typeof detail?.pageIndex === 'number') goToPage(detail.pageIndex);
-    };
-    window.addEventListener('keydown', onKey);
-    window.addEventListener('pageflip:goto', navHandler);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      window.removeEventListener('pageflip:goto', navHandler);
-    };
-  }, [activePage, goToPage]);
-
   return (
     <div ref={containerRef} className="page-curl-viewport">
       {/* 
-        Instead of loading all massive pages simultaneously into heavy 3D transforms,
-        we render only the Active and Target pages with simple solid backgrounds.
+         We render two indices: the activePage and the targetPage.
+         The component 'children' is a render prop that returns the correct section for an index.
       */}
-      {children.map((child, i) => {
-        let isVisible = false;
-        let isTopPage = false;
-        let zIndex = 0;
-
-        if (targetPage === null) {
-          if (i === activePage) { isVisible = true; zIndex = 10; isTopPage = true; }
-        } else {
-          if (i === activePage) {
-            isVisible = true;
-            zIndex = 10;
-            isTopPage = true;
-          }
-          if (i === targetPage) {
-            isVisible = true;
-            zIndex = 5;
-            isTopPage = false;
-          }
-        }
-
-        if (!isVisible) return null;
-
+      {[targetPage, activePage].map((i) => {
+        if (i === null) return null;
+        const isTopPage = i === activePage && targetPage !== null;
+        const zIndex = i === activePage ? 10 : 5;
+        
         return (
           <div
             key={i}
             className={`curl-page ${isTopPage ? 'curl-top-page' : ''}`}
             style={{ zIndex }}
           >
-            {child}
+            {children(i)}
           </div>
         );
       })}
 
-      {/* 
-        The true paper curl! 
-        An absolute SVG overlay that perfectly tracks the 2D clip-path geometry 
-        and renders the curved metallic backface shading and drop shadow. 
-      */}
       {targetPage !== null && (
         <svg
           className="curl-svg-overlay"
@@ -263,7 +292,6 @@ export function PageCurlContainer({ children }: PageCurlContainerProps) {
             <filter id="curl-shadow" x="-50%" y="-50%" width="200%" height="200%">
               <feDropShadow dx="-15" dy="-15" stdDeviation="25" floodColor="rgba(0,0,0,0.6)" />
             </filter>
-            {/* The gradient mapping precisely aligns to the fold line center → fold tip */}
             <linearGradient id="curl-gradient" gradientUnits="userSpaceOnUse">
               <stop offset="0%" stopColor="#111111" />
               <stop offset="10%" stopColor="#1a1a1a" />
@@ -277,9 +305,9 @@ export function PageCurlContainer({ children }: PageCurlContainerProps) {
         </svg>
       )}
 
-      {/* Navigation Indicators */}
+      {/* Persistent Nav Dots (Optional/Removable) */}
       <div className="flip-page-dots">
-        {children.map((_, i) => (
+        {Object.keys(SECTION_ROUTE_MAP).map((_, i) => (
           <button
             key={i}
             className={`flip-dot ${i === activePage ? 'flip-dot-active' : ''}`}
@@ -292,18 +320,4 @@ export function PageCurlContainer({ children }: PageCurlContainerProps) {
   );
 }
 
-export const SECTION_PAGE_MAP: Record<string, number> = {
-  hero: 0, services: 1, process: 2, tech: 3, 'why-us': 4,
-  project: 5, reviews: 6, leadership: 7, contact: 8,
-};
-
-export function scrollToPageFlipSection(sectionId: string) {
-  const pageIndex = SECTION_PAGE_MAP[sectionId];
-  if (pageIndex !== undefined) {
-    window.dispatchEvent(
-      new CustomEvent('pageflip:goto', { detail: { pageIndex } })
-    );
-  }
-}
-
-export default PageCurlContainer;
+export default PageCurlTransition;

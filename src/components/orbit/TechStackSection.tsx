@@ -14,7 +14,7 @@ export function TechStackSection() {
   if (!categories.length) return null;
 
   return (
-    <section id="tech" className="section-light relative overflow-hidden">
+    <section id="tech" className="section-light relative overflow-hidden min-h-[100dvh] flex flex-col justify-center">
       {/* Ambient background glow */}
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] pointer-events-none"

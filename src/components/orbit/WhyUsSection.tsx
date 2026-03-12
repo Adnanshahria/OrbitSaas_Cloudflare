@@ -14,7 +14,7 @@ export function WhyUsSection() {
   if (!items.length) return null;
 
   return (
-    <section id="why-us" className="section-light relative overflow-hidden">
+    <section id="why-us" className="section-light relative overflow-hidden min-h-[100dvh] flex flex-col justify-center">
       {/* Ambient glow */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[400px] pointer-events-none"
