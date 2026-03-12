@@ -1,9 +1,75 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Search, PenTool, Code, CheckCircle2 } from 'lucide-react';
+
+function ProcessCard({ card, icon: Icon, isPeak, node }: any) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x);
+  const mouseYSpring = useSpring(y);
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  const desktopOffset = isPeak ? -170 : 170;
+
+  return (
+    <motion.div
+      layoutId={`card-${card.id}`}
+      initial={{ opacity: 0, scale: 0.8, x: '-50%', y: '-50%', top: '50%', left: '0%' }}
+      animate={{ 
+        opacity: 1, scale: 1, left: node.x, top: `calc(${node.y} + ${desktopOffset}px)`,
+        x: '-50%', y: '-50%'
+      }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      transition={{ type: "spring", stiffness: 140, damping: 28 }}
+      className="absolute z-30 w-64 perspective-[1000px]"
+    >
+      <div className="absolute left-1/2 -translate-x-1/2 w-[1.5px] bg-gradient-to-b from-[var(--accent)]/0 via-[var(--accent)]/30 to-[var(--accent)]/0"
+        style={{ height: '110px', [isPeak ? 'bottom' : 'top']: '-70px', opacity: 0.4 }}
+      />
+      <motion.div 
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+        className="relative group p-[1px] rounded-[1.5rem] bg-gradient-to-br from-[var(--accent)]/40 via-white/5 to-transparent hover:from-[var(--accent)] transition-all duration-500 overflow-hidden shadow-2xl"
+      >
+        <div className="relative bg-[var(--bg-dark)]/90 backdrop-blur-3xl rounded-[1.45rem] p-5 overflow-hidden border border-white/5">
+          <div className="absolute -top-1 -right-1 w-10 h-10 bg-[var(--accent)]/15 rounded-bl-2xl flex items-center justify-center border-l border-b border-[var(--accent)]/30 text-[var(--accent)] font-display font-black text-base italic shadow-[0_0_15px_rgba(var(--accent-rgb),0.1)]">{card.id}</div>
+          <div className="relative z-10 flex flex-col gap-3" style={{ transform: "translateZ(30px)" }}>
+            <div className="w-10 h-10 rounded-lg bg-[var(--accent)]/15 flex items-center justify-center border border-[var(--accent)]/30 text-[var(--accent)] transition-all duration-500 shadow-[inset_0_0_10px_rgba(var(--accent-rgb),0.1)]"><Icon size={20} /></div>
+            <div>
+              <h3 className="text-lg font-black text-white mb-1 tracking-tight leading-tight">{card.title}</h3>
+              <p className="text-[12px] leading-snug font-medium opacity-70" style={{ color: 'var(--text-secondary)' }}>{card.desc}</p>
+            </div>
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 export function ProcessSection() {
   const { content } = useContent();
@@ -199,36 +265,15 @@ export function ProcessSection() {
               const node = nodes[targetNodeIdx];
               const Icon = icons[cardIdx];
               const isPeak = (cardIdx + 1) % 2 !== 0; 
-              const desktopOffset = isPeak ? -135 : 135;
-
+              
               return (
-                <motion.div
-                  key={card.id} layoutId={`card-${card.id}`}
-                  initial={{ opacity: 0, scale: 0.8, x: '-50%', y: '-50%', top: '50%', left: '0%' }}
-                  animate={{ 
-                    opacity: 1, scale: 1, left: node.x, top: `calc(${node.y} + ${desktopOffset}px)`,
-                    x: '-50%', y: '-50%'
-                  }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ type: "spring", stiffness: 140, damping: 28 }}
-                  className="absolute z-30 w-64"
-                >
-                  <div className="absolute left-1/2 -translate-x-1/2 w-[1.5px] bg-gradient-to-b from-[var(--accent)]/0 via-[var(--accent)]/30 to-[var(--accent)]/0"
-                    style={{ height: '80px', [isPeak ? 'bottom' : 'top']: '-40px', opacity: 0.4 }}
-                  />
-                  <div className="relative group p-[1px] rounded-[1.5rem] bg-gradient-to-br from-[var(--accent)]/30 to-transparent hover:from-[var(--accent)] transition-all duration-500 overflow-hidden shadow-2xl">
-                    <div className="relative bg-[var(--bg-dark)]/98 backdrop-blur-3xl rounded-[1.45rem] p-5 overflow-hidden">
-                      <div className="absolute -top-1 -right-1 w-10 h-10 bg-[var(--accent)]/10 rounded-bl-2xl flex items-center justify-center border-l border-b border-[var(--accent)]/20 text-[var(--accent)] font-display font-black text-base italic">{card.id}</div>
-                      <div className="relative z-10 flex flex-col gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-[var(--accent)]/10 flex items-center justify-center border border-[var(--accent)]/20 text-[var(--accent)] transition-all duration-500"><Icon size={20} /></div>
-                        <div>
-                          <h3 className="text-lg font-black text-white mb-1 tracking-tight leading-tight">{card.title}</h3>
-                          <p className="text-[12px] leading-snug font-medium opacity-60" style={{ color: 'var(--text-secondary)' }}>{card.desc}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
+                <ProcessCard 
+                  key={card.id} 
+                  card={card} 
+                  icon={Icon} 
+                  isPeak={isPeak} 
+                  node={node} 
+                />
               );
             })}
           </AnimatePresence>
