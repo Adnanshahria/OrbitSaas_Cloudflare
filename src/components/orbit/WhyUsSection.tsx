@@ -503,7 +503,7 @@ export function WhyUsSection() {
           className="mt-20 flex flex-col items-center"
         >
           <button 
-            onClick={() => window.location.href = '/projects'}
+            onClick={() => window.location.href = '/proj'}
             className="group btn-primary px-16 py-5 text-xl golden-glow-lg rounded-2xl relative overflow-hidden"
           >
             <span className="relative z-10 flex items-center">

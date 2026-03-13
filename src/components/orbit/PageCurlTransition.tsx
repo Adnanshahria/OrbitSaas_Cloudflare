@@ -7,7 +7,7 @@ const SECTION_ROUTE_MAP: Record<string, number> = {
   '/process': 2,
   '/techstack': 3,
   '/why-us': 4,
-  '/projects': 5,
+  '/proj': 5,
   '/reviews': 6,
   '/leadership': 7,
   '/contact': 8,

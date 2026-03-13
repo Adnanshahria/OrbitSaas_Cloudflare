@@ -8,6 +8,12 @@
    Luxury obsidian base, liquid gold accents, cinematic depth
    ══════════════════════════════════════════════════════════ */
 
+@media (min-width: 1024px) {
+  html, body {
+    cursor: none !important;
+  }
+}
+
 :root {
   --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'DM Sans', sans-serif;

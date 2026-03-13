@@ -13,6 +13,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { SEOHead } from './components/seo/SEOHead';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PageCurlTransition } from './components/orbit/PageCurlTransition';
+import CustomCursor from './components/orbit/CustomCursor';
 
 // Lazy load public sections
 const StatsSection = lazy(() => import('./components/orbit/StatsSection').then(m => ({ default: m.StatsSection })));
@@ -215,10 +216,11 @@ export default function App() {
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <ScrollToTop />
               <SEOHead />
+              <CustomCursor />
               <Suspense fallback={<AdminLoading />}>
                 <Routes>
                   {/* Public Core Pages with PageFlip Transitions */}
-                  {['/', '/services', '/process', '/techstack', '/why-us', '/projects', '/reviews', '/leadership', '/contact'].map(path => (
+                  {['/', '/services', '/process', '/techstack', '/why-us', '/proj', '/reviews', '/leadership', '/contact'].map(path => (
                     <Route key={path} path={path} element={
                       <VisitorGateway>
                         <StructuredData />

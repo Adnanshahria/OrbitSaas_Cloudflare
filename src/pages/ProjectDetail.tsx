@@ -369,7 +369,7 @@ function CollapsibleCards({ blocks }: { blocks: string[] }) {
                                     <div
                                         className="px-5 sm:px-8 pb-5 sm:pb-7 pt-2 text-muted-foreground text-base sm:text-lg leading-relaxed space-y-4"
                                     >
-                                        <RichText text={bodyHtml} />
+                                        <RichText text={stripHtml(bodyHtml)} />
                                     </div>
                                 </motion.div>
                             )}
