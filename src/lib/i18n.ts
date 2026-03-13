@@ -12,22 +12,6 @@ export const translations = {
       bookCall: 'Book an Appointment',
       defaultSoundMuted: false,
       defaultVolume: 40,
-      visibility: {
-        services: true,
-        techStack: true,
-        whyUs: true,
-        projects: true,
-        leadership: true,
-        contact: true
-      },
-      urls: {
-        services: '',
-        techStack: '',
-        whyUs: '',
-        projects: '',
-        leadership: '',
-        contact: ''
-      }
     },
     hero: {
       title: 'We Build What Others Dream',
@@ -135,7 +119,6 @@ export const translations = {
       title: 'Featured Projects',
       subtitle: 'Real solutions we\'ve built for real businesses.',
       items: [] as { title: string; desc: string; tags: string[]; link: string; image: string }[],
-      visible: true,
     },
     leadership: {
       title: 'Meet Our Team',
@@ -148,9 +131,11 @@ export const translations = {
       items: [] as any[],
     },
     contact: {
-      title: 'Ready to Build Something Great?',
-      subtitle: 'Let\'s discuss your next web, AI, or mobile project — book a free consultation today.',
-      cta: 'Book a Free Consultation',
+      badge: 'Launch your vision',
+      title: 'Ready to put your idea into ORBIT?',
+      subtitle: 'Join the elite businesses scaling with our high-performance AI & web ecosystems. Let’s build the future, together.',
+      cta: 'Schedule Strategy Call',
+      secondaryCta: 'Direct Inquiry',
       whatsapp: '+8801853452264',
     },
     footer: {
@@ -218,22 +203,6 @@ export const translations = {
       bookCall: 'অ্যাপয়েন্টমেন্ট বুক করুন',
       defaultSoundMuted: false,
       defaultVolume: 40,
-      visibility: {
-        services: true,
-        techStack: true,
-        whyUs: true,
-        projects: true,
-        leadership: true,
-        contact: true
-      },
-      urls: {
-        services: '',
-        techStack: '',
-        whyUs: '',
-        projects: '',
-        leadership: '',
-        contact: ''
-      }
     },
     hero: {
       title: 'আমরা তৈরি করি যা অন্যরা স্বপ্ন দেখে',
@@ -304,7 +273,7 @@ export const translations = {
       items: [
         { 
           title: 'সরাসরি আরআইও (ROI) প্রভাব', 
-          desc: 'আমাদের এআই-চালিত সリューションগুলো এমনভাবে তৈরি করা হয়েছে যাতে সেগুলো নিজেরাই নিজেদের খরচ মিটিয়ে দেয়। আমরা উচ্চ-মূল্যের কাজগুলো অটোমেট করার দিকে মনোনিবেশ করি যা সরাসরি আপনার ব্যবসার মুনাফা বৃদ্ধি করে।', 
+          desc: 'আমাদের এআই-চালিত সリューションগুলো এমনভাবে তৈরি করা হয়েছে যাতে সেগুলো নিজেরাই নিজেদের খরচ মিটিয়ে দেয়। আমরা উচ্চ-মূল্যের কাজগুলো অটোমেট করার দিকে মনোযোগ দিই যা সরাসরি আপনার ব্যবসার মুনাফা বৃদ্ধি করে।', 
           benefit: 'স্থাপনের প্রথম বছরের মধ্যেই বিনিয়োগের ওপর ৩.৫ গুণ রিটার্ন পাওয়ার সম্ভাবনা।',
           bg: '#eef2ff', 
           color: '#4f46e5' 
@@ -326,7 +295,7 @@ export const translations = {
         { 
           title: 'এআই-ফার্স্ট ডেভেলপমেন্ট', 
           desc: 'বুদ্ধিমত্তা কখনোই আমাদের কাছে কেবল একটি বাড়তি অংশ নয়। আমরা সরাসরি আপনার সফটওয়্যারের মূলে এজেন্টিক এআই এবং প্রেডিক্টিভ অ্যানালিটিক্স ব্যবহার করি।', 
-          benefit: 'আপনার ব্যবসার ডেটার ওপর ভিত্তি করে তৈরি করা এআই মডেলের মাধ্যমে প্রতিযোগিতায় বড় সুবিধা অর্জন করুন।',
+          benefit: 'আপনার ব্যবসার ডেটার ওপর ভিত্তি করে তৈরি করা এআই মডেল의 মাধ্যমে প্রতিযোগিতায় বড় সুবিধা অর্জন করুন।',
           bg: '#fff0f6', 
           color: '#db2777' 
         }
@@ -341,7 +310,6 @@ export const translations = {
       title: 'আমাদের প্রকল্পসমূহ',
       subtitle: 'বাস্তব ব্যবসার জন্য আমাদের তৈরি করা বাস্তব সলিউশন।',
       items: [] as { title: string; desc: string; tags: string[]; link: string; image: string }[],
-      visible: true,
     },
     leadership: {
       title: 'আমাদের টিম',
@@ -354,9 +322,11 @@ export const translations = {
       items: [] as any[],
     },
     contact: {
-      title: 'দারুণ কিছু তৈরি করতে প্রস্তুত?',
-      subtitle: 'আপনার পরবর্তী ওয়েব, এআই বা মোবাইল প্রজেক্ট নিয়ে আলোচনা করুন — আজই ফ্রি কনসালটেশন বুক করুন।',
-      cta: 'ফ্রি কনসালটেশন বুক করুন',
+      badge: 'আপনার ভিশন চালু করুন',
+      title: 'আপনার আইডিয়া কি অরবিটে পৌঁছাতে প্রস্তুত?',
+      subtitle: 'আমাদের হাই-পারফরম্যান্স এআই এবং ওয়েব ইকোসিস্টেমের মাধ্যমে আপনার ব্যবসাকে স্কেল করুন। চলুন একসাথে ভবিষ্যৎ গড়ি।',
+      cta: 'স্ট্র্যাটেজি কল শিডিউল করুন',
+      secondaryCta: 'সরাসরি যোগাযোগ',
       whatsapp: '+8801853452264',
     },
     footer: {

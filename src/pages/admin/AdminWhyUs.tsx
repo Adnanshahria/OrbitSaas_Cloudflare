@@ -302,9 +302,10 @@ export default function AdminWhyUs() {
 
     const [loading, setLoading] = useState(true);
     const [items, setItems] = useState<UnifiedUSP[]>([]);
+    const [benefits, setBenefits] = useState<UnifiedUSP[]>([]);
     const [sectionInfo, setSectionInfo] = useState({
-        en: { title: '', subtitle: '' },
-        bn: { title: '', subtitle: '' },
+        en: { title: '', heading: '', subtitle: '', badge: '', cta: '', ctaSub: '' },
+        bn: { title: '', heading: '', subtitle: '', badge: '', cta: '', ctaSub: '' },
     });
 
     const [saving, setSaving] = useState(false);
@@ -317,38 +318,53 @@ export default function AdminWhyUs() {
 
         if (!content.en || !content.bn) {
             setItems([]);
+            setBenefits([]);
             setLoading(false);
             return;
         }
 
-        const enW = (content.en.whyUs as any) || { items: [] };
-        const bnW = (content.bn.whyUs as any) || { items: [] };
-        const fIcons = (content.en.fallingIcons as any) || { enabled: true, icons: {} };
+        const enW = (content.en.whyUs as any) || { items: [], benefits: [] };
+        const bnW = (content.bn.whyUs as any) || { items: [], benefits: [] };
 
         setSectionInfo({
-            en: { title: enW.title || '', subtitle: enW.subtitle || '' },
-            bn: { title: bnW.title || '', subtitle: bnW.subtitle || '' },
+            en: { 
+                title: enW.title || '', 
+                heading: enW.heading || '',
+                subtitle: enW.subtitle || '',
+                badge: enW.badge || '',
+                cta: enW.cta || '',
+                ctaSub: enW.ctaSub || ''
+            },
+            bn: { 
+                title: bnW.title || '', 
+                heading: bnW.heading || '',
+                subtitle: bnW.subtitle || '',
+                badge: bnW.badge || '',
+                cta: bnW.cta || '',
+                ctaSub: bnW.ctaSub || ''
+            },
         });
 
-        const enItems = enW.items || [];
-        const bnItems = bnW.items || [];
-        const maxLen = Math.max(enItems.length, bnItems.length);
+        const mergeItems = (enArr: any[], bnArr: any[]) => {
+            const maxLen = Math.max(enArr.length, bnArr.length);
+            const merged: UnifiedUSP[] = [];
+            for (let i = 0; i < maxLen; i++) {
+                const en = enArr[i] || {};
+                const bn = bnArr[i] || {};
+                merged.push({
+                    en: { title: en.title || '', desc: en.desc || '' },
+                    bn: { title: bn.title || '', desc: bn.desc || '' },
+                    icon: en.icon || bn.icon || '',
+                    color: en.color || bn.color || '',
+                    bg: en.bg || bn.bg || '',
+                    border: en.border || bn.border || '',
+                });
+            }
+            return merged;
+        };
 
-        const merged: UnifiedUSP[] = [];
-        for (let i = 0; i < maxLen; i++) {
-            const en = enItems[i] || {};
-            const bn = bnItems[i] || {};
-            merged.push({
-                en: { title: en.title || '', desc: en.desc || '' },
-                bn: { title: bn.title || '', desc: bn.desc || '' },
-                icon: en.icon || bn.icon || '',
-                color: en.color || bn.color || '',
-                bg: en.bg || bn.bg || '',
-                border: en.border || bn.border || '',
-            });
-        }
-
-        setItems(merged);
+        setItems(mergeItems(enW.items || [], bnW.items || []));
+        setBenefits(mergeItems(enW.benefits || [], bnW.benefits || []));
         setLoading(false);
     }, [content, contentLoading]);
 
@@ -357,38 +373,32 @@ export default function AdminWhyUs() {
         setSaving(true);
         setError('');
         setSaved(false);
-        const toastId = toast.loading('Saving USP items...');
+        const toastId = toast.loading('Saving Why Us content...');
 
         try {
-            const enItems = items.map((m) => ({
-                title: m.en.title,
-                desc: m.en.desc,
+            const mapItems = (arr: UnifiedUSP[], lang: 'en' | 'bn') => arr.map((m) => ({
+                title: m[lang].title,
+                desc: m[lang].desc,
                 icon: m.icon,
                 color: m.color,
                 bg: m.bg,
                 border: m.border,
             }));
 
-            const bnItems = items.map((m) => ({
-                title: m.bn.title,
-                desc: m.bn.desc,
-                icon: m.icon,
-                color: m.color,
-                bg: m.bg,
-                border: m.border,
-            }));
+            const enData = {
+                ...sectionInfo.en,
+                items: mapItems(items, 'en'),
+                benefits: mapItems(benefits, 'en'),
+            };
 
-            const enOk = await updateSection('whyUs', 'en', {
-                title: sectionInfo.en.title,
-                subtitle: sectionInfo.en.subtitle,
-                items: enItems,
-            });
+            const bnData = {
+                ...sectionInfo.bn,
+                items: mapItems(items, 'bn'),
+                benefits: mapItems(benefits, 'bn'),
+            };
 
-            const bnOk = await updateSection('whyUs', 'bn', {
-                title: sectionInfo.bn.title,
-                subtitle: sectionInfo.bn.subtitle,
-                items: bnItems,
-            });
+            const enOk = await updateSection('whyUs', 'en', enData);
+            const bnOk = await updateSection('whyUs', 'bn', bnData);
 
             if (enOk && bnOk) {
                 setSaved(true);
@@ -399,12 +409,12 @@ export default function AdminWhyUs() {
                 await refreshContent();
                 setTimeout(() => setSaved(false), 2000);
             } else {
-                setError('Error saving USP. Please try again.');
-                toast.error('Error saving USP', { id: toastId });
+                setError('Error saving section. Please try again.');
+                toast.error('Error saving section', { id: toastId });
             }
         } catch (err) {
             console.error(err);
-            setError('Failed to save USP.');
+            setError('Failed to save Why Us.');
             toast.error('Save failed', { id: toastId });
         } finally {
             setSaving(false);
@@ -437,15 +447,24 @@ export default function AdminWhyUs() {
                 <div className="space-y-4">
                     <h3 className="font-semibold text-primary">English Section Info</h3>
                     <TextField
-                        label="Title"
-                        value={sectionInfo.en.title}
+                        label="Badge"
+                        value={sectionInfo.en.badge}
                         onChange={(v) =>
                             setSectionInfo({
                                 ...sectionInfo,
-                                en: { ...sectionInfo.en, title: v },
+                                en: { ...sectionInfo.en, badge: v },
                             })
                         }
-                        lang="en"
+                    />
+                    <TextField
+                        label="Heading (Shimmer)"
+                        value={sectionInfo.en.heading}
+                        onChange={(v) =>
+                            setSectionInfo({
+                                ...sectionInfo,
+                                en: { ...sectionInfo.en, heading: v },
+                            })
+                        }
                     />
                     <TextField
                         label="Subtitle"
@@ -457,21 +476,51 @@ export default function AdminWhyUs() {
                             })
                         }
                         multiline
-                        lang="en"
                     />
+                    <div className="grid grid-cols-2 gap-4">
+                        <TextField
+                            label="CTA Text"
+                            value={sectionInfo.en.cta}
+                            onChange={(v) =>
+                                setSectionInfo({
+                                    ...sectionInfo,
+                                    en: { ...sectionInfo.en, cta: v },
+                                })
+                            }
+                        />
+                        <TextField
+                            label="CTA Subtext"
+                            value={sectionInfo.en.ctaSub}
+                            onChange={(v) =>
+                                setSectionInfo({
+                                    ...sectionInfo,
+                                    en: { ...sectionInfo.en, ctaSub: v },
+                                })
+                            }
+                        />
+                    </div>
                 </div>
                 <div className="space-y-4">
                     <h3 className="font-semibold text-primary">Bangla Section Info</h3>
                     <TextField
-                        label="শিরোনাম (Title)"
-                        value={sectionInfo.bn.title}
+                        label="ব্যাজ (Badge)"
+                        value={sectionInfo.bn.badge}
                         onChange={(v) =>
                             setSectionInfo({
                                 ...sectionInfo,
-                                bn: { ...sectionInfo.bn, title: v },
+                                bn: { ...sectionInfo.bn, badge: v },
                             })
                         }
-                        lang="bn"
+                    />
+                    <TextField
+                        label="হেডিং (Heading)"
+                        value={sectionInfo.bn.heading}
+                        onChange={(v) =>
+                            setSectionInfo({
+                                ...sectionInfo,
+                                bn: { ...sectionInfo.bn, heading: v },
+                            })
+                        }
                     />
                     <TextField
                         label="সাবটাইটেল (Subtitle)"
@@ -483,8 +532,29 @@ export default function AdminWhyUs() {
                             })
                         }
                         multiline
-                        lang="bn"
                     />
+                    <div className="grid grid-cols-2 gap-4">
+                        <TextField
+                            label="CTA টেক্সট"
+                            value={sectionInfo.bn.cta}
+                            onChange={(v) =>
+                                setSectionInfo({
+                                    ...sectionInfo,
+                                    bn: { ...sectionInfo.bn, cta: v },
+                                })
+                            }
+                        />
+                        <TextField
+                            label="CTA সাবটেক্সট"
+                            value={sectionInfo.bn.ctaSub}
+                            onChange={(v) =>
+                                setSectionInfo({
+                                    ...sectionInfo,
+                                    bn: { ...sectionInfo.bn, ctaSub: v },
+                                })
+                            }
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -492,7 +562,7 @@ export default function AdminWhyUs() {
             <div className="bg-card rounded-xl p-4 md:p-6 border border-border">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold text-foreground">
-                        USP Items ({items.length})
+                        Main USP Cards ({items.length})
                     </h3>
                 </div>
 
@@ -500,7 +570,7 @@ export default function AdminWhyUs() {
                     items={items as any[]}
                     setItems={setItems as any}
                     newItem={DEFAULT_ITEM as any}
-                    addLabel="Add USP Item"
+                    addLabel="Add USP Card"
                     getItemLabel={(item: any) =>
                         item.en.title || item.bn.title || ''
                     }
@@ -522,7 +592,48 @@ export default function AdminWhyUs() {
                                 onMoveDown={() => moveItem(i, 'down')}
                                 index={i}
                                 total={items.length}
-                                iconColor="#6366f1"
+                                iconColor="#d4a017"
+                            />
+                        );
+                    }}
+                />
+            </div>
+
+            {/* Benefits list */}
+            <div className="bg-card rounded-xl p-4 md:p-6 border border-border">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-foreground">
+                        Secondary Benefits Cards ({benefits.length})
+                    </h3>
+                </div>
+
+                <ItemListEditor
+                    items={benefits as any[]}
+                    setItems={setBenefits as any}
+                    newItem={DEFAULT_ITEM as any}
+                    addLabel="Add Benefit Card"
+                    getItemLabel={(item: any) =>
+                        item.en.title || item.bn.title || ''
+                    }
+                    renderItem={(item, i, update) => {
+                        const moveItem = (index: number, direction: 'up' | 'down') => {
+                            const newIndex = direction === 'up' ? index - 1 : index + 1;
+                            if (newIndex < 0 || newIndex >= benefits.length) return;
+                            const copy = [...benefits];
+                            [copy[index], copy[newIndex]] = [copy[newIndex], copy[index]];
+                            setBenefits(copy as any);
+                        };
+
+                        return (
+                            <USPCard
+                                item={item as any}
+                                update={update as any}
+                                onRemove={() => setBenefits(benefits.filter((_, idx) => idx !== i) as any)}
+                                onMoveUp={() => moveItem(i, 'up')}
+                                onMoveDown={() => moveItem(i, 'down')}
+                                index={i}
+                                total={benefits.length}
+                                iconColor="#d4a017"
                             />
                         );
                     }}
@@ -533,9 +644,16 @@ export default function AdminWhyUs() {
             <JsonPanel
                 data={{
                     en: {
-                        title: sectionInfo.en.title,
-                        subtitle: sectionInfo.en.subtitle,
+                        ...sectionInfo.en,
                         items: items.map(m => ({
+                            title: m.en.title,
+                            desc: m.en.desc,
+                            icon: m.icon,
+                            color: m.color,
+                            bg: m.bg,
+                            border: m.border,
+                        })),
+                        benefits: benefits.map(m => ({
                             title: m.en.title,
                             desc: m.en.desc,
                             icon: m.icon,
@@ -545,9 +663,16 @@ export default function AdminWhyUs() {
                         })),
                     },
                     bn: {
-                        title: sectionInfo.bn.title,
-                        subtitle: sectionInfo.bn.subtitle,
+                        ...sectionInfo.bn,
                         items: items.map(m => ({
+                            title: m.bn.title,
+                            desc: m.bn.desc,
+                            icon: m.icon,
+                            color: m.color,
+                            bg: m.bg,
+                            border: m.border,
+                        })),
+                        benefits: benefits.map(m => ({
                             title: m.bn.title,
                             desc: m.bn.desc,
                             icon: m.icon,
@@ -563,27 +688,45 @@ export default function AdminWhyUs() {
                         return;
                     }
                     const newInfo = {
-                        en: { title: parsed.en.title || '', subtitle: parsed.en.subtitle || '' },
-                        bn: { title: parsed.bn.title || '', subtitle: parsed.bn.subtitle || '' },
+                        en: { 
+                            title: parsed.en.title || '', 
+                            heading: parsed.en.heading || '',
+                            subtitle: parsed.en.subtitle || '',
+                            badge: parsed.en.badge || '',
+                            cta: parsed.en.cta || '',
+                            ctaSub: parsed.en.ctaSub || ''
+                        },
+                        bn: { 
+                            title: parsed.bn.title || '', 
+                            heading: parsed.bn.heading || '',
+                            subtitle: parsed.bn.subtitle || '',
+                            badge: parsed.bn.badge || '',
+                            cta: parsed.bn.cta || '',
+                            ctaSub: parsed.bn.ctaSub || ''
+                        },
                     };
-                    const enItems = parsed.en.items || [];
-                    const bnItems = parsed.bn.items || [];
-                    const maxLen = Math.max(enItems.length, bnItems.length);
-                    const merged: UnifiedUSP[] = [];
-                    for (let i = 0; i < maxLen; i++) {
-                        const en = enItems[i] || {};
-                        const bn = bnItems[i] || {};
-                        merged.push({
-                            en: { title: en.title || '', desc: en.desc || '' },
-                            bn: { title: bn.title || '', desc: bn.desc || '' },
-                            icon: en.icon || bn.icon || '',
-                            color: en.color || bn.color || '',
-                            bg: en.bg || bn.bg || '',
-                            border: en.border || bn.border || '',
-                        });
-                    }
+                    
+                    const mergeItems = (enArr: any[], bnArr: any[]) => {
+                        const maxLen = Math.max(enArr.length, bnArr.length);
+                        const merged: UnifiedUSP[] = [];
+                        for (let i = 0; i < maxLen; i++) {
+                            const en = enArr[i] || {};
+                            const bn = bnArr[i] || {};
+                            merged.push({
+                                en: { title: en.title || '', desc: en.desc || '' },
+                                bn: { title: bn.title || '', desc: bn.desc || '' },
+                                icon: en.icon || bn.icon || '',
+                                color: en.color || bn.color || '',
+                                bg: en.bg || bn.bg || '',
+                                border: en.border || bn.border || '',
+                            });
+                        }
+                        return merged;
+                    };
+
                     setSectionInfo(newInfo);
-                    setItems(merged);
+                    setItems(mergeItems(parsed.en.items || [], parsed.bn.items || []));
+                    setBenefits(mergeItems(parsed.en.benefits || [], parsed.bn.benefits || []));
                 }}
             />
 

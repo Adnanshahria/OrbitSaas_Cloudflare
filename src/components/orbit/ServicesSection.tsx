@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
@@ -572,12 +572,160 @@ const ServiceVisual = ({ index }: { index: number }) => {
   );
 };
 
+/* ─────────────────────── Agent Skills Canvas Background ─────────────────────── */
+const CardCanvasBackground = ({ index }: { index: number }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) return;
+    
+    let w = 0;
+    let h = 0;
+    let raf: number;
+    let mouseX = -1000;
+    let mouseY = -1000;
+
+    const resize = () => {
+      w = canvas.offsetWidth;
+      h = canvas.offsetHeight;
+      canvas.width = w * window.devicePixelRatio;
+      canvas.height = h * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    };
+    resize();
+
+    // Determine color based on index to differentiate cards slightly
+    const colors = [
+      '139, 92, 246', // Violet
+      '20, 184, 166', // Teal
+      '16, 185, 129', // Emerald
+      '244, 63, 94',  // Rose
+      '59, 130, 246', // Blue
+      '245, 158, 11'  // Amber
+    ];
+    const themeColor = colors[index % colors.length];
+
+    const particles = Array.from({ length: 30 }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      s: Math.random() * 1.5 + 0.5,
+      c: themeColor
+    }));
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+    };
+    
+    const handleMouseLeave = () => {
+      mouseX = -1000;
+      mouseY = -1000;
+    };
+
+    const parent = canvas.parentElement;
+    if (parent) {
+      parent.addEventListener('mousemove', handleMouseMove);
+      parent.addEventListener('mouseleave', handleMouseLeave);
+    }
+
+    const render = () => {
+      ctx.clearRect(0, 0, w, h);
+      
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        
+        if (p.x < 0 || p.x > w) p.vx *= -1;
+        if (p.y < 0 || p.y > h) p.vy *= -1;
+
+        let drawX = p.x;
+        let drawY = p.y;
+        
+        // Agent skill interaction: mild repel/attract to mouse
+        if (mouseX !== -1000) {
+          const dx = mouseX - p.x;
+          const dy = mouseY - p.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < 120) {
+            const angle = Math.atan2(dy, dx);
+            const force = (120 - dist) / 120;
+            drawX -= Math.cos(angle) * force * 15;
+            drawY -= Math.sin(angle) * force * 15;
+          }
+        }
+
+        ctx.beginPath();
+        ctx.arc(drawX, drawY, p.s, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.c}, 0.6)`;
+        ctx.fill();
+
+        // Connect nearby particles to form neural/agent web
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          let d2X = p2.x;
+          let d2Y = p2.y;
+          
+          if (mouseX !== -1000) {
+            const dx2 = mouseX - p2.x;
+            const dy2 = mouseY - p2.y;
+            const dist2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+            if (dist2 < 120) {
+              const angle2 = Math.atan2(dy2, dx2);
+              const force2 = (120 - dist2) / 120;
+              d2X -= Math.cos(angle2) * force2 * 15;
+              d2Y -= Math.sin(angle2) * force2 * 15;
+            }
+          }
+
+          const cdx = drawX - d2X;
+          const cdy = drawY - d2Y;
+          const cdist = Math.sqrt(cdx*cdx + cdy*cdy);
+          if (cdist < 80) {
+            ctx.beginPath();
+            ctx.moveTo(drawX, drawY);
+            ctx.lineTo(d2X, d2Y);
+            ctx.strokeStyle = `rgba(${p.c}, ${0.2 * (1 - cdist/80)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+      raf = requestAnimationFrame(render);
+    };
+    render();
+
+    window.addEventListener('resize', resize);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+      if (parent) {
+        parent.removeEventListener('mousemove', handleMouseMove);
+        parent.removeEventListener('mouseleave', handleMouseLeave);
+      }
+    };
+  }, [index]);
+
+  return (
+    <canvas 
+      ref={canvasRef} 
+      className="absolute inset-0 w-full h-full pointer-events-none rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-0" 
+    />
+  );
+};
+
 /* ─────────────────────── Bento Card with 3D Hover ─────────────────────── */
 function BentoCard({
   item,
   index,
 }: {
-  item: any;
+  item: { title?: string; desc?: string; id?: string | number; [key: string]: unknown };
   index: number;
 }) {
   const Icon = SERVICE_ICONS[index % SERVICE_ICONS.length];
@@ -624,6 +772,9 @@ function BentoCard({
       className="group relative overflow-hidden rounded-[2rem] bg-white/95 backdrop-blur-2xl border-2 border-[#d8d3c7] hover:border-[var(--nav-accent)] p-5 md:p-6 md:min-h-[240px] flex flex-col justify-between cursor-default shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_60px_-15px_rgba(16,185,129,0.15),0_8px_24px_-8px_rgba(0,0,0,0.08)]"
       style={{ transition: 'transform 0.15s ease-out, border-color 0.4s, box-shadow 0.4s', willChange: 'transform' }}
     >
+      {/* HTML Canvas Agent Skills Background */}
+      <CardCanvasBackground index={index} />
+
       {/* Shine overlay — follows cursor */}
       <div className="card-shine absolute inset-0 pointer-events-none z-20 rounded-[2rem]" style={{ transition: 'background 0.15s ease-out' }} />
 
@@ -666,7 +817,8 @@ function BentoCard({
 export function ServicesSection({ embedded }: { embedded?: boolean }) {
   const { content } = useContent();
   const { lang } = useLang();
-  const t = (content[lang] as any)?.services;
+  type ContentServices = { items?: Array<{ title?: string; desc?: string; id?: string | number; [key: string]: unknown }>; heading?: string; sub?: string };
+  const t = (content[lang] as { services?: ContentServices })?.services;
   const allItems = t?.items || [];
 
   const Wrapper = embedded ? 'div' : 'section';
@@ -726,10 +878,10 @@ export function ServicesSection({ embedded }: { embedded?: boolean }) {
                 ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-[53fr_47fr]" 
                 : "grid-cols-1 md:grid-cols-2 lg:grid-cols-[47fr_53fr]";
 
-             return (
+              return (
                <div key={rowIndex} className={`grid ${gridClass} gap-5`}>
-                 {rowItems.map((item: any, colIndex: number) => (
-                   <BentoCard key={item.id || item.title || colIndex} item={item} index={rowIndex * 2 + colIndex} />
+                 {rowItems.map((item: { title?: string; desc?: string; id?: string | number; [key: string]: unknown }, colIndex: number) => (
+                   <BentoCard key={(item.id as string | number) || (item.title as string) || colIndex} item={item} index={rowIndex * 2 + colIndex} />
                  ))}
                </div>
              );

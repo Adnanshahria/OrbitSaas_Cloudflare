@@ -1,4 +1,4 @@
-const fs = require('fs');
+import fs from 'fs';
 const content = `export type Lang = 'en' | 'bn';
 
 export const translations = {
@@ -383,7 +383,7 @@ export const translations = {
 } as const;
 
 export type Translations = typeof translations['en'] | typeof translations['bn'];
-\`;
+`;
 
 fs.writeFileSync('src/lib/i18n.ts', content, 'utf8');
 console.log('Successfully wrote i18n.ts');

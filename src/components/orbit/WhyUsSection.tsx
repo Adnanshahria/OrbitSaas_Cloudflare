@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
@@ -20,153 +20,298 @@ import { RichText } from '@/components/ui/RichText';
 const ICONS = [BarChart3, Layers, TrendingUp, Brain];
 const BENEFIT_ICONS = [Globe, ShieldCheck, Sparkles];
 
+/* ───────────────── Middle Aura Component (Agent Skill) ──────────────── */
+const MiddleAura = ({ color = 'var(--accent)', scale = 1 }: { color?: string; scale?: number }) => (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0" style={{ transform: `scale(${scale})` }}>
+    {[...Array(3)].map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute rounded-full border border-current"
+        style={{ color, width: '60px', height: '60px' }}
+        animate={{
+          scale: [1, 3],
+          opacity: [0.5, 0],
+        }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          delay: i * 1.3,
+          ease: "easeOut"
+        }}
+      />
+    ))}
+  </div>
+);
+
 
 /* ───────────────── Unique Super-Premium Visuals (0-6) ───────────────── */
 
 // 0. ROI Impact — Dynamic Growth Chart with Floating Profit Nodes
 const ROIVisual = () => (
-  <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-[rgba(255,255,255,0.01)]">
-    <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(var(--accent) 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
-    <div className="relative w-[85%] h-3/5 flex items-end justify-between gap-1.5 px-4">
-      {[35, 60, 45, 80, 65, 95].map((height, i) => (
+  <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-[rgba(255,255,255,0.01)] p-4">
+    {/* Background Grid Accent */}
+    <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(var(--accent) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+    
+    <div className="relative w-full h-[120px] sm:h-[130px] flex items-end justify-between gap-1.5 px-4 max-w-[260px]">
+      {[35, 60, 45, 85, 65, 95].map((height, i) => (
         <motion.div
           key={i}
-          className="relative flex-1 bg-gradient-to-t from-[var(--accent)]/5 via-[var(--accent)]/30 to-[var(--accent)] rounded-t-lg shadow-[0_0_20px_rgba(212,160,23,0.15)]"
-          initial={{ height: 0 }}
-          animate={{ height: `${height}%` }}
-          transition={{ duration: 1.5, delay: i * 0.1, ease: "circOut" }}
+          className="relative flex-1 group/bar"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: `${height}%`, opacity: 1 }}
+          transition={{ duration: 1.5, delay: i * 0.1, ease: [0.34, 1.56, 0.64, 1] }}
         >
-          <motion.div className="absolute -top-1 left-0 right-0 h-[2px] bg-white rounded-full blur-[2px]" animate={{ opacity: [0.3, 1, 0.3], scaleX: [0.8, 1, 0.8] }} transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }} />
+          {/* Glassmorphic Bar */}
+          <div className="absolute inset-x-0 bottom-0 top-0 bg-gradient-to-t from-[var(--accent)]/10 via-[var(--accent)]/40 to-[var(--accent)] rounded-t-[3px] sm:rounded-t-lg shadow-[0_0_20px_rgba(212,160,23,0.1)] border-x border-t border-white/20 backdrop-blur-[2px]" />
+          
+          {/* Inner Luminescence */}
+          <motion.div 
+            className="absolute top-0 left-0 right-0 h-[1.5px] bg-white/60 rounded-full blur-[0.5px] z-10"
+            animate={{ opacity: [0.3, 0.8, 0.3], scaleX: [0.7, 1, 0.7] }}
+            transition={{ duration: 3, repeat: Infinity, delay: i * 0.3 }}
+          />
+
+          {/* Floating Data Point */}
+          {i === 3 || i === 5 ? (
+            <motion.div 
+              className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-white/10 backdrop-blur-md rounded-md border border-white/20 text-[7px] font-black text-white shadow-xl whitespace-nowrap"
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }}
+            >
+              +{(height/10).toFixed(1)}x
+            </motion.div>
+          ) : null}
         </motion.div>
       ))}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible" preserveAspectRatio="none">
+
+      {/* Dynamic Connection Curve - Normalized Coordinates */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible z-20" viewBox="0 0 260 130" preserveAspectRatio="none">
         <defs>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          <linearGradient id="roi-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="transparent" stopOpacity="0" />
+            <stop offset="50%" stopColor="var(--accent-luminous)" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="1" />
+          </linearGradient>
+          <filter id="roi-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
         </defs>
         <motion.path
-          d="M 0 85 Q 50 75 100 15"
-          stroke="var(--accent-luminous)"
-          strokeWidth="4"
+          d="M 25 85 C 50 85, 75 55, 100 75 S 150 20, 180 45 S 230 5, 240 10"
+          stroke="url(#roi-gradient)"
+          strokeWidth="2.5"
           fill="none"
           strokeLinecap="round"
-          filter="url(#glow)"
+          filter="url(#roi-glow)"
           initial={{ pathLength: 0, opacity: 0 }}
           animate={{ pathLength: 1, opacity: 1 }}
-          transition={{ duration: 2.5, delay: 0.5, ease: "easeInOut" }}
+          transition={{ duration: 3, delay: 0.8, ease: "easeInOut" }}
+        />
+        {/* Animated End Node */}
+        <motion.circle
+          cx="240" cy="10" r="3"
+          fill="white"
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 3.5, duration: 0.5 }}
+          style={{ filter: 'drop-shadow(0 0 8px var(--accent-luminous))' }}
         />
       </svg>
-      {[...Array(6)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_12px_var(--accent-luminous)]"
-          animate={{ 
-            y: [0, -60, 0], 
-            x: [0, (i % 2 === 0 ? 30 : -30), 0],
-            opacity: [0, 0.9, 0],
-            scale: [0, 1, 0]
-          }}
-          transition={{ duration: 4, delay: i * 0.8, repeat: Infinity }}
-          style={{ left: `${15 + i * 15}%`, bottom: '10%' }}
-        />
-      ))}
     </div>
   </div>
 );
 
-// 1. Scalability — Hexagonal Node Network with Pulsing Data
-const ScalabilityVisual = () => (
-  <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-    <div className="absolute inset-0 bg-[#0a0a0a]" style={{ backgroundImage: 'radial-gradient(var(--accent) 0.5px, transparent 0.5px)', backgroundSize: '24px 24px', opacity: 0.1 }} />
-    <div className="relative w-44 h-44">
-      {[...Array(7)].map((_, i) => {
-        const angle = (i * 60) * (Math.PI / 180);
-        const radius = i === 0 ? 0 : 55;
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
-        return (
-          <React.Fragment key={i}>
-            {i > 0 && (
-              <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
-                <motion.path
-                  d={`M 50% 50% L ${50 + (x/1.1)}% ${50 + (y/1.1)}%`}
-                  stroke="var(--accent)" strokeWidth="1.5" strokeDasharray="5 5"
-                  strokeOpacity="0.2"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1, strokeDashoffset: [-20, 0] }}
-                  transition={{ 
-                    pathLength: { duration: 1.5, delay: i * 0.1 },
-                    strokeDashoffset: { duration: 2, repeat: Infinity, ease: "linear" }
-                  }}
-                />
-              </svg>
-            )}
-            <motion.div
-              className="absolute w-12 h-12 border border-[var(--accent)]/40 rounded-xl flex items-center justify-center bg-[#0a0a0a]/90 backdrop-blur-sm shadow-[0_0_20px_rgba(212,160,23,0.1)]"
-              style={{ left: `calc(50% + ${x}px - 24px)`, top: `calc(50% + ${y}px - 24px)` }}
-              animate={{ 
-                scale: [1, 1.08, 1],
-                boxShadow: ['0_0_10px_rgba(212,160,23,0.1)', '0_0_30px_rgba(212,160,23,0.3)', '0_0_10px_rgba(212,160,23,0.1)']
-              }}
-              transition={{ duration: 4, repeat: Infinity, delay: i * 0.4 }}
-            >
-              <motion.div 
-                className="w-2.5 h-2.5 rounded-full bg-[var(--accent)] shadow-[0_0_15px_var(--accent)]"
-                animate={{ opacity: [0.4, 1, 0.4] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-            </motion.div>
-          </React.Fragment>
-        );
-      })}
+// 1. Scalability — Neural Fractal Hub (Agent Skills Premium)
+const ScalabilityVisual = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    const timeStart = Date.now();
+
+    const nodes: any[] = [];
+    const maxLevels = 3;
+    const branches = 4;
+
+    // Build Fractal Structure
+    const buildFractal = (x: number, y: number, level: number, angle: number) => {
+      if (level > maxLevels) return;
+      
+      const id = nodes.length;
+      nodes.push({ x, y, level, parentId: id === 0 ? -1 : nodes.length - 1 });
+      
+      const dist = 50 / (level + 1);
+      for (let i = 0; i < branches; i++) {
+        const a = angle + (i - branches / 2) * (Math.PI / 2 / (level + 1));
+        const nx = x + Math.cos(a) * dist;
+        const ny = y + Math.sin(a) * dist;
+        buildFractal(nx, ny, level + 1, a);
+      }
+    };
+
+    buildFractal(100, 100, 0, 0);
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const time = (Date.now() - timeStart) / 1000;
+      const pulse = Math.sin(time * 2) * 0.5 + 0.5;
+
+      // ── Background Shimmer ──
+      ctx.fillStyle = 'rgba(212, 160, 23, 0.02)';
+      ctx.fillRect(0, 0, 200, 200);
+
+      // ── Connections ──
+      ctx.lineWidth = 1;
+      nodes.forEach((node, i) => {
+        if (i === 0) return;
+        const parent = nodes[node.parentId] || nodes[0];
+        
+        // Dynamic path distortion
+        const phase = (time + i * 0.1) % 2;
+        const pOpacity = Math.max(0, 1 - Math.abs(phase - 1) * 2);
+
+        ctx.beginPath();
+        ctx.moveTo(parent.x, parent.y);
+        ctx.lineTo(node.x, node.y);
+        ctx.strokeStyle = `rgba(212, 160, 23, ${0.1 + pOpacity * 0.3})`;
+        ctx.stroke();
+
+        if (pOpacity > 0.1) {
+          ctx.beginPath();
+          const px = parent.x + (node.x - parent.x) * phase;
+          const py = parent.y + (node.y - parent.y) * phase;
+          ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${pOpacity})`;
+          ctx.fill();
+        }
+      });
+
+      // ── Nodes ──
+      nodes.forEach((n, i) => {
+        const floatX = Math.sin(time + i) * 2;
+        const floatY = Math.cos(time + i * 0.8) * 2;
+        const nx = n.x + floatX;
+        const ny = n.y + floatY;
+
+        const size = (4 - n.level) * 1.5;
+        
+        // Node Glow
+        const grad = ctx.createRadialGradient(nx, ny, 0, nx, ny, size * 4);
+        grad.addColorStop(0, `rgba(212, 160, 23, ${0.2 * (1 / (n.level + 1))})`);
+        grad.addColorStop(1, 'rgba(212, 160, 23, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(nx, ny, size * 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Core
+        ctx.beginPath();
+        ctx.arc(nx, ny, size, 0, Math.PI * 2);
+        ctx.fillStyle = n.level === 0 ? 'var(--accent)' : `rgba(212, 160, 23, ${0.6 - n.level * 0.1})`;
+        ctx.fill();
+
+        if (n.level === 0) {
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.arc(nx, ny, size + pulse * 4, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      });
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+    return () => cancelAnimationFrame(animationFrameId);
+  }, []);
+
+  return (
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-[rgba(255,255,255,0.01)] group/fractal">
+      <MiddleAura opacity-30 />
+      <canvas 
+        ref={canvasRef} 
+        width={200} 
+        height={200} 
+        className="w-full h-full opacity-90 transition-transform duration-700 group-hover/fractal:scale-110"
+      />
+      {/* HUD Overlay */}
+      <div className="absolute inset-0 border-[0.5px] border-white/5 pointer-events-none rounded-xl" />
+      <div className="absolute top-2 right-2 flex flex-col items-end gap-1 opacity-20">
+        <div className="w-8 h-[1px] bg-white" />
+        <div className="w-4 h-[1px] bg-white" />
+      </div>
+      <div className="absolute bottom-2 left-2 flex flex-col gap-1 opacity-20">
+        <div className="w-4 h-[1px] bg-white" />
+        <div className="w-8 h-[1px] bg-white" />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // 2. Growth — Parallax Orbital Rings
 const GrowthVisual = () => (
-  <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-    <div className="relative w-48 h-48 flex items-center justify-center">
-      <motion.div className="w-12 h-12 bg-gradient-to-br from-[var(--accent)] to-[#8a6500] rounded-full shadow-[0_0_40px_rgba(212,160,23,0.5)] z-20 flex items-center justify-center border border-white/20" animate={{ scale: [1, 1.25, 1], rotate: [0, 5, -5, 0] }} transition={{ duration: 4, repeat: Infinity }}>
-        <Zap size={20} className="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
+  <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-[rgba(255,255,255,0.01)]">
+    <div className="relative w-52 h-52 flex items-center justify-center">
+      {/* Central Core with Internal Pulse */}
+      <motion.div className="w-14 h-14 relative z-20 flex items-center justify-center group" animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}>
+        <MiddleAura scale={1.2} />
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)] via-[#8a6500] to-[#5a4200] rounded-full shadow-[0_0_50px_rgba(212,160,23,0.4)] border border-white/20" />
+        <Zap size={22} className="text-white relative z-10 drop-shadow-[0_0_12px_rgba(255,255,255,0.9)]" />
+        
+        {/* Core Pulse Ring */}
+        <motion.div 
+          className="absolute inset-0 rounded-full border border-[var(--accent)]"
+          animate={{ scale: [1, 2.5], opacity: [0.6, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
       </motion.div>
+
+      {/* Orbiting Stardust Rings */}
       {[0, 1, 2, 3].map((i) => (
         <motion.div
           key={i}
-          className="absolute border border-[var(--accent)]/20 rounded-[35%] flex items-center justify-center"
-          style={{ width: `${80 + i * 40}px`, height: `${80 + i * 40}px` }}
-          animate={{ rotate: i % 2 === 0 ? 360 : -360, opacity: [0.05, 0.3, 0.05], scale: [1, 1.1, 1] }}
-          transition={{ duration: 10 + i * 5, repeat: Infinity, ease: "linear" }}
+          className="absolute border border-[var(--accent)]/10 rounded-full"
+          style={{ width: `${90 + i * 45}px`, height: `${90 + i * 45}px` }}
+          animate={{ rotate: i % 2 === 0 ? 360 : -360, opacity: [0.1, 0.3, 0.1] }}
+          transition={{ duration: 15 + i * 5, repeat: Infinity, ease: "linear" }}
         >
+          {/* Planetarium Nodes */}
           <motion.div 
-            className={`absolute w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_15px_var(--accent)]`} 
+            className="absolute w-2 h-2 rounded-full bg-[var(--accent)] shadow-[0_0_15px_var(--accent)]" 
             style={{ 
-              top: i % 2 === 0 ? '-1px' : 'auto', 
-              bottom: i % 2 !== 0 ? '-1px' : 'auto' 
+              top: '-1px', 
+              left: '50%',
+              backgroundImage: 'radial-gradient(circle at 30% 30%, white, transparent)'
             }}
-            animate={{ scale: [1, 1.5, 1] }}
-            transition={{ duration: 1, repeat: Infinity }}
+            animate={{ scale: [1, 1.4, 1] }}
+            transition={{ duration: 1 + i * 0.2, repeat: Infinity }}
           />
         </motion.div>
       ))}
-      {/* Dynamic light particles */}
-      {[...Array(8)].map((_, i) => (
+
+      {/* Floating Stardust Particles */}
+      {[...Array(12)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute w-1 h-1 bg-white rounded-full blur-[1px]"
+          className="absolute w-[2px] h-[2px] bg-white rounded-full"
           style={{ 
-            left: `${50 + Math.cos(i*45) * 40}%`, 
-            top: `${50 + Math.sin(i*45) * 40}%` 
+            left: `${50 + Math.cos(i*30) * (40 + Math.random() * 40)}%`, 
+            top: `${50 + Math.sin(i*30) * (40 + Math.random() * 40)}%` 
           }}
           animate={{ 
-            scale: [0, 1, 0], 
-            opacity: [0, 0.6, 0],
-            x: [0, Math.cos(i*45) * 20],
-            y: [0, Math.sin(i*45) * 20]
+            opacity: [0, 1, 0],
+            scale: [0, 1.5, 0],
+            x: [0, Math.cos(i*30) * 30],
+            y: [0, Math.sin(i*30) * 30]
           }}
-          transition={{ duration: 2 + Math.random(), repeat: Infinity, delay: i * 0.2 }}
+          transition={{ duration: 3 + Math.random() * 2, repeat: Infinity, delay: i * 0.2 }}
         />
       ))}
     </div>
@@ -178,51 +323,213 @@ const AIVisual = () => (
   <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
     <div className="absolute inset-0 bg-[#0a0a0a]" style={{ backgroundImage: 'linear-gradient(rgba(212,160,23,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(212,160,23,0.05) 1px, transparent 1px)', backgroundSize: '25px 25px' }} />
     <div className="relative w-44 h-44">
-      <svg className="absolute inset-0 w-full h-full overflow-visible">
-        <motion.path
-          d="M 20 20 L 100 100 M 20 100 L 100 20 M 60 10 L 60 110 M 10 60 L 110 60"
-          stroke="var(--accent)" strokeWidth="1" strokeOpacity="0.4" fill="none" transform="scale(1.4) translate(-15, -15)"
-          strokeDasharray="4 4"
-        />
-        <motion.circle cx="50%" cy="50%" r="55" stroke="var(--accent)" strokeWidth="1" strokeOpacity="0.15" fill="none" strokeDasharray="10 5" animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} />
-      </svg>
       <motion.div className="absolute inset-10 border-2 border-[var(--accent)]/50 rounded-2xl bg-[#0a0a0a]/90 backdrop-blur-xl flex items-center justify-center shadow-[0_0_50px_rgba(212,160,23,0.3)] z-10" animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity }}>
+        <MiddleAura scale={1.5} />
         <Brain size={40} className="text-[var(--accent)] filter drop-shadow-[0_0_15px_var(--accent)]" />
         <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" animate={{ left: ['-100%', '100%'] }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} />
-        {/* Logic pulses */}
-        {[...Array(3)].map((_, i) => (
-          <motion.div key={i} className="absolute w-full h-[1px] bg-[var(--accent)] opacity-40" style={{ top: `${30 + i * 20}%` }} animate={{ opacity: [0, 1, 0], scaleX: [0, 1.2, 0] }} transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }} />
-        ))}
       </motion.div>
     </div>
   </div>
 );
 
 // 4. Global Delivery — Atmospheric Orbital Sphere
-const GlobalVisual = () => (
-  <div className="relative w-full h-full flex items-center justify-center py-4 bg-[radial-gradient(circle_at_center,rgba(212,160,23,0.05)_0%,transparent_70%)]">
-    <div className="relative w-40 h-40 flex items-center justify-center">
-      <motion.div className="absolute w-full h-full rounded-full border border-[var(--accent)]/10" animate={{ rotate: 360 }} transition={{ duration: 25, repeat: Infinity, ease: "linear" }} />
-      <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(212,160,23,0.2)_0%,transparent_60%)] blur-2xl animate-pulse" />
-      <motion.div className="relative z-10 w-24 h-24 bg-[#110f05] border-2 border-[var(--accent)]/50 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(212,160,23,0.4)] overflow-hidden" animate={{ rotateY: 360 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }}>
-        <Globe size={48} className="text-[var(--accent)]" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-[#8a6500]/40 to-transparent pointer-events-none" />
-        <motion.div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(212,160,23,0.2)_50%,transparent_100%)]" animate={{ x: ['-200%', '200%'] }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }} />
-      </motion.div>
-      {[0, 1, 2].map((i) => (
-        <motion.div
-          key={i}
-          className="absolute border border-[var(--accent)]/20 rounded-full"
-          style={{ width: `${130 + i * 40}px`, height: `${130 + i * 40}px`, opacity: 0.3 }}
-          animate={{ rotate: i % 2 === 0 ? 360 : -360 }}
-          transition={{ duration: 10 + i * 4, repeat: Infinity, ease: "linear" }}
-        >
-          <motion.div className="absolute w-2 h-2 rounded-full bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]" style={{ top: '-1px', left: '50%' }} animate={{ scale: [1, 1.5, 1] }} transition={{ duration: 2, repeat: Infinity }} />
-        </motion.div>
-      ))}
+const MAP_DATA = [
+  "       . . . .   . . . . . .",
+  "   . . . . . . . . . . . . . .",
+  " . . . . . . . . . . . . . . . .",
+  " . . . . . . . . . . . . . . . .",
+  "   . . . . . . . . . . . . . .",
+  "     . . . . . . . . . . . . ",
+  "       . . . . . . . . . .",
+  "         . . . . . . . .",
+  "           . . . . . .",
+  "             . . . .",
+  "               . .",
+].map(s => s.split('')); 
+
+// More realistic continent shapes (Simulated high-res matrix)
+const WORLD_MAP = [
+  "000011110000000011111100110000",
+  "000111111000001111111111111000",
+  "011111111100111111111111111110",
+  "011111111111111111111111111110",
+  "001111111111111111111111111000",
+  "000111111001111111111111111000",
+  "000011110000111111111111100000",
+  "000011100000111111111110000000",
+  "000001100000011111111000000000",
+  "000001000000001111100000000000",
+  "000000000000000111000000000000",
+];
+
+const GlobalVisual = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let rotation = 0;
+
+    const rows = WORLD_MAP.length;
+    const cols = WORLD_MAP[0].length;
+    const spacing = 4;
+    const dotSize = 1.2;
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = 60;
+
+      // ── 1. Sphere Base Shading ──
+      const sphereGrad = ctx.createRadialGradient(
+        centerX - radius * 0.3, centerY - radius * 0.3, radius * 0.2,
+        centerX, centerY, radius
+      );
+      sphereGrad.addColorStop(0, 'rgba(212, 160, 23, 0.2)');
+      sphereGrad.addColorStop(1, '#080808');
+      
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.fillStyle = sphereGrad;
+      ctx.fill();
+
+      // ── 2. Rotating Dot Map ──
+      rotation += 0.005;
+      const mapWidth = cols * spacing;
+      const offsetX = (rotation * 50) % mapWidth;
+
+      ctx.save();
+      // Clipping to sphere
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.clip();
+
+      for (let side = -1; side <= 1; side++) {
+        const xStart = centerX - radius/2 + (side * mapWidth) + offsetX;
+        
+        WORLD_MAP.forEach((row, rIdx) => {
+          row.split('').forEach((char, cIdx) => {
+            if (char === '0') return;
+
+            const x = xStart + cIdx * spacing - (mapWidth / 2);
+            const y = centerY - (rows * spacing / 2) + rIdx * spacing;
+
+            const dx = x - centerX;
+            const dy = y - centerY;
+            const distSq = dx * dx + dy * dy;
+            
+            if (distSq < radius * radius) {
+              const opacity = Math.pow(1 - distSq / (radius * radius), 0.5);
+              ctx.beginPath();
+              ctx.arc(x, y, dotSize * opacity, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(212, 160, 23, ${0.4 * opacity})`;
+              ctx.fill();
+              
+              if (opacity > 0.7) {
+                ctx.save();
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = 'rgba(212, 160, 23, 0.5)';
+                ctx.fill();
+                ctx.restore();
+              }
+            }
+          });
+        });
+      }
+      ctx.restore();
+
+      // ── 3. Connection Arcs ──
+      const time = Date.now() / 1000;
+      const arcs = [
+        { start: { x: centerX - 30, y: centerY }, end: { x: centerX + 30, y: centerY - 20 }, phase: 0 },
+        { start: { x: centerX - 20, y: centerY + 20 }, end: { x: centerX + 20, y: centerY + 25 }, phase: 2 },
+        { start: { x: centerX - 10, y: centerY - 30 }, end: { x: centerX + 5, y: centerY + 30 }, phase: 4 },
+      ];
+
+      arcs.forEach((arc) => {
+        const progress = (time + arc.phase) % 4 / 4;
+        const cpX = (arc.start.x + arc.end.x) / 2;
+        const cpY = Math.min(arc.start.y, arc.end.y) - 30;
+        
+        ctx.beginPath();
+        ctx.moveTo(arc.start.x, arc.start.y);
+        ctx.quadraticCurveTo(cpX, cpY, arc.end.x, arc.end.y);
+        
+        const arcGrad = ctx.createLinearGradient(arc.start.x, arc.start.y, arc.end.x, arc.end.y);
+        arcGrad.addColorStop(0, 'rgba(212,160,23,0)');
+        arcGrad.addColorStop(progress, 'rgba(212,160,23,0.4)');
+        arcGrad.addColorStop(Math.min(progress + 0.1, 1), 'rgba(212,160,23,0)');
+        
+        ctx.strokeStyle = arcGrad;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Data particle
+        const t = progress;
+        const px = (1 - t) * (1 - t) * arc.start.x + 2 * (1 - t) * t * cpX + t * t * arc.end.x;
+        const py = (1 - t) * (1 - t) * arc.start.y + 2 * (1 - t) * t * cpY + t * t * arc.end.y;
+        
+        ctx.beginPath();
+        ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = 'rgba(212, 160, 23, 0.8)';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      // ── 4. Fresnel Glow ──
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      const fresnel = ctx.createRadialGradient(centerX, centerY, radius * 0.8, centerX, centerY, radius);
+      fresnel.addColorStop(0, 'rgba(212,160,23,0)');
+      fresnel.addColorStop(1, 'rgba(212,160,23,0.3)');
+      ctx.fillStyle = fresnel;
+      ctx.fill();
+
+      // Border shine
+      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+    return () => cancelAnimationFrame(animationFrameId);
+  }, []);
+
+  return (
+    <div className="relative w-full h-full flex items-center justify-center py-8 overflow-hidden bg-[rgba(255,255,255,0.01)]">
+    <div className="relative w-52 h-52 flex items-center justify-center">
+        <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(212,160,23,0.1)_0%,transparent_70%)] opacity-50 blur-3xl p-10" />
+        <canvas 
+          ref={canvasRef} 
+          width={200} 
+          height={200}
+          className="relative z-20 drop-shadow-[0_0_50px_rgba(212,160,23,0.3)]"
+        />
+        {[...Array(10)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-[1px] h-[1px] bg-white/20 rounded-full"
+            style={{ 
+              left: `${Math.random() * 100}%`, 
+              top: `${Math.random() * 100}%` 
+            }}
+            animate={{ opacity: [0, 0.5, 0] }}
+            transition={{ duration: 3 + Math.random() * 3, repeat: Infinity, delay: Math.random() * 5 }}
+          />
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // 5. Enterprise Security — Advanced Layered Shield Check
 const SecurityVisual = () => (
@@ -258,48 +565,137 @@ const SecurityVisual = () => (
 );
 
 // 6. Elite Talent — Celestial Talent Constellation
-const TalentVisual = () => (
-  <div className="relative w-full h-full flex items-center justify-center py-4 overflow-hidden">
-    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--accent)]/5 to-transparent opacity-20" />
-    <div className="relative w-56 h-32">
-      {[...Array(20)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1 h-1 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
-          style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}
-          animate={{ 
-            opacity: [0.1, 1, 0.1], 
-            scale: [0.5, 1.5, 0.5],
-            y: [0, -10, 0] 
-          }}
-          transition={{ duration: 3 + Math.random() * 4, repeat: Infinity, delay: Math.random() * 5 }}
+const TalentVisual = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    const bokeh = Array.from({ length: 15 }, () => ({
+      x: Math.random() * 300,
+      y: Math.random() * 200,
+      size: 1 + Math.random() * 3,
+      speed: 0.2 + Math.random() * 0.5,
+      opacity: 0.1 + Math.random() * 0.3
+    }));
+
+    const nodes = [
+      { x: 30, y: 100 }, { x: 90, y: 130 }, { x: 150, y: 80 }, { x: 210, y: 130 }, { x: 250, y: 90 }
+    ];
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const time = Date.now() / 1000;
+
+      // ── 1. Neural Constellation ──
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(212, 160, 23, 0.3)';
+      ctx.setLineDash([5, 5]);
+      ctx.lineWidth = 1;
+      ctx.moveTo(nodes[0].x, nodes[0].y);
+      for (let i = 1; i < nodes.length; i++) {
+        ctx.lineTo(nodes[i].x, nodes[i].y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Nodes
+      nodes.forEach((n, i) => {
+        const pulse = Math.sin(time * 2 + i) * 1.5;
+        ctx.beginPath();
+        const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 4 + pulse);
+        grad.addColorStop(0, 'rgba(212, 160, 23, 0.4)');
+        grad.addColorStop(1, 'rgba(212, 160, 23, 0)');
+        ctx.fillStyle = grad;
+        ctx.arc(n.x, n.y, 4 + pulse, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'var(--accent)';
+        ctx.fill();
+      });
+
+      // ── 2. Ambient Bokeh ──
+      bokeh.forEach(b => {
+        b.y -= b.speed;
+        if (b.y < -10) b.y = canvas.height + 10;
+        
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${b.opacity})`;
+        ctx.fill();
+      });
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+    return () => cancelAnimationFrame(animationFrameId);
+  }, []);
+
+  return (
+    <div className="relative w-full h-full flex items-center justify-center py-6 overflow-hidden bg-[rgba(255,255,255,0.01)]">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--accent)]/5 to-transparent opacity-30" />
+      
+      <div className="relative w-64 h-40">
+        <canvas 
+          ref={canvasRef} 
+          width={300} 
+          height={200} 
+          className="absolute inset-0 w-full h-full opacity-60"
         />
-      ))}
-      <svg className="absolute inset-0 w-full h-full opacity-30">
-        <motion.path 
-          d="M 20 40 L 60 80 L 100 20 L 150 90 L 200 30" 
-          stroke="var(--accent)" strokeWidth="2" fill="none" transform="scale(0.8) translate(30, 10)"
-          initial={{ pathLength: 0 }} 
-          animate={{ pathLength: 1 }} 
-          transition={{ duration: 6, repeat: Infinity, repeatType: "reverse" }} 
-        />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <motion.div 
-          className="px-8 py-3 bg-[#1d1905]/80 backdrop-blur-md border-2 border-[var(--accent)]/40 rounded-2xl flex items-center gap-3 shadow-[0_0_40px_rgba(212,160,23,0.3)]"
-          animate={{ y: [0, -6, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <Sparkles size={22} className="text-[var(--accent)] animate-pulse" />
-          <div className="flex flex-col">
-            <span className="text-[12px] font-black text-white uppercase tracking-[0.2em]">Global Elite</span>
-            <span className="text-[9px] text-[var(--accent)] font-bold uppercase tracking-widest opacity-80">0.1% Selection Rate</span>
-          </div>
-        </motion.div>
+
+        {/* Floating Status Tags (React) */}
+        {[
+          { x: '10%', y: '20%', label: 'Top 1%', color: 'bg-emerald-500' },
+          { x: '80%', y: '70%', label: 'Elite AI', color: 'bg-orange-500' },
+        ].map((tag, i) => (
+          <motion.div
+            key={i}
+            className={`absolute px-2 py-0.5 rounded-full ${tag.color}/10 border border-${tag.color}/30 text-[7px] font-black text-white uppercase tracking-tighter z-10`}
+            style={{ left: tag.x, top: tag.y }}
+            animate={{ y: [0, -5, 0], opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 3, repeat: Infinity, delay: i * 0.8 }}
+          >
+            {tag.label}
+          </motion.div>
+        ))}
+
+        {/* Central Hero Tag */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <motion.div 
+            className="px-6 py-4 bg-[#110f05]/90 backdrop-blur-xl border-2 border-[var(--accent)]/40 rounded-3xl flex items-center gap-4 shadow-[0_20px_50px_rgba(212,160,23,0.3)] z-20 group"
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <div className="relative">
+              <Sparkles size={24} className="text-[var(--accent)]" />
+              <motion.div 
+                className="absolute inset-0 text-[var(--accent)]"
+                animate={{ opacity: [0, 1, 0], scale: [1, 1.5, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Sparkles size={24} />
+              </motion.div>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[13px] font-black text-white uppercase tracking-[0.25em]">Global Talent</span>
+              <div className="flex items-center gap-1.5">
+                <div className="h-[2px] w-8 bg-gradient-to-r from-[var(--accent)] to-transparent" />
+                <span className="text-[8px] text-[var(--accent)] font-bold uppercase tracking-widest">Verified Elite</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ALL_VISUALS = [ROIVisual, ScalabilityVisual, GrowthVisual, AIVisual, GlobalVisual, SecurityVisual, TalentVisual];
 const MAIN_VISUALS = [ROIVisual, ScalabilityVisual, GrowthVisual, AIVisual];
@@ -342,8 +738,27 @@ function TiltCard({
   return (
     <motion.div
       ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      onMouseMove={(e) => {
+        handleMouseMove(e);
+        // Custom shine logic to match Services section
+        const card = cardRef.current;
+        if (!card) return;
+        const rect = card.getBoundingClientRect();
+        const shineX = e.clientX - rect.left;
+        const shineY = e.clientY - rect.top;
+        const shine = card.querySelector('.card-shine-overlay') as HTMLElement;
+        if (shine) {
+          shine.style.background = `radial-gradient(circle at ${shineX}px ${shineY}px, rgba(212,160,23,0.15) 0%, transparent 60%)`;
+        }
+      }}
+      onMouseLeave={() => {
+        handleMouseLeave();
+        const card = cardRef.current;
+        if (card) {
+          const shine = card.querySelector('.card-shine-overlay') as HTMLElement;
+          if (shine) shine.style.background = 'transparent';
+        }
+      }}
       style={{
         rotateX,
         rotateY,
@@ -353,11 +768,18 @@ function TiltCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1, duration: 0.6 }}
-      className={`group relative bento-card border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] backdrop-blur-xl p-6 rounded-[2rem] flex flex-col transition-all duration-500 hover:border-[rgba(212,160,23,0.35)] hover:bg-[rgba(255,255,255,0.04)] ${
+      className={`group relative bento-card border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] backdrop-blur-xl p-6 rounded-[2rem] flex flex-col transition-all duration-500 hover:border-[rgba(212,160,23,0.35)] hover:bg-[rgba(255,255,255,0.04)] overflow-hidden ${
         layout === 'horizontal' ? 'min-h-[240px]' : 'min-h-[200px]'
       }`}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-[2.5rem]" />
+      {/* Shine overlay — follows cursor (Services style) */}
+      <div className="card-shine-overlay absolute inset-0 pointer-events-none z-20 rounded-[2rem]" style={{ transition: 'background 0.1s ease-out' }} />
+
+      {/* Decorative Glow */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-[2rem]" />
+
+      {/* Bottom border accent glow (Services style) */}
+      <div className="absolute bottom-0 left-[10%] right-[10%] h-[2px] bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-500 z-30" />
 
       <div className="relative z-10 flex flex-col h-full gap-6" style={{ transform: 'translateZ(30px)' }}>
         
@@ -444,7 +866,7 @@ export function WhyUsSection() {
             className="mb-8"
           >
             <span className="pill-badge pill-badge-accent uppercase tracking-[0.2em] text-[10px] px-6 py-2">
-              WHY PARTNER WITH US
+              {t?.badge}
             </span>
           </motion.div>
           <motion.h2
@@ -453,7 +875,7 @@ export function WhyUsSection() {
             viewport={{ once: true }}
             className="section-heading text-white text-4xl md:text-6xl mb-6 tracking-tighter"
           >
-            <span className="text-shimmer-accent">Absolute Digital</span> Dominance
+            <span className="text-shimmer-accent">{t?.heading}</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -507,12 +929,12 @@ export function WhyUsSection() {
             className="group btn-primary px-16 py-5 text-xl golden-glow-lg rounded-2xl relative overflow-hidden"
           >
             <span className="relative z-10 flex items-center">
-              Explore Our Masterpieces
+              {t?.cta}
               <ArrowRight size={22} className="ml-3 group-hover:translate-x-3 transition-transform" />
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
-          <p className="mt-6 text-[11px] text-white/30 uppercase tracking-[0.4em] font-semibold">Witness the benchmark of digital excellence</p>
+          <p className="mt-6 text-[11px] text-white/30 uppercase tracking-[0.4em] font-semibold">{t?.ctaSub}</p>
         </motion.div>
       </div>
     </section>

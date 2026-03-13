@@ -5,9 +5,11 @@ import { useContent } from '@/contexts/ContentContext';
 export default function AdminContact() {
     const { lang, setLang, saving, saved, error, getData, save } = useSectionEditor('contact');
     const { content } = useContent();
+    const [badge, setBadge] = useState('');
     const [title, setTitle] = useState('');
     const [subtitle, setSubtitle] = useState('');
     const [cta, setCta] = useState('');
+    const [secondaryCta, setSecondaryCta] = useState('');
     const [whatsapp, setWhatsapp] = useState('');
 
     // Get the currently active WhatsApp number (language-independent, read from English)
@@ -16,9 +18,11 @@ export default function AdminContact() {
     useEffect(() => {
         const d = getData();
         if (d) {
+            setBadge(d.badge || '');
             setTitle(d.title || '');
             setSubtitle(d.subtitle || '');
             setCta(d.cta || '');
+            setSecondaryCta(d.secondaryCta || '');
             setWhatsapp(d.whatsapp || '');
         }
     }, [getData]);
@@ -31,9 +35,11 @@ export default function AdminContact() {
             </div>
             <ErrorAlert message={error} />
             <div className="space-y-4 bg-card rounded-xl p-4 md:p-6 border border-border">
+                <TextField label="Badge Text" value={badge} onChange={setBadge} lang={lang} />
                 <TextField label="Title" value={title} onChange={setTitle} lang={lang} />
                 <TextField label="Subtitle" value={subtitle} onChange={setSubtitle} multiline lang={lang} />
-                <TextField label="CTA Button Text" value={cta} onChange={setCta} lang={lang} />
+                <TextField label="Primary CTA Button" value={cta} onChange={setCta} lang={lang} />
+                <TextField label="Secondary CTA (Email) Text" value={secondaryCta} onChange={setSecondaryCta} lang={lang} />
                 <div>
                     <TextField label="WhatsApp Number (with country code)" value={whatsapp} onChange={setWhatsapp} />
                     {activeWhatsapp && (
@@ -44,16 +50,18 @@ export default function AdminContact() {
                     )}
                 </div>
             </div>
-            <SaveButton onClick={() => save({ title, subtitle, cta, whatsapp })} saving={saving} saved={saved} />
+            <SaveButton onClick={() => save({ badge, title, subtitle, cta, secondaryCta, whatsapp })} saving={saving} saved={saved} />
 
             <div className="mt-8 pt-8 border-t border-border">
                 <JsonPanel
                     title={`JSON Import / Export (${lang.toUpperCase()})`}
-                    data={{ title, subtitle, cta, whatsapp }}
+                    data={{ badge, title, subtitle, cta, secondaryCta, whatsapp }}
                     onImport={(parsed) => {
+                        setBadge(parsed.badge || '');
                         setTitle(parsed.title || '');
                         setSubtitle(parsed.subtitle || '');
                         setCta(parsed.cta || '');
+                        setSecondaryCta(parsed.secondaryCta || '');
                         setWhatsapp(parsed.whatsapp || '');
                     }}
                 />
