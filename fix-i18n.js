@@ -1,4 +1,5 @@
-export type Lang = 'en' | 'bn';
+const fs = require('fs');
+const content = `export type Lang = 'en' | 'bn';
 
 export const translations = {
   en: {
@@ -78,7 +79,7 @@ export const translations = {
     },
     whyUs: {
       title: 'The ORBIT Advantage',
-      subtitle: 'We don\'t just build products — we become your technology partner, engineering for maximum ROI, global scale, and future-proof innovation.',
+      subtitle: 'We don\\'t just build products — we become your technology partner, engineering for maximum ROI, global scale, and future-proof innovation.',
       items: [
         { 
           title: 'Direct ROI Impact', 
@@ -117,7 +118,7 @@ export const translations = {
     },
     projects: {
       title: 'Featured Projects',
-      subtitle: 'Real solutions we\'ve built for real businesses.',
+      subtitle: 'Real solutions we\\'ve built for real businesses.',
       items: [] as { title: string; desc: string; tags: string[]; link: string; image: string }[],
     },
     leadership: {
@@ -132,7 +133,7 @@ export const translations = {
     },
     contact: {
       title: 'Ready to Build Something Great?',
-      subtitle: 'Let\'s discuss your next web, AI, or mobile project — book a free consultation today.',
+      subtitle: 'Let\\'s discuss your next web, AI, or mobile project — book a free consultation today.',
       cta: 'Book a Free Consultation',
       whatsapp: '+8801853452264',
     },
@@ -154,7 +155,7 @@ export const translations = {
     chatbot: {
       title: 'ORBIT AI Assistant',
       placeholder: 'Ask about our services...',
-      greeting: 'Hi! I\'m ORBIT\'s AI assistant. How can I help you today?',
+      greeting: 'Hi! I\\'m ORBIT\\'s AI assistant. How can I help you today?',
       systemPrompt: '',
       qaPairs: [] as { question: string; answer: string }[],
     },
@@ -271,7 +272,7 @@ export const translations = {
       items: [
         { 
           title: 'সরাসরি আরআইও (ROI) প্রভাব', 
-          desc: 'আমাদের এআই-চালিত সリューションগুলো এমনভাবে তৈরি করা হয়েছে যাতে সেগুলো নিজেরাই নিজেদের খরচ মিটিয়ে দেয়। আমরা উচ্চ-মূল্যের কাজগুলো অটোমেট করার দিকে মনোনিবেশ করি যা সরাসরি আপনার ব্যবসার মুনাফা বৃদ্ধি করে।', 
+          desc: 'আমাদের এআই-চালিত সリューションগুলো এমনভাবে তৈরি করা হয়েছে যাতে সেগুলো নিজেরাই নিজেদের খরচ মিটিয়ে দেয়। আমরা উচ্চ-মূল্যের কাজগুলো অটোমেট করার দিকে মনোযোগ দিই যা সরাসরি আপনার ব্যবসার মুনাফা বৃদ্ধি করে।', 
           benefit: 'স্থাপনের প্রথম বছরের মধ্যেই বিনিয়োগের ওপর ৩.৫ গুণ রিটার্ন পাওয়ার সম্ভাবনা।',
           bg: '#eef2ff', 
           color: '#4f46e5' 
@@ -293,7 +294,7 @@ export const translations = {
         { 
           title: 'এআই-ফার্স্ট ডেভেলপমেন্ট', 
           desc: 'বুদ্ধিমত্তা কখনোই আমাদের কাছে কেবল একটি বাড়তি অংশ নয়। আমরা সরাসরি আপনার সফটওয়্যারের মূলে এজেন্টিক এআই এবং প্রেডিক্টিভ অ্যানালিটিক্স ব্যবহার করি।', 
-          benefit: 'আপনার ব্যবসার ডেটার ওপর ভিত্তি করে তৈরি করা এআই মডেলের মাধ্যমে প্রতিযোগিতায় বড় সুবিধা অর্জন করুন।',
+          benefit: 'আপনার ব্যবসার ডেটার ওপর ভিত্তি করে তৈরি করা এআই মডেল의 মাধ্যমে প্রতিযোগিতায় বড় সুবিধা অর্জন করুন।',
           bg: '#fff0f6', 
           color: '#db2777' 
         }
@@ -382,3 +383,7 @@ export const translations = {
 } as const;
 
 export type Translations = typeof translations['en'] | typeof translations['bn'];
+\`;
+
+fs.writeFileSync('src/lib/i18n.ts', content, 'utf8');
+console.log('Successfully wrote i18n.ts');
