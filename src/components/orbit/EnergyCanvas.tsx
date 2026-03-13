@@ -26,11 +26,14 @@ function EnergyCanvasInner() {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
+        // Mobile detection
+        const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.innerWidth < 768;
+
         const resize = () => {
             const parent = canvas.parentElement;
             if (!parent) return;
             const rect = parent.getBoundingClientRect();
-            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2);
             canvas.width = rect.width * dpr;
             canvas.height = rect.height * dpr;
             canvas.style.width = '100%';
@@ -43,8 +46,20 @@ function EnergyCanvasInner() {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
+        let isVisible = true;
+        const observer = new IntersectionObserver(
+            ([entry]) => { isVisible = entry.isIntersecting; },
+            { threshold: 0.1 }
+        );
+        observer.observe(canvas);
+
         const animate = () => {
-            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            if (!isVisible) {
+                rafRef.current = requestAnimationFrame(animate);
+                return;
+            }
+
+            const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2);
             const w = canvas.width / dpr;
             const h = canvas.height / dpr;
 
@@ -85,8 +100,9 @@ function EnergyCanvasInner() {
             frameCountRef.current++;
             const frame = frameCountRef.current;
 
-            // Spawn a wave on all 4 incoming paths every 120 frames (much slower rate)
-            if (frame % 120 === 0) {
+            // Spawn rate: slower on mobile (every 180 frames vs 120)
+            const spawnInterval = isMobile ? 180 : 120;
+            if (frame % spawnInterval === 0) {
                 for (let i = 0; i < 4; i++) {
                     pulsesRef.current.push({ pathIndex: i, t: 0, speed: 0.007 });
                 }
@@ -118,7 +134,6 @@ function EnergyCanvasInner() {
                 const y = path.sy + (path.ey - path.sy) * p.t;
 
                 // Angle points exactly along the line trajectory
-                // The upward central beam should always remain perfectly horizontal (tilted straight up in radians)
                 const angle = isUp ? -Math.PI / 2 : Math.atan2(path.ey - path.sy, path.ex - path.sx);
 
                 // Fade in/out, capped at 60% opacity max
@@ -131,14 +146,10 @@ function EnergyCanvasInner() {
                 let rightWidth;
 
                 if (isUp) {
-                    // Upward wave starts wide and tapers. 
-                    // To compensate for the 60% funnel offset, we make the RIGHT (+x) side significantly wider initially
                     const baseWidth = 110 - (p.t * 70);
                     leftWidth = baseWidth;
-                    // Provide a substantial extra boost to the right so it enters the shifted beam completely
                     rightWidth = baseWidth + (funnelX - cx) * (1 - p.t) * 1.4;
                 } else {
-                    // Corner waves expand symmetrically
                     const wWidth = 15 + p.t * 50;
                     leftWidth = wWidth;
                     rightWidth = wWidth;
@@ -151,20 +162,25 @@ function EnergyCanvasInner() {
                 ctx.rotate(angle);
                 ctx.globalAlpha = alpha;
 
-                // Outer soft ambient oval
-                ctx.beginPath();
-                ctx.ellipse(0, 0, thickness * 2.5, rightWidth * 1.5, 0, 0, Math.PI);
-                ctx.ellipse(0, 0, thickness * 2.5, leftWidth * 1.5, 0, Math.PI, Math.PI * 2);
-                ctx.fillStyle = `rgba(0, 230, 118, 0.15)`;
-                ctx.fill();
+                // Skip outer ambient oval on mobile for performance
+                if (!isMobile) {
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, thickness * 2.5, rightWidth * 1.5, 0, 0, Math.PI);
+                    ctx.ellipse(0, 0, thickness * 2.5, leftWidth * 1.5, 0, Math.PI, Math.PI * 2);
+                    ctx.fillStyle = `rgba(0, 230, 118, 0.15)`;
+                    ctx.fill();
+                }
 
                 // Main colored core
                 ctx.beginPath();
                 ctx.ellipse(0, 0, thickness, rightWidth, 0, 0, Math.PI);
                 ctx.ellipse(0, 0, thickness, leftWidth, 0, Math.PI, Math.PI * 2);
                 ctx.fillStyle = '#00e676';
-                ctx.shadowColor = '#00ff8c';
-                ctx.shadowBlur = 15;
+                // Skip shadow blur on mobile (expensive)
+                if (!isMobile) {
+                    ctx.shadowColor = '#00ff8c';
+                    ctx.shadowBlur = 15;
+                }
                 ctx.fill();
 
                 // White hot inner crest
@@ -178,8 +194,6 @@ function EnergyCanvasInner() {
             }
 
             // ─── DRAW CENTRAL FLASH ───
-
-            // Big flash on collision
             if (collisionFlashRef.current > 0) {
                 const flash = collisionFlashRef.current;
                 const radius = 20 + (1 - flash) * 120;
@@ -205,6 +219,7 @@ function EnergyCanvasInner() {
         return () => {
             window.removeEventListener('resize', resize);
             cancelAnimationFrame(rafRef.current);
+            observer.disconnect();
         };
     }, []);
 

@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
@@ -576,7 +576,14 @@ const ServiceVisual = ({ index }: { index: number }) => {
 const CardCanvasBackground = ({ index }: { index: number }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Skip entirely on mobile — hover-only effect, saves 6 RAF loops + 180 particles
+  const [isMobile] = useState(() => 
+    typeof window !== 'undefined' && (window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.innerWidth < 768)
+  );
+
   useEffect(() => {
+    if (isMobile) return; // No canvas work on mobile
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d', { alpha: true });
@@ -587,6 +594,7 @@ const CardCanvasBackground = ({ index }: { index: number }) => {
     let raf: number;
     let mouseX = -1000;
     let mouseY = -1000;
+    let isVisible = true;
 
     const resize = () => {
       w = canvas.offsetWidth;
@@ -596,6 +604,13 @@ const CardCanvasBackground = ({ index }: { index: number }) => {
       ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
     };
     resize();
+
+    // Pause when off-screen
+    const observer = new IntersectionObserver(
+      ([entry]) => { isVisible = entry.isIntersecting; },
+      { threshold: 0.1 }
+    );
+    observer.observe(canvas);
 
     // Determine color based on index to differentiate cards slightly
     const colors = [
@@ -635,6 +650,11 @@ const CardCanvasBackground = ({ index }: { index: number }) => {
     }
 
     const render = () => {
+      if (!isVisible) {
+        raf = requestAnimationFrame(render);
+        return;
+      }
+
       ctx.clearRect(0, 0, w, h);
       
       for (let i = 0; i < particles.length; i++) {
@@ -705,12 +725,15 @@ const CardCanvasBackground = ({ index }: { index: number }) => {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', resize);
+      observer.disconnect();
       if (parent) {
         parent.removeEventListener('mousemove', handleMouseMove);
         parent.removeEventListener('mouseleave', handleMouseLeave);
       }
     };
-  }, [index]);
+  }, [index, isMobile]);
+
+  if (isMobile) return null; // Don't even render the canvas element on mobile
 
   return (
     <canvas 

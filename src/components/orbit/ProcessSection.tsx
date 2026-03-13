@@ -261,7 +261,7 @@ export function ProcessSection() {
     <section
       ref={sectionRef}
       id="process"
-      className="section-dark relative overflow-hidden min-h-[100dvh] flex flex-col items-center pt-6 pb-12 lg:pt-4 touch-none"
+      className="section-dark relative overflow-hidden min-h-[100dvh] flex flex-col items-center pt-6 pb-12 lg:pt-4"
     >
       <div className="absolute top-0 left-1/4 w-full h-1/2 bg-[#00ff80]/5 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-[#00ff80]/5 blur-[120px] rounded-full pointer-events-none" />
