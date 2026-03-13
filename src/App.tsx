@@ -177,8 +177,6 @@ function PublicSite() {
 
   return (
     <>
-      {isLoaded && <Navbar />}
-
       <PageCurlTransition>
         {(index) => <PublicPageContent index={index} />}
       </PageCurlTransition>
@@ -207,6 +205,20 @@ const queryClient = new QueryClient({
   },
 });
 
+function NavbarVisibilityWrapper() {
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith('/admin');
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isAdmin || !isLoaded) return null;
+  return <Navbar />;
+}
+
 export default function App() {
   return (
     <>
@@ -214,10 +226,11 @@ export default function App() {
         <ContentProvider>
           <LanguageProvider>
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <ScrollToTop />
-              <SEOHead />
-              <CustomCursor />
-              <Suspense fallback={<AdminLoading />}>
+            <ScrollToTop />
+            <SEOHead />
+            <NavbarVisibilityWrapper />
+            <CustomCursor />
+            <Suspense fallback={<AdminLoading />}>
                 <Routes>
                   {/* Public Core Pages with PageFlip Transitions */}
                   {['/', '/services', '/process', '/techstack', '/why-us', '/proj', '/reviews', '/leadership', '/contact'].map(path => (

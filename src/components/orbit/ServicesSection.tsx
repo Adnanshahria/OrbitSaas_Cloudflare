@@ -115,7 +115,7 @@ const ChatbotVisual = () => (
     {/* Atmospheric glow */}
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] h-[80px] bg-gradient-to-br from-teal-400/10 via-cyan-300/8 to-emerald-400/10 rounded-full blur-xl" />
 
-    <div className="relative w-full max-w-[170px]">
+    <div className="relative w-full max-w-[150px] sm:max-w-[170px]">
       {/* AI brain indicator — top right */}
       <motion.div
         className="absolute -top-1 right-0 z-20"
@@ -195,7 +195,7 @@ const AutomationVisual = () => (
     {/* Background glow */}
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140px] h-[60px] bg-gradient-to-r from-emerald-400/10 via-amber-300/8 to-violet-400/10 rounded-full blur-xl" />
 
-    <div className="relative flex items-center gap-2">
+    <div className="relative flex items-center gap-1 sm:gap-2">
       {/* Floating particles */}
       {[
         { top: '-4px', left: '20px', color: 'bg-emerald-400', delay: 0 },
@@ -226,7 +226,7 @@ const AutomationVisual = () => (
       </motion.div>
 
       {/* Connector 1 */}
-      <div className="relative w-5 h-[3px]">
+      <div className="relative w-3 sm:w-5 h-[3px]">
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-300/40 to-amber-300/40 rounded-full" />
         <motion.div
           className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-gradient-to-r from-emerald-400 to-amber-400 shadow-[0_0_6px_rgba(16,185,129,0.5)]"
@@ -254,7 +254,7 @@ const AutomationVisual = () => (
       </motion.div>
 
       {/* Connector 2 */}
-      <div className="relative w-5 h-[3px]">
+      <div className="relative w-3 sm:w-5 h-[3px]">
         <div className="absolute inset-0 bg-gradient-to-r from-amber-300/40 to-violet-300/40 rounded-full" />
         <motion.div
           className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-gradient-to-r from-amber-400 to-violet-400 shadow-[0_0_6px_rgba(245,158,11,0.5)]"
@@ -559,10 +559,12 @@ const ServiceVisual = ({ index }: { index: number }) => {
       ref={visualRef}
       onMouseEnter={handleVisualEnter}
       onMouseLeave={handleVisualLeave}
-      className="w-full h-full min-h-[160px] bg-white/40 rounded-2xl border border-[#EBE8E0]/60 overflow-hidden relative flex items-center justify-center shrink-0 cursor-pointer"
+      className="w-full h-full min-h-[85px] sm:min-h-[120px] md:min-h-0 bg-white rounded-xl sm:rounded-2xl border-2 border-blue-400/80 overflow-hidden relative flex items-center justify-center shrink-0 cursor-pointer shadow-[0_4px_12px_rgba(59,130,246,0.15),inset_0_0_20px_rgba(59,130,246,0.05)]"
       style={{ transition: 'transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease, border-color 0.3s ease' }}
     >
-      <Visual />
+      <div className="scale-[0.58] sm:scale-[0.75] md:scale-95 lg:scale-110 transition-transform duration-500">
+        <Visual />
+      </div>
       {/* Inner shine on hover */}
       <div className="visual-inner-shine absolute inset-0 rounded-2xl bg-gradient-to-br from-white/0 to-white/0 pointer-events-none transition-all duration-300" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#EBE8E0]/10 to-transparent pointer-events-none opacity-20 mix-blend-multiply" />
@@ -619,7 +621,7 @@ function BentoCard({
       transition={{ delay: index * 0.1, duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="group relative overflow-hidden rounded-[2rem] bg-white/90 backdrop-blur-2xl border-2 border-[#d8d3c7] hover:border-[var(--nav-accent)] p-5 md:p-6 cursor-default shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_60px_-15px_rgba(16,185,129,0.15),0_8px_24px_-8px_rgba(0,0,0,0.08)]"
+      className="group relative overflow-hidden rounded-[2rem] bg-white/95 backdrop-blur-2xl border-2 border-[#d8d3c7] hover:border-[var(--nav-accent)] p-5 md:p-6 md:min-h-[240px] flex flex-col justify-between cursor-default shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_60px_-15px_rgba(16,185,129,0.15),0_8px_24px_-8px_rgba(0,0,0,0.08)]"
       style={{ transition: 'transform 0.15s ease-out, border-color 0.4s, box-shadow 0.4s', willChange: 'transform' }}
     >
       {/* Shine overlay — follows cursor */}
@@ -631,27 +633,29 @@ function BentoCard({
       {/* Bottom border accent glow */}
       <div className="absolute bottom-0 left-[10%] right-[10%] h-[2px] bg-gradient-to-r from-transparent via-[var(--nav-accent)] to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-500" />
 
-      {/* Side-by-side layout: Text left, Visual right */}
-      <div className="flex flex-col md:flex-row gap-5 relative z-10">
-        {/* Left Content Box */}
-        <div className="flex flex-col flex-grow min-w-0">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-[var(--nav-accent)] shadow-sm border border-emerald-100/50 group-hover:shadow-[0_0_12px_rgba(16,185,129,0.2)] transition-shadow duration-500">
-              <Icon size={20} strokeWidth={2} />
-            </div>
-            <h3 className="text-lg md:text-xl leading-tight font-bold text-[#1E293B] group-hover:text-[var(--nav-accent)] transition-colors duration-500" style={{ fontFamily: 'var(--font-display)' }}>
-              {item.title}
-            </h3>
+      {/* Refined Layout: Title top, Content row below */}
+      <div className="flex flex-col relative z-10 h-full">
+        {/* Title row - Full width */}
+        <div className="flex items-center gap-2 sm:gap-3 mb-3 md:mb-4">
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-emerald-50 text-[var(--nav-accent)] shadow-sm border border-emerald-100/50 group-hover:shadow-[0_0_12px_rgba(16,185,129,0.2)] transition-shadow duration-500">
+            <Icon size={16} className="sm:w-5 sm:h-5" strokeWidth={2} />
           </div>
-
-          <p className="text-[13px] md:text-[14px] leading-relaxed text-slate-500 flex-grow" style={{ fontFamily: 'var(--font-body)' }}>
-            <RichText text={item.desc} />
-          </p>
+          <h3 className="text-base sm:text-lg md:text-xl leading-tight font-bold text-[#1E293B] group-hover:text-[var(--nav-accent)] transition-colors duration-500" style={{ fontFamily: 'var(--font-display)' }}>
+            {item.title}
+          </h3>
         </div>
 
-        {/* Right Visual Box (smaller, in the green-box position) */}
-        <div className="hidden md:flex shrink-0 w-[200px] lg:w-[240px]" onMouseMove={(e) => e.stopPropagation()}>
-          <ServiceVisual index={index} />
+        {/* Content row: Responsive Layout */}
+        <div className="flex flex-row md:grid md:grid-cols-[1fr_200px] lg:grid-cols-[1fr_240px] gap-4 sm:gap-6 items-start md:items-stretch flex-grow">
+          <div className="flex-grow min-w-0">
+            <p className="text-[11px] sm:text-[13px] md:text-[14px] leading-relaxed text-slate-500" style={{ fontFamily: 'var(--font-body)' }}>
+              <RichText text={item.desc} />
+            </p>
+          </div>
+
+          <div className="shrink-0 w-[95px] h-[95px] sm:w-[130px] sm:h-[130px] md:w-full md:h-full" onMouseMove={(e) => e.stopPropagation()}>
+            <ServiceVisual index={index} />
+          </div>
         </div>
       </div>
     </motion.div>

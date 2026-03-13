@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SectionHeader, SaveButton, TextField, ErrorAlert, ItemListEditor, LangToggle, JsonPanel } from '@/components/admin/EditorComponents';
+import { SectionHeader, SaveButton, TextField, ErrorAlert, ItemListEditor, LangToggle, JsonPanel, ToggleField } from '@/components/admin/EditorComponents';
 import { Upload, Trash2, X, Plus, Layers, Settings2, ChevronDown, HelpCircle, Search, GripVertical, Link2, ArrowUp, ArrowDown } from 'lucide-react';
 import { RichTextEditor } from '@/components/admin/RichTextEditor';
 import { useContent } from '@/contexts/ContentContext';
@@ -1002,18 +1002,22 @@ export default function AdminProjects() {
         en: { title: '', subtitle: '' },
         bn: { title: '', subtitle: '' },
     });
-    const [categories, setCategories] = useState<string[]>(['SaaS', 'eCommerce', 'Enterprise', 'Education', 'Portfolio', 'Other']);
+    const [categories, setCategories] = useState<string[]>([]);
     const [newCategory, setNewCategory] = useState('');
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [error, setError] = useState('');
+    const [isVisible, setIsVisible] = useState(true);
 
     // Load and Merge Data on Mount
     useEffect(() => {
         if (!content.en || !content.bn) return;
 
         const enP = (content.en.projects as any) || { items: [] };
-        const bnP = (content.bn.projects as any) || { items: [] };
+        const bnP = (content.bn.projects as any) || { items: [], categories: [] };
+
+        setIsVisible(enP.visible !== false); // Default to true if not specified
+        setCategories(enP.categories || []);
 
         setSectionInfo({
             en: { title: enP.title || '', subtitle: enP.subtitle || '' },
@@ -1022,7 +1026,6 @@ export default function AdminProjects() {
 
         const storedCategories = enP.categories || ['SaaS', 'eCommerce', 'Enterprise', 'Education', 'Portfolio', 'Other'];
         setCategories(storedCategories);
-
         // Merge English and Bangla content
     }, [content]);
 
@@ -1136,12 +1139,14 @@ export default function AdminProjects() {
                 title: sectionInfo.en.title,
                 subtitle: sectionInfo.en.subtitle,
                 categories: categories,
-                items: enItems
+                items: enItems,
+                visible: isVisible,
             });
             const bnSuccess = await updateSection('projects', 'bn', {
                 title: sectionInfo.bn.title,
                 subtitle: sectionInfo.bn.subtitle,
-                items: bnItems
+                items: bnItems,
+                visible: isVisible,
             });
 
             if (enSuccess && bnSuccess) {
@@ -1207,6 +1212,22 @@ export default function AdminProjects() {
             </div>
 
             <ErrorAlert message={error} />
+
+            {/* Global Settings */}
+            <div className="bg-card rounded-xl p-4 md:p-6 border border-border">
+                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Settings2 className="w-4 h-4 text-primary" />
+                    Global Portfolio Settings
+                </h3>
+                <div className="max-w-md">
+                    <ToggleField 
+                        label="Show Portfolio on Main Page" 
+                        description="If disabled, the entire projects section will be hidden from the public site."
+                        checked={isVisible}
+                        onChange={setIsVisible}
+                    />
+                </div>
+            </div>
 
             {/* Edit Section Title/Subtitle */}
             <div className="bg-card rounded-2xl border border-border overflow-hidden">

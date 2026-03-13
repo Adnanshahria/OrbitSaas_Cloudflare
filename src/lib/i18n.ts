@@ -12,6 +12,22 @@ export const translations = {
       bookCall: 'Book an Appointment',
       defaultSoundMuted: false,
       defaultVolume: 40,
+      visibility: {
+        services: true,
+        techStack: true,
+        whyUs: true,
+        projects: true,
+        leadership: true,
+        contact: true
+      },
+      urls: {
+        services: '',
+        techStack: '',
+        whyUs: '',
+        projects: '',
+        leadership: '',
+        contact: ''
+      }
     },
     hero: {
       title: 'We Build What Others Dream',
@@ -119,6 +135,7 @@ export const translations = {
       title: 'Featured Projects',
       subtitle: 'Real solutions we\'ve built for real businesses.',
       items: [] as { title: string; desc: string; tags: string[]; link: string; image: string }[],
+      visible: true,
     },
     leadership: {
       title: 'Meet Our Team',
@@ -201,6 +218,22 @@ export const translations = {
       bookCall: 'অ্যাপয়েন্টমেন্ট বুক করুন',
       defaultSoundMuted: false,
       defaultVolume: 40,
+      visibility: {
+        services: true,
+        techStack: true,
+        whyUs: true,
+        projects: true,
+        leadership: true,
+        contact: true
+      },
+      urls: {
+        services: '',
+        techStack: '',
+        whyUs: '',
+        projects: '',
+        leadership: '',
+        contact: ''
+      }
     },
     hero: {
       title: 'আমরা তৈরি করি যা অন্যরা স্বপ্ন দেখে',
@@ -308,6 +341,7 @@ export const translations = {
       title: 'আমাদের প্রকল্পসমূহ',
       subtitle: 'বাস্তব ব্যবসার জন্য আমাদের তৈরি করা বাস্তব সলিউশন।',
       items: [] as { title: string; desc: string; tags: string[]; link: string; image: string }[],
+      visible: true,
     },
     leadership: {
       title: 'আমাদের টিম',

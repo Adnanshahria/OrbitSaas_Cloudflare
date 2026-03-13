@@ -182,6 +182,8 @@ export function ProjectsSection() {
         return { ...(showBn ? bnItem : enItem), _originalIndex: i, _id: enItem.id || '' };
     });
 
+    if (enData?.visible === false) return null;
+
     return (
         <section id="project" ref={sectionRef} className="relative min-h-[100dvh] bg-[#F3EFE0] text-[#2C2A24] overflow-hidden py-32">
             <Helmet>

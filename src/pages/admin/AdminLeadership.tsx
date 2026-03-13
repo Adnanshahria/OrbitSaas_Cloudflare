@@ -7,6 +7,7 @@ import {
     ErrorAlert,
     ItemListEditor,
     JsonPanel,
+    ToggleField,
 } from '@/components/admin/EditorComponents';
 import { Upload, Trash2, User } from 'lucide-react';
 import { uploadToImgBB } from '@/lib/imgbb';
@@ -24,6 +25,11 @@ interface UnifiedMember {
     order: number;
     en: LocalizedMember;
     bn: LocalizedMember;
+    socials: {
+        linkedin: { enabled: boolean; url: string };
+        twitter: { enabled: boolean; url: string };
+        email: { enabled: boolean; url: string };
+    };
     [key: string]: any;
 }
 
@@ -32,6 +38,11 @@ const DEFAULT_MEMBER: UnifiedMember = {
     order: 0,
     en: { name: '', role: '' },
     bn: { name: '', role: '' },
+    socials: {
+        linkedin: { enabled: false, url: '' },
+        twitter: { enabled: false, url: '' },
+        email: { enabled: false, url: '' },
+    },
 };
 
 // ─── Single Image Upload (circular preview) ───
@@ -151,6 +162,43 @@ function MemberEditor({
                         className="w-full bg-secondary rounded-lg px-3 py-2 text-sm text-foreground outline-none border border-border"
                     />
                 </div>
+
+                {/* Social Links Section */}
+                <div className="space-y-4 pt-4 border-t border-border/30">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        🔗 Social Links (Global)
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {(['linkedin', 'twitter', 'email'] as const).map(platform => (
+                            <div key={platform} className="space-y-3 p-3 rounded-lg bg-secondary/20 border border-border/50">
+                                <ToggleField 
+                                    label={platform.charAt(0).toUpperCase() + platform.slice(1)} 
+                                    checked={item.socials?.[platform]?.enabled ?? false} 
+                                    onChange={(v) => update({
+                                        ...item,
+                                        socials: {
+                                            ...item.socials,
+                                            [platform]: { ...item.socials?.[platform], enabled: v }
+                                        }
+                                    })} 
+                                />
+                                {item.socials?.[platform]?.enabled && (
+                                    <TextField 
+                                        label={`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`} 
+                                        value={item.socials?.[platform]?.url || ''} 
+                                        onChange={(v) => update({
+                                            ...item,
+                                            socials: {
+                                                ...item.socials,
+                                                [platform]: { ...item.socials?.[platform], url: v }
+                                            }
+                                        })} 
+                                    />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             {/* Language tabs */}
@@ -242,6 +290,11 @@ export default function AdminLeadership() {
                 order: en.order ?? bn.order ?? i + 1,
                 en: { name: en.name || '', role: en.role || '' },
                 bn: { name: bn.name || '', role: bn.role || '' },
+                socials: en.socials || bn.socials || {
+                    linkedin: { enabled: false, url: '' },
+                    twitter: { enabled: false, url: '' },
+                    email: { enabled: false, url: '' },
+                },
             });
         }
 
@@ -265,6 +318,7 @@ export default function AdminLeadership() {
                 role: m.en.role,
                 image: m.image,
                 order: m.order,
+                socials: m.socials,
             }));
 
             const bnMembers = sorted.map((m) => ({
@@ -272,6 +326,7 @@ export default function AdminLeadership() {
                 role: m.bn.role,
                 image: m.image,
                 order: m.order,
+                socials: m.socials,
             }));
 
             const enOk = await updateSection('leadership', 'en', {
@@ -442,6 +497,7 @@ export default function AdminLeadership() {
                             role: m.en.role,
                             image: m.image,
                             order: m.order,
+                            socials: m.socials,
                         })),
                     },
                     bn: {
@@ -453,6 +509,7 @@ export default function AdminLeadership() {
                             role: m.bn.role,
                             image: m.image,
                             order: m.order,
+                            socials: m.socials,
                         })),
                     },
                 }}
@@ -477,6 +534,11 @@ export default function AdminLeadership() {
                             order: en.order ?? bn.order ?? i + 1,
                             en: { name: en.name || '', role: en.role || '' },
                             bn: { name: bn.name || '', role: bn.role || '' },
+                            socials: en.socials || bn.socials || {
+                                linkedin: { enabled: false, url: '' },
+                                twitter: { enabled: false, url: '' },
+                                email: { enabled: false, url: '' },
+                            },
                         });
                     }
                     setSectionInfo(newInfo);
