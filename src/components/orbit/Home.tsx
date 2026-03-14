@@ -4,7 +4,72 @@ import { useLang } from '@/contexts/LanguageContext';
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RichText } from '@/components/ui/RichText';
-import { ArrowRight, Cpu, Zap, Activity } from 'lucide-react';
+import { ArrowRight, Cpu, Zap, Activity, Globe, MessageSquare, Shield, Rocket } from 'lucide-react';
+
+const BackgroundBlobs = () => (
+  <div className="absolute inset-0 overflow-hidden -z-10 pointer-events-none">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ 
+        opacity: [0.03, 0.05, 0.03],
+        x: [0, 40, 0], 
+        y: [0, -30, 0],
+        scale: [1, 1.1, 1]
+      }}
+      transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+      className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-indigo-500/20 blur-[120px] rounded-full"
+    />
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ 
+        opacity: [0.03, 0.06, 0.03],
+        x: [0, -30, 0], 
+        y: [0, 40, 0],
+        scale: [1, 1.2, 1]
+      }}
+      transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+      className="absolute top-[20%] -right-[5%] w-[45%] h-[45%] bg-indigo-500/20 blur-[100px] rounded-full"
+    />
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ 
+        opacity: [0.02, 0.04, 0.02],
+        x: [0, 30, 0], 
+        y: [0, 30, 0],
+        scale: [1, 1.15, 1]
+      }}
+      transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+      className="absolute -bottom-[5%] left-[15%] w-[40%] h-[40%] bg-violet-600/20 blur-[90px] rounded-full"
+    />
+  </div>
+);
+
+const FloatingParticles = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none -z-5">
+    {[...Array(6)].map((_, i) => (
+      <motion.div
+        key={i}
+        initial={{ 
+          opacity: 0,
+          x: (i * 20) + "%",
+          y: "0%"
+        }}
+        animate={{ 
+          opacity: [0, 0.15, 0],
+          y: ["-20%", "120%"],
+          x: [(i * 20) + "%", (i * 20 + (i % 2 === 0 ? 5 : -5)) + "%"]
+        }}
+        transition={{ 
+          duration: 15 + i * 2, 
+          repeat: Infinity, 
+          delay: i * 1.5,
+          ease: "linear"
+        }}
+        className="absolute w-px h-24 bg-gradient-to-b from-transparent via-indigo-500/20 to-transparent"
+      />
+    ))}
+  </div>
+);
 
 /* ═══════════════════════════════════════════════════════════
    THUNDERBOLT CANVAS — High-intensity electric arc system
@@ -244,7 +309,10 @@ export function Home() {
   useThunderboltCanvas(canvasRef, prefersReducedMotion);
 
   return (
-    <section className="section-dark relative min-h-screen overflow-hidden flex flex-col justify-center">
+    <section id="home" className="relative min-h-[100svh] flex flex-col items-center justify-start pt-24 pb-12 overflow-hidden noise-overlay">
+      <BackgroundBlobs />
+      <FloatingParticles />
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black pointer-events-none" />
       {/* ── Canvas Background ── */}
       <canvas
         ref={canvasRef}
@@ -252,7 +320,7 @@ export function Home() {
       />
 
       {/* ── Grid Layout ── */}
-      <div className="container mx-auto px-6 relative z-10 pt-32 pb-20">
+      <div className="container mx-auto px-6 relative z-10 pt-8 md:pt-0 pb-20">
         <div className="grid lg:grid-cols-12 gap-12 items-center">
           
           {/* Left Side: Content */}
@@ -262,7 +330,7 @@ export function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 text-xs font-bold tracking-[0.2em] uppercase mb-10">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 text-xs font-bold tracking-[0.2em] uppercase mb-10 md:mb-8">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
@@ -271,16 +339,16 @@ export function Home() {
               </span>
 
               <h1 
-                className="text-5xl md:text-7xl xl:text-8xl font-black leading-[0.95] tracking-tight mb-8"
+                className="text-4xl md:text-7xl xl:text-8xl font-black leading-[0.95] tracking-tight mb-8"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
                 {title.split(' ').map((word, i) => (
                   <motion.span
                     key={i}
-                    initial={{ opacity: 0, y: 30, filter: 'blur(10px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    transition={{ duration: 0.8, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
                     className="inline-block mr-[0.2em]"
+                    initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    transition={{ delay: 0.4 + (i * 0.1), duration: 1, ease: [0.22, 1, 0.36, 1] }}
                     style={{
                       background: word.toLowerCase() === 'agentic' || word.toLowerCase() === 'intelligence' 
                         ? 'linear-gradient(to right, #818cf8, #38bdf8)' 
@@ -299,24 +367,60 @@ export function Home() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.8, duration: 1 }}
               >
-                <p className="text-lg md:text-xl text-white/50 max-w-xl leading-relaxed mb-10">
+                <p className="text-base md:text-xl text-white/50 max-w-xl leading-relaxed mb-10 md:mb-16">
                   <RichText text={subtitle} />
                 </p>
 
-                <div className="flex flex-wrap gap-5">
+                <div className="mb-10 md:mb-12 relative max-w-3xl">
+                  <div className="absolute -inset-4 bg-indigo-500/5 blur-3xl rounded-[3rem] -z-10" />
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 bg-white/[0.02] border border-white/[0.05] backdrop-blur-2xl rounded-3xl p-3 md:p-4 shadow-2xl relative overflow-hidden group/stats">
+                    {/* Iridescent shine sweep */}
+                    <motion.div 
+                      animate={{ x: ['-200%', '200%'] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent -skew-x-12 -z-10"
+                    />
+                    {stats.map((stat: any, i: number) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4 + (i * 0.1), duration: 0.5 }}
+                        className="relative group p-2 rounded-xl hover:bg-white/[0.02] transition-colors md:border-r md:border-white/5 last:border-none"
+                      >
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="text-xl md:text-2xl font-black bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent leading-none">
+                              {stat.value}{stat.suffix}
+                            </span>
+                            <div className="w-1 h-1 rounded-full bg-indigo-400/50 animate-pulse" />
+                          </div>
+                          <div className="text-[9px] md:text-[10px] text-white/30 uppercase tracking-[0.05em] font-bold leading-tight line-clamp-2 md:max-w-[100px]">
+                            {stat.label}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-row items-center gap-3 md:gap-5">
                   <button
                     onClick={() => navigate('/contact')}
-                    className="px-8 py-4 bg-white text-black font-bold rounded-xl hover:bg-indigo-400 transition-all duration-300 flex items-center gap-2 group cursor-pointer"
+                    className="relative overflow-hidden px-5 py-3 md:px-8 md:py-4 bg-white text-black text-sm md:text-base font-bold rounded-xl hover:bg-indigo-400 transition-all duration-500 flex items-center gap-2 group cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(129,140,248,0.4)]"
                   >
-                    {cta}
-                    <Zap className="fill-current transition-transform group-hover:scale-125" size={18} />
+                    <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
+                    <span className="relative z-10 flex items-center gap-2">
+                      {cta}
+                      <Zap className="fill-current transition-transform group-hover:scale-125" size={16} />
+                    </span>
                   </button>
                   <button
                     onClick={() => navigate('/services')}
-                    className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-all duration-300 flex items-center gap-2 group cursor-pointer"
+                    className="px-5 py-3 md:px-8 md:py-4 bg-white/5 border border-white/10 text-white text-sm md:text-base font-bold rounded-xl hover:bg-white/10 transition-all duration-300 flex items-center gap-2 group cursor-pointer"
                   >
                     {learnMore}
-                    <ArrowRight className="transition-transform group-hover:translate-x-1" size={18} />
+                    <ArrowRight className="transition-transform group-hover:translate-x-1" size={16} />
                   </button>
                 </div>
               </motion.div>
@@ -360,29 +464,6 @@ export function Home() {
         </div>
       </div>
 
-      {/* ── Bottom Stats row ── */}
-      <div className="relative z-10 bg-black/40 backdrop-blur-md border-t border-white/5">
-        <div className="container mx-auto px-6 py-8">
-          <div className="flex flex-wrap justify-between items-center gap-8">
-            {stats.map((stat: any, i: number) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.8 + (i * 0.1) }}
-                className="flex items-center gap-4"
-              >
-                <div className="text-4xl font-black text-white leading-none">
-                  {stat.value}{stat.suffix}
-                </div>
-                <div className="text-[10px] text-white/40 uppercase tracking-[0.2em] max-w-[80px] leading-tight">
-                  {stat.label}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
     </section>
   );
 }

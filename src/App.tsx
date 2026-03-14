@@ -13,7 +13,6 @@ import { HelmetProvider } from 'react-helmet-async';
 import { SEOHead } from './components/seo/SEOHead';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PageCurlTransition } from './components/orbit/PageCurlTransition';
-import CustomCursor from './components/orbit/CustomCursor';
 
 // Lazy load public sections
 const StatsSection = lazy(() => import('./components/orbit/StatsSection').then(m => ({ default: m.StatsSection })));
@@ -133,7 +132,7 @@ function PublicPageContent({ index }: { index: number }) {
     case 0: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Home /></div>;
     case 1: return <div className="snap-page-light" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ServicesSection /></Suspense></div>;
     case 2: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ProcessSection /></Suspense></div>;
-    case 3: return <div className="snap-page-light" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><TechStackSection /></Suspense></div>;
+    case 3: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><TechStackSection /></Suspense></div>;
     case 4: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><WhyUsSection /></Suspense></div>;
     case 5: return <div className="snap-page-light" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ProjectsSection /></Suspense></div>;
     case 6: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ReviewsSection /></Suspense></div>;
@@ -229,7 +228,6 @@ export default function App() {
             <ScrollToTop />
             <SEOHead />
             <NavbarVisibilityWrapper />
-            <CustomCursor />
             <Suspense fallback={<AdminLoading />}>
                 <Routes>
                   {/* Public Core Pages with PageFlip Transitions */}

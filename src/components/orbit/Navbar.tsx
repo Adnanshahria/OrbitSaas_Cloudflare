@@ -56,7 +56,7 @@ export function Navbar() {
   }, []);
 
   // Sections that use Light Mode
-  const isLightMode = ['services', 'tech', 'project', 'leadership'].includes(activeSection);
+  const isLightMode = ['services', 'project', 'leadership'].includes(activeSection);
 
   // Theme Variables
   const theme = {

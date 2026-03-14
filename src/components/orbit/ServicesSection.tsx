@@ -16,6 +16,63 @@ import { RichText } from '@/components/ui/RichText';
 
 const SERVICE_ICONS = [MonitorSmartphone, BotMessageSquare, Cpu, Smartphone, ShoppingCart, Globe];
 
+const SERVICE_THEMES = [
+  { 
+    text: 'from-indigo-500 to-violet-600', 
+    bg: 'bg-indigo-50', 
+    border: 'border-indigo-200/50', 
+    icon: 'text-indigo-600', 
+    glow: 'rgba(99, 102, 241, 0.25)', 
+    accent: '#6366f1',
+    hoverBg: 'group-hover:border-indigo-400/50'
+  },
+  { 
+    text: 'from-emerald-500 to-teal-600', 
+    bg: 'bg-emerald-50', 
+    border: 'border-emerald-200/50', 
+    icon: 'text-emerald-600', 
+    glow: 'rgba(16, 185, 129, 0.25)', 
+    accent: '#10b981',
+    hoverBg: 'group-hover:border-emerald-400/50'
+  },
+  { 
+    text: 'from-amber-400 to-orange-600', 
+    bg: 'bg-amber-50', 
+    border: 'border-amber-200/50', 
+    icon: 'text-amber-600', 
+    glow: 'rgba(245, 158, 11, 0.25)', 
+    accent: '#f59e0b',
+    hoverBg: 'group-hover:border-amber-400/50'
+  },
+  { 
+    text: 'from-rose-500 to-pink-600', 
+    bg: 'bg-rose-50', 
+    border: 'border-rose-200/50', 
+    icon: 'text-rose-600', 
+    glow: 'rgba(244, 63, 94, 0.25)', 
+    accent: '#f43f5e',
+    hoverBg: 'group-hover:border-rose-400/50'
+  },
+  { 
+    text: 'from-blue-500 to-cyan-500', 
+    bg: 'bg-blue-50', 
+    border: 'border-blue-200/50', 
+    icon: 'text-blue-600', 
+    glow: 'rgba(59, 130, 246, 0.25)', 
+    accent: '#3b82f6',
+    hoverBg: 'group-hover:border-blue-400/50'
+  },
+  { 
+    text: 'from-cyan-500 to-teal-500', 
+    bg: 'bg-cyan-50', 
+    border: 'border-cyan-200/50', 
+    icon: 'text-cyan-600', 
+    glow: 'rgba(6, 182, 212, 0.25)', 
+    accent: '#06b6d4',
+    hoverBg: 'group-hover:border-cyan-400/50'
+  },
+];
+
 /* ──────────── 0: Full Stack Web Design — Layered browser with depth ──────────── */
 const WebDesignVisual = () => (
   <div className="relative w-full h-full flex items-center justify-center p-2">
@@ -792,8 +849,12 @@ function BentoCard({
       transition={{ delay: index * 0.1, duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="group relative overflow-hidden rounded-[2rem] bg-white/95 backdrop-blur-2xl border-2 border-[#d8d3c7] hover:border-[var(--nav-accent)] p-5 md:p-6 md:min-h-[240px] flex flex-col justify-between cursor-default shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_60px_-15px_rgba(16,185,129,0.15),0_8px_24px_-8px_rgba(0,0,0,0.08)]"
-      style={{ transition: 'transform 0.15s ease-out, border-color 0.4s, box-shadow 0.4s', willChange: 'transform' }}
+      className={`group relative overflow-hidden rounded-[2rem] bg-white/95 backdrop-blur-2xl border-2 border-[#d8d3c7] ${SERVICE_THEMES[index % SERVICE_THEMES.length].hoverBg} p-5 md:p-6 md:min-h-[240px] flex flex-col justify-between cursor-default shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]`}
+      style={{ 
+        transition: 'transform 0.15s ease-out, border-color 0.4s, box-shadow 0.4s', 
+        willChange: 'transform',
+        '--card-glow': SERVICE_THEMES[index % SERVICE_THEMES.length].glow
+      } as any}
     >
       {/* HTML Canvas Agent Skills Background */}
       <CardCanvasBackground index={index} />
@@ -802,19 +863,32 @@ function BentoCard({
       <div className="card-shine absolute inset-0 pointer-events-none z-20 rounded-[2rem]" style={{ transition: 'background 0.15s ease-out' }} />
 
       {/* Decorative Glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[var(--nav-accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+      <div 
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+        style={{ background: `linear-gradient(to bottom right, var(--card-glow), transparent)` }}
+      />
 
       {/* Bottom border accent glow */}
-      <div className="absolute bottom-0 left-[10%] right-[10%] h-[2px] bg-gradient-to-r from-transparent via-[var(--nav-accent)] to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-500" />
+      <div 
+        className="absolute bottom-0 left-[10%] right-[10%] h-[2px] opacity-0 group-hover:opacity-60 transition-opacity duration-500"
+        style={{ background: `linear-gradient(to right, transparent, ${SERVICE_THEMES[index % SERVICE_THEMES.length].accent}, transparent)` }}
+      />
 
       {/* Refined Layout: Title top, Content row below */}
       <div className="flex flex-col relative z-10 h-full">
         {/* Title row - Full width */}
         <div className="flex items-center gap-2 sm:gap-3 mb-3 md:mb-4">
-          <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-emerald-50 text-[var(--nav-accent)] shadow-sm border border-emerald-100/50 group-hover:shadow-[0_0_12px_rgba(16,185,129,0.2)] transition-shadow duration-500">
+          <div className={`flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl shadow-sm border ${SERVICE_THEMES[index % SERVICE_THEMES.length].bg} ${SERVICE_THEMES[index % SERVICE_THEMES.length].border} ${SERVICE_THEMES[index % SERVICE_THEMES.length].icon} group-hover:shadow-[0_0_12px_var(--card-glow)] transition-shadow duration-500`}>
             <Icon size={16} className="sm:w-5 sm:h-5" strokeWidth={2} />
           </div>
-          <h3 className="text-base sm:text-lg md:text-xl leading-tight font-bold text-[#1E293B] group-hover:text-[var(--nav-accent)] transition-colors duration-500" style={{ fontFamily: 'var(--font-display)' }}>
+          <h3 
+            className={`text-base sm:text-lg md:text-xl leading-tight font-bold bg-clip-text text-transparent bg-gradient-to-r ${SERVICE_THEMES[index % SERVICE_THEMES.length].text} transition-all duration-500 group-hover:scale-[1.02] origin-left`} 
+            style={{ 
+              fontFamily: 'var(--font-display)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}
+          >
             {item.title}
           </h3>
         </div>
