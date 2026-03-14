@@ -79,6 +79,7 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
         return;
       }
 
+      // Smooth easing
       const p = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
       
       const W = container.offsetWidth;
@@ -87,6 +88,7 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
 
       let clipPathStr = '';
       const polygonEl = container.querySelector('#curl-polygon');
+      const shadowEl = container.querySelector('#curl-shadow-poly');
       const gradient = container.querySelector('#curl-gradient');
       
       if (isForward) {
@@ -109,7 +111,9 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
             backPts.push([W - K, H - K]);                
             if (K > W) backPts.push([W - K, W + H - K]); 
             backPts.push(E2);
-            polygonEl.setAttribute('points', backPts.map(pt => `${pt[0]},${pt[1]}`).join(' '));
+            const ptsStr = backPts.map(pt => `${pt[0]},${pt[1]}`).join(' ');
+            polygonEl.setAttribute('points', ptsStr);
+            if (shadowEl) shadowEl.setAttribute('points', ptsStr);
           }
           if (gradient) {
             gradient.setAttribute('x1', `${W - K / 2}`);
@@ -139,7 +143,9 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
             backPts.push([K, K]);                
             if (K > H) backPts.push([K - H, K]); 
             backPts.push(E2);
-            polygonEl.setAttribute('points', backPts.map(pt => `${pt[0]},${pt[1]}`).join(' '));
+            const ptsStr = backPts.map(pt => `${pt[0]},${pt[1]}`).join(' ');
+            polygonEl.setAttribute('points', ptsStr);
+            if (shadowEl) shadowEl.setAttribute('points', ptsStr);
           }
           if (gradient) {
             gradient.setAttribute('x1', `${K / 2}`);
@@ -154,8 +160,9 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
       if (topPageEl) topPageEl.style.clipPath = clipPathStr;
       
       if (polygonEl) {
-        if (K <= 0 || K >= W + H) polygonEl.setAttribute('opacity', '0');
-        else polygonEl.setAttribute('opacity', '1');
+        const opacity = (K <= 0 || K >= W + H) ? '0' : '1';
+        polygonEl.setAttribute('opacity', opacity);
+        if (shadowEl) shadowEl.setAttribute('opacity', opacity);
       }
 
       rAF = requestAnimationFrame(animate);
@@ -204,15 +211,15 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
       const page = startEl || getActiveCurlPage();
       if (!page) return false;
       // Check the curl-page itself first (it has overflow-y: auto)
-      if (page.scrollHeight > page.clientHeight + 2 &&
-          Math.ceil(page.scrollTop + page.clientHeight) < page.scrollHeight - 2) return true;
+      if (page.scrollHeight > page.clientHeight + 4 &&
+          Math.ceil(page.scrollTop + page.clientHeight) < page.scrollHeight - 4) return true;
       // Also walk up from touch target if provided
       if (startEl) {
         let node: HTMLElement | null = startEl;
         while (node && node !== container) {
           const style = window.getComputedStyle(node);
           const hasOverflow = (style.overflowY === 'auto' || style.overflowY === 'scroll') && node.scrollHeight > node.clientHeight;
-          if (hasOverflow && Math.ceil(node.scrollTop + node.clientHeight) < node.scrollHeight - 2) return true;
+          if (hasOverflow && Math.ceil(node.scrollTop + node.clientHeight) < node.scrollHeight - 4) return true;
           node = node.parentElement;
         }
       }
@@ -223,13 +230,13 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
     const canScrollUp = (startEl?: HTMLElement): boolean => {
       const page = startEl || getActiveCurlPage();
       if (!page) return false;
-      if (page.scrollHeight > page.clientHeight + 2 && page.scrollTop > 2) return true;
+      if (page.scrollHeight > page.clientHeight + 4 && page.scrollTop > 4) return true;
       if (startEl) {
         let node: HTMLElement | null = startEl;
         while (node && node !== container) {
           const style = window.getComputedStyle(node);
           const hasOverflow = (style.overflowY === 'auto' || style.overflowY === 'scroll') && node.scrollHeight > node.clientHeight;
-          if (hasOverflow && node.scrollTop > 2) return true;
+          if (hasOverflow && node.scrollTop > 4) return true;
           node = node.parentElement;
         }
       }
@@ -261,12 +268,12 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
 
       wheelAccum.current += e.deltaY;
       if (wheelTimer.current) clearTimeout(wheelTimer.current);
-      wheelTimer.current = setTimeout(() => { wheelAccum.current = 0; }, 200);
+      wheelTimer.current = setTimeout(() => { wheelAccum.current = 0; }, 350);
 
-      if (wheelAccum.current > 300) {
+      if (wheelAccum.current > 180) {
         wheelAccum.current = 0;
         goToPage(activePage + 1);
-      } else if (wheelAccum.current < -300) {
+      } else if (wheelAccum.current < -180) {
         wheelAccum.current = 0;
         goToPage(activePage - 1);
       }
@@ -393,7 +400,11 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
           <div
             key={i}
             className={`curl-page ${isTopPage ? 'curl-top-page' : ''}`}
-            style={{ zIndex }}
+            style={{ 
+              zIndex,
+              transform: 'translateZ(0)',
+              willChange: 'clip-path'
+            }}
           >
             {children(i)}
           </div>
@@ -406,19 +417,18 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
           style={{ position: 'absolute', inset: 0, zIndex: 20, pointerEvents: 'none', width: '100%', height: '100%' }}
         >
           <defs>
-            <filter id="curl-shadow" x="-50%" y="-50%" width="200%" height="200%">
-              <feDropShadow dx="-15" dy="-15" stdDeviation="25" floodColor="rgba(0,0,0,0.6)" />
-            </filter>
             <linearGradient id="curl-gradient" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#111111" />
-              <stop offset="10%" stopColor="#1a1a1a" />
-              <stop offset="35%" stopColor="#666666" />
-              <stop offset="55%" stopColor="#f0f0f0" />
-              <stop offset="70%" stopColor="#ffffff" />
-              <stop offset="100%" stopColor="#888888" />
+              <stop offset="0%" stopColor="#0a0a0a" />
+              <stop offset="15%" stopColor="#222222" />
+              <stop offset="40%" stopColor="#666666" />
+              <stop offset="55%" stopColor="#ffffff" />
+              <stop offset="75%" stopColor="#eeeeee" />
+              <stop offset="100%" stopColor="#aaaaaa" />
             </linearGradient>
           </defs>
-          <polygon id="curl-polygon" fill="url(#curl-gradient)" filter="url(#curl-shadow)" />
+          {/* Hardware-accelerated shadow polygon instead of feDropShadow */}
+          <polygon id="curl-shadow-poly" fill="rgba(0,0,0,0.4)" transform="translate(-10, -10)" />
+          <polygon id="curl-polygon" fill="url(#curl-gradient)" />
         </svg>
       )}
 
