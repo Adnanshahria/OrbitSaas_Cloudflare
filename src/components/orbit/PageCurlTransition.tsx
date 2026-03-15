@@ -38,7 +38,32 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
   const touchStartY = useRef(0);
   const touchStartX = useRef(0);
   
+  // Direct Refs for Smooth Animation
+  const polygonRef = useRef<SVGPolygonElement>(null);
+  const shadowRef = useRef<SVGPolygonElement>(null);
+  const gradientRef = useRef<SVGLinearGradientElement>(null);
+  const topPageRef = useRef<HTMLDivElement>(null);
+  const bottomPageRef = useRef<HTMLDivElement>(null);
+  
   const totalPages = Object.keys(SECTION_ROUTE_MAP).length;
+  
+  // Initialize isMobile synchronously to prevent first-render flicker/re-render
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth <= 1024 || window.matchMedia('(hover: none)').matches;
+  });
+
+  const isMobileRef = useRef(isMobile);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 1024 || window.matchMedia('(hover: none)').matches;
+      setIsMobile(mobile);
+      isMobileRef.current = mobile;
+    };
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const goToPage = useCallback(
     (newTarget: number) => {
@@ -68,108 +93,149 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
 
     const isForward = targetPage > activePage;
     let start = performance.now();
-    const duration = 1200; 
+    const isMob = isMobileRef.current;
+    
+    // Snappier duration: 600ms for desktop, 380ms for mobile fallback
+    const duration = isMob ? 380 : 600; 
     let rAF: number;
+
+    // Cache dimensions ONCE
+    const W = container.offsetWidth;
+    const H = container.offsetHeight;
 
     const animate = (now: number) => {
       let t = (now - start) / duration;
       if (t >= 1) {
+        // DO NOT clear clipPath here - it causes the old page to snap back 
+        // for a frame before being unmounted. The next render (targetPage=null)
+        // will handle the cleanup naturally.
         setActivePage(targetPage);
         setTargetPage(null);
         return;
       }
 
-      // Smooth easing
-      const p = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      // Ultra-Smooth Quintic Easing
+      const p = t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2;
       
-      const W = container.offsetWidth;
-      const H = container.offsetHeight;
-      const K = p * (W + H);
-
-      let clipPathStr = '';
-      const polygonEl = container.querySelector('#curl-polygon');
-      const shadowEl = container.querySelector('#curl-shadow-poly');
-      const gradient = container.querySelector('#curl-gradient');
-      
-      if (isForward) {
-        if (K <= 0) {
-          clipPathStr = `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`;
-        } else if (K >= W + H) {
-          clipPathStr = `polygon(0px 0px, 0px 0px, 0px 0px)`;
-        } else {
-          const E1 = K <= H ? [W, H - K] : [W + H - K, 0];
-          const E2 = K <= W ? [W - K, H] : [0, W + H - K];
-          const frontPts = [[0, 0]];
-          if (K <= H) frontPts.push([W, 0]);
-          frontPts.push(E1, E2);
-          if (K <= W) frontPts.push([0, H]);
-          clipPathStr = `polygon(${frontPts.map(pt => `${pt[0]}px ${pt[1]}px`).join(', ')})`;
-          
-          if (polygonEl) {
-            const backPts = [E1];
-            if (K > H) backPts.push([W + H - K, H - K]); 
-            backPts.push([W - K, H - K]);                
-            if (K > W) backPts.push([W - K, W + H - K]); 
-            backPts.push(E2);
-            const ptsStr = backPts.map(pt => `${pt[0]},${pt[1]}`).join(' ');
-            polygonEl.setAttribute('points', ptsStr);
-            if (shadowEl) shadowEl.setAttribute('points', ptsStr);
-          }
-          if (gradient) {
-            gradient.setAttribute('x1', `${W - K / 2}`);
-            gradient.setAttribute('y1', `${H - K / 2}`);
-            gradient.setAttribute('x2', `${W - K}`);
-            gradient.setAttribute('y2', `${H - K}`);
-          }
+      const polygonEl = polygonRef.current;
+      const shadowEl = shadowRef.current;
+      const gradientEl = gradientRef.current;
+      const topPageEl = topPageRef.current;
+      if (isMob) {
+        // MOBILE FALLBACK: Simple GPU-accelerated fade + slight slide
+        if (topPageEl) {
+          topPageEl.style.opacity = (1 - p).toString();
+          topPageEl.style.transform = `translate3d(0, ${isForward ? -20 * p : 20 * p}px, 0)`;
+          topPageEl.style.setProperty('--p', p.toString());
         }
       } else {
-        if (K <= 0) {
-          clipPathStr = `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`;
-        } else if (K >= W + H) {
-          clipPathStr = `polygon(0px 0px, 0px 0px, 0px 0px)`;
-        } else {
-          const E1 = K <= W ? [K, 0] : [W, K - W];
-          const E2 = K <= H ? [0, K] : [K - H, H];
-          const frontPts = [E1];
-          if (K <= W) frontPts.push([W, 0]);
-          frontPts.push([W, H]);
-          if (K <= H) frontPts.push([0, H]);
-          frontPts.push(E2);
-          clipPathStr = `polygon(${frontPts.map(pt => `${pt[0]}px ${pt[1]}px`).join(', ')})`;
-          
-          if (polygonEl) {
-            const backPts = [E1];
-            if (K > W) backPts.push([K, K - W]); 
-            backPts.push([K, K]);                
-            if (K > H) backPts.push([K - H, K]); 
-            backPts.push(E2);
-            const ptsStr = backPts.map(pt => `${pt[0]},${pt[1]}`).join(' ');
-            polygonEl.setAttribute('points', ptsStr);
-            if (shadowEl) shadowEl.setAttribute('points', ptsStr);
+        // DESKTOP CURL: Optimized Polygon & Clip-path
+        const K = p * (W + H);
+        
+        if (isForward) {
+          if (K <= 0) {
+            if (topPageEl) topPageEl.style.clipPath = 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)';
+          } else if (K >= W + H) {
+            if (topPageEl) topPageEl.style.clipPath = 'none';
+          } else {
+            const E1 = K <= H ? [W + 2, H - K] : [W + H - K, -2];
+            const E2 = K <= W ? [W - K, H + 2] : [-2, W + H - K];
+            const frontPts = [[-2, -2]];
+            if (K <= H) frontPts.push([W + 2, -2]);
+            frontPts.push(E1, E2);
+            if (K <= W) frontPts.push([-2, H + 2]);
+            
+            // OPTIMIZED: CSS Variable Update (Reduces string allocation)
+            if (topPageEl) {
+              for (let i = 0; i < 6; i++) {
+                const pt = i < frontPts.length ? frontPts[i] : frontPts[frontPts.length - 1];
+                topPageEl.style.setProperty(`--pt${i}x`, `${pt[0]}px`);
+                topPageEl.style.setProperty(`--pt${i}y`, `${pt[1]}px`);
+              }
+            }
+            
+            if (polygonEl) {
+              const backPts = [E1];
+              if (K > H) backPts.push([W + H - K, H - K]); 
+              backPts.push([W - K, H - K]);                
+              if (K > W) backPts.push([W - K, W + H - K]); 
+              backPts.push(E2);
+              const ptsStr = backPts.map(pt => `${pt[0]},${pt[1]}`).join(' ');
+              polygonEl.setAttribute('points', ptsStr);
+              if (shadowEl) shadowEl.setAttribute('points', ptsStr);
+            }
+            if (gradientEl) {
+              gradientEl.setAttribute('x1', `${W - K / 2}`);
+              gradientEl.setAttribute('y1', `${H - K / 2}`);
+              gradientEl.setAttribute('x2', `${W - K}`);
+              gradientEl.setAttribute('y2', `${H - K}`);
+            }
           }
-          if (gradient) {
-            gradient.setAttribute('x1', `${K / 2}`);
-            gradient.setAttribute('y1', `${K / 2}`);
-            gradient.setAttribute('x2', `${K}`);
-            gradient.setAttribute('y2', `${K}`);
+        } else {
+          if (K <= 0) {
+            if (topPageEl) topPageEl.style.clipPath = 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)';
+          } else if (K >= W + H) {
+            if (topPageEl) topPageEl.style.clipPath = 'none';
+          } else {
+            const E1 = K <= W ? [K, -2] : [W + 2, K - W];
+            const E2 = K <= H ? [-2, K] : [K - H, H + 2];
+            const frontPts = [E1];
+            if (K <= W) frontPts.push([W + 2, -2]);
+            frontPts.push([W + 2, H + 2]);
+            if (K <= H) frontPts.push([-2, H + 2]);
+            frontPts.push(E2);
+            
+            if (topPageEl) {
+              for (let i = 0; i < 6; i++) {
+                const pt = i < frontPts.length ? frontPts[i] : frontPts[frontPts.length - 1];
+                topPageEl.style.setProperty(`--pt${i}x`, `${pt[0]}px`);
+                topPageEl.style.setProperty(`--pt${i}y`, `${pt[1]}px`);
+              }
+            }
+            
+            if (polygonEl) {
+              const backPts = [E1];
+              if (K > W) backPts.push([K, K - W]); 
+              backPts.push([K, K]);                
+              if (K > H) backPts.push([K - H, K]); 
+              backPts.push(E2);
+              const ptsStr = backPts.map(pt => `${pt[0]},${pt[1]}`).join(' ');
+              polygonEl.setAttribute('points', ptsStr);
+              if (shadowEl) shadowEl.setAttribute('points', ptsStr);
+            }
+            if (gradientEl) {
+              gradientEl.setAttribute('x1', `${K / 2}`);
+              gradientEl.setAttribute('y1', `${K / 2}`);
+              gradientEl.setAttribute('x2', `${K}`);
+              gradientEl.setAttribute('y2', `${K}`);
+            }
           }
         }
-      }
+        
+        if (topPageEl) {
+          topPageEl.style.setProperty('--p', p.toString());
+        }
 
-      const topPageEl = container.querySelector('.curl-top-page') as HTMLElement;
-      if (topPageEl) topPageEl.style.clipPath = clipPathStr;
-      
-      if (polygonEl) {
-        const opacity = (K <= 0 || K >= W + H) ? '0' : '1';
-        polygonEl.setAttribute('opacity', opacity);
-        if (shadowEl) shadowEl.setAttribute('opacity', opacity);
+        if (polygonEl) {
+          const opacity = (K <= 0 || K >= W + H) ? '0' : '1';
+          polygonEl.setAttribute('opacity', opacity);
+          if (shadowEl) shadowEl.setAttribute('opacity', opacity);
+        }
       }
 
       rAF = requestAnimationFrame(animate);
     };
 
     rAF = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rAF);
+    return () => {
+      cancelAnimationFrame(rAF);
+      // Clean up styles on unmount/re-run using ref
+      const el = topPageRef.current;
+      if (el) {
+        el.style.opacity = '';
+        el.style.transform = '';
+      }
+    };
   }, [targetPage, activePage]);
 
   // Track when the user last scrolled inside a scrollable area
@@ -179,6 +245,9 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
   const edgeDwellDir = useRef<'up' | 'down' | null>(null);
   // Track cumulative touch delta for momentum-style transition triggering
   const touchCumulativeDelta = useRef(0);
+  
+  // NEW: Store "ready-to-jump" state for confirming scroll logic
+  const jumpReady = useRef<{ direction: 'up' | 'down'; timestamp: number } | null>(null);
 
   // Reset counters when page changes
   useEffect(() => {
@@ -186,6 +255,7 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
     edgeDwellStart.current = 0;
     edgeDwellDir.current = null;
     touchCumulativeDelta.current = 0;
+    jumpReady.current = null; // Reset jump state on page change
   }, [activePage]);
 
   // Handle Scroll & Touch
@@ -270,12 +340,22 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
       if (wheelTimer.current) clearTimeout(wheelTimer.current);
       wheelTimer.current = setTimeout(() => { wheelAccum.current = 0; }, 350);
 
-      if (wheelAccum.current > 180) {
-        wheelAccum.current = 0;
-        goToPage(activePage + 1);
-      } else if (wheelAccum.current < -180) {
-        wheelAccum.current = 0;
-        goToPage(activePage - 1);
+      const threshold = 180;
+      if (Math.abs(wheelAccum.current) > threshold) {
+        const direction = wheelAccum.current > 0 ? 'down' : 'up';
+        const nowTime = performance.now();
+
+        // If we were already 'ready' in this direction recently, navigate
+        if (jumpReady.current?.direction === direction && (nowTime - jumpReady.current.timestamp < 1500)) {
+          wheelAccum.current = 0;
+          jumpReady.current = null;
+          goToPage(direction === 'down' ? activePage + 1 : activePage - 1);
+        } else {
+          // First hit at the edge: Set ready state and wait for next scroll
+          jumpReady.current = { direction, timestamp: nowTime };
+          wheelAccum.current = 0; 
+          // Optional: Add a subtle haptic/visual cue here if needed
+        }
       }
     };
 
@@ -363,9 +443,21 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
       if (now - lastInternalScrollTime.current < 400) return;
 
       if (swipingUp) {
-        goToPage(activePage + 1);
+        const nowTime = performance.now();
+        if (jumpReady.current?.direction === 'down' && (nowTime - jumpReady.current.timestamp < 1500)) {
+          jumpReady.current = null;
+          goToPage(activePage + 1);
+        } else {
+          jumpReady.current = { direction: 'down', timestamp: nowTime };
+        }
       } else if (swipingDown) {
-        goToPage(activePage - 1);
+        const nowTime = performance.now();
+        if (jumpReady.current?.direction === 'up' && (nowTime - jumpReady.current.timestamp < 1500)) {
+          jumpReady.current = null;
+          goToPage(activePage - 1);
+        } else {
+          jumpReady.current = { direction: 'up', timestamp: nowTime };
+        }
       }
 
       isAtEdge = false;
@@ -386,7 +478,14 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
   }, [activePage, targetPage, goToPage]);
 
   return (
-    <div ref={containerRef} className="page-curl-viewport">
+    <div 
+      ref={containerRef} 
+      className="page-curl-viewport" 
+      data-animating={targetPage !== null}
+      style={{
+        backgroundColor: targetPage !== null ? (activePage === 1 || activePage === 5 || activePage === 7 ? '#FAFAFA' : '#000') : undefined
+      }}
+    >
       {/* 
          We render two indices: the activePage and the targetPage.
          The component 'children' is a render prop that returns the correct section for an index.
@@ -395,42 +494,68 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
         if (i === null) return null;
         const isTopPage = i === activePage && targetPage !== null;
         const zIndex = i === activePage ? 10 : 5;
+        // Force underlying page to be fully visible immediately
+        const opacity = (i === targetPage) ? 1 : undefined;
         
         return (
           <div
             key={i}
-            className={`curl-page ${isTopPage ? 'curl-top-page' : ''}`}
+            ref={isTopPage ? topPageRef : null}
+            className={`curl-page ${isTopPage ? 'curl-top-page var-clip-path' : ''}`}
             style={{ 
               zIndex,
+              opacity,
               transform: 'translateZ(0)',
               willChange: 'clip-path'
             }}
           >
             {children(i)}
+            {isTopPage && (
+              <div 
+                className="curl-dark-overlay" 
+                style={{ 
+                  position: 'fixed',
+                  inset: 0,
+                  backgroundColor: 'black',
+                  zIndex: 99999,
+                  pointerEvents: 'none',
+                  opacity: 'var(--p, 0)'
+                }} 
+              />
+            )}
           </div>
         );
       })}
 
-      {targetPage !== null && (
-        <svg
-          className="curl-svg-overlay"
-          style={{ position: 'absolute', inset: 0, zIndex: 20, pointerEvents: 'none', width: '100%', height: '100%' }}
-        >
-          <defs>
-            <linearGradient id="curl-gradient" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#0a0a0a" />
-              <stop offset="15%" stopColor="#222222" />
-              <stop offset="40%" stopColor="#666666" />
-              <stop offset="55%" stopColor="#ffffff" />
-              <stop offset="75%" stopColor="#eeeeee" />
-              <stop offset="100%" stopColor="#aaaaaa" />
-            </linearGradient>
-          </defs>
-          {/* Hardware-accelerated shadow polygon instead of feDropShadow */}
-          <polygon id="curl-shadow-poly" fill="rgba(0,0,0,0.4)" transform="translate(-10, -10)" />
-          <polygon id="curl-polygon" fill="url(#curl-gradient)" />
-        </svg>
-      )}
+      <svg
+        className="curl-svg-overlay"
+        style={{ 
+          position: 'absolute', 
+          inset: 0, 
+          zIndex: 20, 
+          pointerEvents: 'none', 
+          width: '100%', 
+          height: '100%',
+          opacity: targetPage !== null ? 1 : 0,
+          visibility: targetPage !== null ? 'visible' : 'hidden',
+          transition: 'opacity 0.2s ease-in-out'
+        }}
+      >
+        <defs>
+          <linearGradient id="curl-gradient" ref={gradientRef} gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#050505" />
+            <stop offset="10%" stopColor="#1a1a1a" />
+            <stop offset="35%" stopColor="#444444" />
+            <stop offset="50%" stopColor="#d1d1d1" />
+            <stop offset="65%" stopColor="#555555" />
+            <stop offset="85%" stopColor="#111111" />
+            <stop offset="100%" stopColor="#000000" />
+          </linearGradient>
+        </defs>
+        {/* Hardware-accelerated shadow polygon instead of feDropShadow */}
+        <polygon id="curl-shadow-poly" ref={shadowRef} fill="rgba(0,0,0,0.4)" transform="translate(-10, -10)" />
+        <polygon id="curl-polygon" ref={polygonRef} fill="url(#curl-gradient)" />
+      </svg>
 
       {/* Persistent Nav Dots (Optional/Removable) */}
       <div className="flip-page-dots">

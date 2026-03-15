@@ -8,8 +8,12 @@ import {
   Cpu,
   Smartphone,
   ShoppingCart,
-  Globe
+  Globe,
+  ArrowRight,
+  ChevronRight,
+  Sparkles
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { parseRichText } from '@/lib/utils';
 import { RichText } from '@/components/ui/RichText';
 
@@ -844,8 +848,7 @@ function BentoCard({
     <motion.div
       ref={cardRef}
       initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -914,6 +917,7 @@ function BentoCard({
 export function ServicesSection({ embedded }: { embedded?: boolean }) {
   const { content } = useContent();
   const { lang } = useLang();
+  const navigate = useNavigate();
   type ContentServices = { items?: Array<{ title?: string; desc?: string; id?: string | number; [key: string]: unknown }>; heading?: string; sub?: string };
   const t = (content[lang] as { services?: ContentServices })?.services;
   const allItems = t?.items || [];
@@ -921,7 +925,7 @@ export function ServicesSection({ embedded }: { embedded?: boolean }) {
   const Wrapper = embedded ? 'div' : 'section';
 
   return (
-    <Wrapper id="services" className="relative w-full min-h-[100dvh] overflow-visible bg-[#FDFBF7] pb-20 pt-12 md:pt-16 md:pb-24 z-10 flex flex-col items-center">
+    <Wrapper id="services" className="relative w-full min-h-[100dvh] overflow-visible bg-[#FAFAFA] pb-4 pt-10 md:pt-14 md:pb-6 z-10 flex flex-col items-center">
       
       {/* Background Decorators - Luxury Beige organic glows */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
@@ -961,7 +965,7 @@ export function ServicesSection({ embedded }: { embedded?: boolean }) {
         </div>
 
         {/* ────── Dynamic Bento Grid Layout ────── */}
-        <div className="flex flex-col gap-5 pb-8">
+        <div className="flex flex-col gap-4 pb-6">
           {Array.from({ length: Math.ceil((allItems.length || 6) / 2) }).map((_, rowIndex) => {
              // Fallback items if array is empty
              const rowItems = allItems.length > 0 ? allItems.slice(rowIndex * 2, rowIndex * 2 + 2) : [
@@ -976,7 +980,7 @@ export function ServicesSection({ embedded }: { embedded?: boolean }) {
                 : "grid-cols-1 md:grid-cols-2 lg:grid-cols-[47fr_53fr]";
 
               return (
-               <div key={rowIndex} className={`grid ${gridClass} gap-5`}>
+               <div key={rowIndex} className={`grid ${gridClass} gap-4`}>
                  {rowItems.map((item: { title?: string; desc?: string; id?: string | number; [key: string]: unknown }, colIndex: number) => (
                    <BentoCard key={(item.id as string | number) || (item.title as string) || colIndex} item={item} index={rowIndex * 2 + colIndex} />
                  ))}
@@ -984,6 +988,50 @@ export function ServicesSection({ embedded }: { embedded?: boolean }) {
              );
           })}
         </div>
+        
+        {/* ────── Premium Unified Button Row ────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3, duration: 0.8 }}
+          className="w-full flex flex-col md:flex-row items-center justify-between gap-6 mt-8 md:mt-10 pt-6 border-t border-slate-200/40"
+        >
+          {/* Left: Aesthetic Get Early Access CTA */}
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('trigger-lead-magnet'))}
+            className="order-1 md:order-1 group relative px-12 py-5 bg-[#0e0e10] text-white rounded-[2rem] font-bold text-base md:text-lg border border-white/10 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.4)] transition-all duration-500 hover:scale-[1.02] active:scale-95 overflow-hidden cursor-pointer"
+          >
+            {/* Agent Skills Background Glow */}
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-sky-500/10 to-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            
+            {/* Shimmer effect */}
+            <motion.div 
+              animate={{ x: ['-100%', '200%'] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent skew-x-12" 
+            />
+            
+            <span className="relative z-10 flex items-center gap-4">
+              <Sparkles className="w-5 h-5 text-emerald-400 group-hover:animate-spin-slow" />
+              {lang === 'en' ? 'Get Early Access' : 'এক্সক্লুসিভ অ্যাক্সেস নিন'}
+              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-2" />
+            </span>
+          </button>
+
+          {/* Right: Premium Next Section */}
+          <motion.button
+            whileHover={{ scale: 1.05, x: 5 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate('/process')}
+            className="order-2 md:order-2 flex items-center gap-4 group px-8 py-4 rounded-2xl bg-white/40 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgba(0,0,0,0.04)] text-slate-800 font-bold tracking-widest text-[11px] uppercase transition-all hover:bg-white hover:shadow-xl cursor-pointer"
+          >
+            <span className="opacity-60 group-hover:opacity-100 transition-opacity">{lang === 'en' ? 'Explore Process' : 'প্রক্রিয়া দেখুন'}</span>
+            <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center transition-all group-hover:bg-emerald-500 group-hover:rotate-90">
+              <ChevronRight size={18} />
+            </div>
+          </motion.button>
+        </motion.div>
         
       </div>
     </Wrapper>

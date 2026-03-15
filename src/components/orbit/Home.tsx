@@ -309,7 +309,7 @@ export function Home() {
   useThunderboltCanvas(canvasRef, prefersReducedMotion);
 
   return (
-    <section id="home" className="relative min-h-[100svh] flex flex-col items-center justify-start pt-24 pb-12 overflow-hidden noise-overlay">
+    <section id="home" className="relative min-h-[100svh] flex flex-col items-center justify-center pt-24 pb-16 overflow-hidden noise-overlay">
       <BackgroundBlobs />
       <FloatingParticles />
       <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black pointer-events-none" />
@@ -320,7 +320,7 @@ export function Home() {
       />
 
       {/* ── Grid Layout ── */}
-      <div className="container mx-auto px-6 relative z-10 pt-8 md:pt-0 pb-20">
+      <div className="container mx-auto px-6 relative z-10 pt-8 md:pt-0 pb-12">
         <div className="grid lg:grid-cols-12 gap-12 items-center">
           
           {/* Left Side: Content */}
@@ -367,7 +367,7 @@ export function Home() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.8, duration: 1 }}
               >
-                <p className="text-base md:text-xl text-white/50 max-w-xl leading-relaxed mb-10 md:mb-16">
+                <p className="text-base md:text-xl text-white/50 max-w-xl leading-relaxed mb-8 md:mb-12">
                   <RichText text={subtitle} />
                 </p>
 
@@ -429,7 +429,7 @@ export function Home() {
 
           {/* Right Side: Flashy Cards */}
           <div className="lg:col-span-5 xl:col-span-4 hidden lg:block">
-            <div className="relative h-[700px] w-full">
+            <div className="relative h-[620px] w-full">
               {/* Card 1: Agentic AI - Moved Down and Lefty */}
               <div className="absolute top-[12%] right-[5%] z-10 transition-all duration-500">
                 <FlashyCard icon={Activity} title="Agentic AI nodes" delay={1.2} className="w-[280px]">

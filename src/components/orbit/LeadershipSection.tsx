@@ -10,7 +10,7 @@ export function LeadershipSection() {
   const members = t?.members || [];
 
   return (
-    <section id="leadership" className="relative overflow-hidden min-h-[100dvh] flex flex-col justify-center bg-[#FDFCF6]">
+    <section id="leadership" className="relative overflow-hidden min-h-[100dvh] flex flex-col justify-center bg-[#FAFAFA]">
       {/* Decorative Background Elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Subtle Radial Gradient */}

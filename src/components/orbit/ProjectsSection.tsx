@@ -189,7 +189,7 @@ export function ProjectsSection() {
     if (enData?.visible === false) return null;
 
     return (
-        <section id="project" ref={sectionRef} className="relative min-h-[100dvh] bg-[#F3EFE0] text-[#2C2A24] overflow-hidden py-32">
+        <section id="project" ref={sectionRef} className="relative min-h-[100dvh] bg-[#FAFAFA] text-[#2C2A24] overflow-hidden py-32">
             <Helmet>
                 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet" />
             </Helmet>

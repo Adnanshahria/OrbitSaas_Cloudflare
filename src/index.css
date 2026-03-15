@@ -163,6 +163,7 @@
   overflow: hidden;
   z-index: 0;
   background-color: #000;
+  overscroll-behavior: none;
 }
 
 /* Each page is simply absolutely positioned */
@@ -173,6 +174,22 @@
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
+  contain: layout style paint;
+  will-change: transform, opacity, clip-path;
+  overscroll-behavior-y: none;
+}
+
+/* Variable-driven clipping to avoid per-frame GC pressure in JS */
+.var-clip-path {
+  clip-path: polygon(
+    var(--pt0x, 0%) var(--pt0y, 0%),
+    var(--pt1x, 100%) var(--pt1y, 0%),
+    var(--pt2x, 100%) var(--pt2y, 100%),
+    var(--pt3x, 100%) var(--pt3y, 100%),
+    var(--pt4x, 0%) var(--pt4y, 100%),
+    var(--pt5x, 0%) var(--pt5y, 100%)
+  );
+  position: relative;
 }
 
 /* Default dark theme scrollbar */
@@ -432,6 +449,11 @@
 
 .section-subheading-light {
   color: var(--text-secondary);
+}
+
+/* Optimize SVGs */
+.curl-svg-overlay {
+  will-change: transform;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -700,6 +722,14 @@
   .animate-pulse-slow {
     animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
+  .animate-spin-slow {
+    animation: spin-slow 8s linear infinite;
+  }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes pulse-slow {

@@ -765,8 +765,7 @@ function TiltCard({
         transformStyle: 'preserve-3d',
       }}
       initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, duration: 0.6 }}
       className={`group relative bento-card border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] backdrop-blur-xl p-6 rounded-[2rem] flex flex-col transition-all duration-500 hover:border-[rgba(212,160,23,0.35)] hover:bg-[rgba(255,255,255,0.04)] overflow-hidden ${
         layout === 'horizontal' ? 'min-h-[240px]' : 'min-h-[200px]'

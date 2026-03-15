@@ -32,10 +32,15 @@ export function LeadMagnetPopup() {
         };
 
         document.addEventListener('mouseleave', handleMouseLeave);
+        
+        // 3. Manual trigger via custom event
+        const handleManualTrigger = () => setIsOpen(true);
+        window.addEventListener('trigger-lead-magnet', handleManualTrigger);
 
         return () => {
             clearTimeout(timerId);
             document.removeEventListener('mouseleave', handleMouseLeave);
+            window.removeEventListener('trigger-lead-magnet', handleManualTrigger);
         };
     }, []);
 

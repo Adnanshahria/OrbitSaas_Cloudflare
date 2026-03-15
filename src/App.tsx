@@ -163,10 +163,27 @@ function PublicSite() {
 
   useEffect(() => {
     setIsLoaded(true);
-    // Signal to the prerenderer that the app is ready for snapshot
+    const preloadSections = () => {
+      Promise.all([
+        import('./components/orbit/StatsSection'),
+        import('./components/orbit/ServicesSection'),
+        import('./components/orbit/ProcessSection'),
+        import('./components/orbit/TechStackSection'),
+        import('./components/orbit/WhyUsSection'),
+        import('./components/orbit/ProjectsSection'),
+        import('./components/orbit/ReviewsSection'),
+        import('./components/orbit/LeadershipSection'),
+        import('./components/orbit/ContactSection'),
+        import('./components/orbit/OrbitFooter')
+      ]).catch(() => {});
+    };
+    // Start preloading sooner to catch the first transition
+    setTimeout(preloadSections, 200); 
+
+    // Signal pre-renderer
     setTimeout(() => {
       document.dispatchEvent(new Event('custom-render-trigger'));
-    }, 1500); // Give fonts & Lotties a moment to settle
+    }, 1500); 
   }, []);
 
   useEffect(() => {
@@ -231,15 +248,17 @@ export default function App() {
             <NavbarVisibilityWrapper />
             <Suspense fallback={<AdminLoading />}>
                 <Routes>
-                  {/* Public Core Pages with PageFlip Transitions */}
-                  {['/', '/services', '/process', '/techstack', '/why-us', '/proj', '/reviews', '/leadership', '/contact'].map(path => (
-                    <Route key={path} path={path} element={
-                      <VisitorGateway>
-                        <StructuredData />
-                        <PublicSite />
-                      </VisitorGateway>
-                    } />
-                  ))}
+                  {/* Public Core Pages with PageFlip Transitions - Consolidated to prevent unmount/flicker */}
+                  <Route element={
+                    <VisitorGateway>
+                      <StructuredData />
+                      <PublicSite />
+                    </VisitorGateway>
+                  }>
+                    {['/', '/services', '/process', '/techstack', '/why-us', '/proj', '/reviews', '/leadership', '/contact'].map(path => (
+                      <Route key={path} path={path} element={null} />
+                    ))}
+                  </Route>
                   <Route path="/project" element={
                     <VisitorGateway>
                       <StructuredData />
