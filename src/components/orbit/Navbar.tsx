@@ -37,6 +37,8 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+
+
 export function Navbar() {
   const { content } = useContent();
   const { lang, toggleLang } = useLang();

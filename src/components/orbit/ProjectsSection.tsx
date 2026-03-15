@@ -1,5 +1,5 @@
-import { useRef, useEffect } from 'react';
-import { motion, useInView, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { useRef, useEffect, useState } from 'react';
+import { motion, useInView, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { useLang } from '@/contexts/LanguageContext';
 import { useContent } from '@/contexts/ContentContext';
 import { Helmet } from 'react-helmet-async';
@@ -170,17 +170,21 @@ export function ProjectsSection() {
     const { content } = useContent();
     const sectionRef = useRef<HTMLElement>(null);
     const isInView = useInView(sectionRef, { once: true, amount: 0.1 });
+    const [page, setPage] = useState(0);
 
     const enData = (content.en as any).projects || {};
     const bnData = (content.bn as any).projects || {};
     const enItems: any[] = Array.isArray(enData.items) ? enData.items : [];
     const bnItems: any[] = Array.isArray(bnData.items) ? bnData.items : [];
 
-    const displayItems = enItems.slice(0, 3).map((enItem, i) => {
+    const itemsPerPage = 3;
+    const totalPages = Math.ceil(enItems.length / itemsPerPage);
+
+    const displayItems = enItems.map((enItem, i) => {
         const bnItem = bnItems[i];
         const showBn = lang === 'bn' && bnItem && bnItem.title && bnItem.title.trim() !== '';
         return { ...(showBn ? bnItem : enItem), _originalIndex: i, _id: enItem.id || '' };
-    });
+    }).slice(page * itemsPerPage, (page + 1) * itemsPerPage);
 
     if (enData?.visible === false) return null;
 
@@ -227,34 +231,78 @@ export function ProjectsSection() {
                 </header>
 
                 {/* Golden Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16">
-                    {displayItems.map((item, i) => (
-                        <UltraCard key={item._id || item._originalIndex} item={item} i={i} />
-                    ))}
+                <div className="min-h-[600px]">
+                    <AnimatePresence mode="popLayout">
+                        <motion.div 
+                            key={`page-${page}`}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20, transition: { duration: 0.3 } }}
+                            transition={{ duration: 0.6, staggerChildren: 0.1 }}
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16"
+                        >
+                            {displayItems.map((item, i) => (
+                                <UltraCard key={item._id || item._originalIndex} item={item} i={i} />
+                            ))}
+                        </motion.div>
+                    </AnimatePresence>
                 </div>
 
-                {/* Call to Action to Archive */}
+                {/* Call to Action to Archive & Navigation */}
                 <motion.div 
                     initial={{ opacity: 0, y: 40 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 1.2, delay: 0.5 }}
-                    className="mt-32 flex justify-center"
+                    className="mt-32 flex flex-col sm:flex-row items-center justify-center gap-6"
                 >
-                    <Link to="/project" className="group relative px-14 py-6 bg-[#FAF8F1] text-[#B69762] rounded-full overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95 shadow-[0_20px_40px_rgba(182,151,98,0.1)] border border-amber-900/10">
+                    {/* Enhanced Explore Full Archive Button */}
+                    <Link to="/project" className="group relative px-14 py-6 bg-[#2C2A24] text-[#FCD34D] rounded-full overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95 shadow-[0_20px_40px_rgba(44,42,36,0.2)] border border-[#B69762]/30">
                         {/* Metallic Border Glow */}
-                        <div className="absolute inset-0 border border-amber-500/0 group-hover:border-amber-500/20 rounded-full transition-colors duration-500" />
-                        <div className="absolute inset-[1px] border border-white/40 rounded-full pointer-events-none" />
+                        <div className="absolute inset-0 border border-amber-500/0 group-hover:border-amber-500/30 rounded-full transition-colors duration-500" />
+                        <div className="absolute inset-[1px] border border-white/10 rounded-full pointer-events-none" />
                         
-                        <span className="relative z-10 font-bold uppercase tracking-[0.3em] text-[10px] flex items-center gap-4 transition-colors duration-500 group-hover:text-amber-800">
+                        <span className="relative z-10 font-bold uppercase tracking-[0.3em] text-[11px] flex items-center gap-4 transition-colors duration-500 group-hover:text-amber-100">
                             Explore Full Archive
                             <MoveRight className="w-4 h-4 group-hover:translate-x-3 transition-transform duration-700 ease-in-out" />
                         </span>
 
                         {/* Liquid Gold Hover Effect */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-amber-50/0 via-amber-50/30 to-white/60 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                        <div className="absolute -inset-full bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-[1.5s] ease-in-out" />
+                        <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/0 via-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                        <div className="absolute -inset-full bg-gradient-to-r from-transparent via-amber-400/10 to-transparent skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-[1.5s] ease-in-out" />
                     </Link>
+
+                    {totalPages > 1 && (
+                        <div className="flex items-center gap-4 mt-6 sm:mt-0">
+                            <button 
+                                onClick={() => setPage(p => Math.max(0, p - 1))}
+                                disabled={page === 0}
+                                className="group relative p-6 bg-[#FAF8F1] text-[#B69762] rounded-full overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed border border-amber-900/10 shadow-[0_10px_20px_rgba(182,151,98,0.05)]"
+                                aria-label="Previous Projects"
+                            >
+                                <span className="relative z-10 flex items-center justify-center">
+                                    <MoveRight className="w-5 h-5 rotate-180" />
+                                </span>
+                                <div className="absolute inset-0 bg-gradient-to-tr from-amber-50/0 via-amber-50/30 to-white/60 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                            </button>
+                            
+                            <span className="text-[10px] font-bold text-amber-900/60 tracking-[0.2em] min-w-[3rem] text-center">
+                                {page + 1}/{totalPages}
+                            </span>
+
+                            <button 
+                                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                                disabled={page === totalPages - 1}
+                                className="group relative p-6 bg-[#FAF8F1] text-[#B69762] rounded-full overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed border border-amber-900/10 shadow-[0_10px_20px_rgba(182,151,98,0.05)]"
+                                aria-label="Next Projects"
+                            >
+                                <span className="relative z-10 flex items-center justify-center">
+                                    <MoveRight className="w-5 h-5" />
+                                </span>
+                                <div className="absolute inset-0 bg-gradient-to-tr from-amber-50/0 via-amber-50/30 to-white/60 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                            </button>
+                        </div>
+                    )}
                 </motion.div>
             </div>
         </section>

@@ -56,6 +56,7 @@ const AdminSEO = lazy(() => import('./pages/admin/AdminSEO'));
 const AdminBackup = lazy(() => import('./pages/admin/AdminBackup'));
 const AdminLegal = lazy(() => import('./pages/admin/AdminLegal'));
 const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'));
+const AdminProfile = lazy(() => import('./pages/admin/AdminProfile'));
 
 function AdminLoading() {
   return (
@@ -287,6 +288,7 @@ export default function App() {
                     <Route path="backup" element={<AdminBackup />} />
                     <Route path="legal" element={<AdminLegal />} />
                     <Route path="notifications" element={<AdminNotifications />} />
+                    <Route path="profile" element={<AdminProfile />} />
                   </Route>
                 </Routes>
               </Suspense>

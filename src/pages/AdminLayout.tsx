@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useContent } from '@/contexts/ContentContext';
 import { Helmet } from 'react-helmet-async';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -7,8 +8,10 @@ import {
     LayoutDashboard, Type, ShoppingCart, Users, FolderOpen,
     MessageCircle, Globe, Shield, LogOut, Menu, PanelLeftClose, PanelLeft,
     Lightbulb, Phone, FileText, Cpu, CloudUpload, Loader2, Link as LinkIcon,
-    Database, Mail, BarChart3, Star, Trash2, CheckCircle2, XCircle, Bell, Layers
+    Database, BarChart3, Star, Trash2, CheckCircle2, XCircle, Bell, Layers, UserCircle
 } from 'lucide-react';
+
+
 
 const navItems = [
     { label: 'Hero', path: '/admin/hero', icon: Type },
@@ -22,12 +25,13 @@ const navItems = [
     { label: 'Reviews', path: '/admin/reviews', icon: Star },
     { label: 'Contact', path: '/admin/contact', icon: Phone },
     { label: 'Footer', path: '/admin/footer', icon: FileText },
-    { label: 'Legal Pages', path: '/admin/legal', icon: Shield },
+    { label: 'Legal', path: '/admin/legal', icon: Shield },
     { label: 'Chatbot', path: '/admin/chatbot', icon: MessageCircle },
     { label: 'Links', path: '/admin/links', icon: LinkIcon },
-    { label: 'Navbar', path: '/admin/navbar', icon: Globe },
-    { label: 'SEO', path: '/admin/seo', icon: Shield },
-    { label: 'Leads', path: '/admin/leads', icon: Mail },
+    { label: 'Navbar', path: '/admin/navbar', icon: LinkIcon },
+    { label: 'Profile', path: '/admin/profile', icon: UserCircle },
+    { label: 'SEO', path: '/admin/seo', icon: Globe },
+    { label: 'Leads', path: '/admin/leads', icon: BarChart3 },
     { label: 'Notifications', path: '/admin/notifications', icon: Bell },
     { label: 'Backup', path: '/admin/backup', icon: Database },
 ];
@@ -61,6 +65,9 @@ function ProgressToast({ progress, label, color, doneMessage }: { progress: numb
 
 export default function AdminLayout() {
     const navigate = useNavigate();
+    const { content, refreshContent } = useContent();
+    const profile = (content.en.adminProfile as any) || {};
+    
     const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 1024);
     const [publishing, setPublishing] = useState(false);
     const [deleting, setDeleting] = useState(false);
@@ -264,6 +271,8 @@ export default function AdminLayout() {
                 </nav>
 
                 <div className="p-3 border-t border-border space-y-1">
+
+
                     <button
                         onClick={handlePublishCache}
                         disabled={publishing}
