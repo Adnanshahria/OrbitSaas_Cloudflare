@@ -93,6 +93,22 @@ export default function AdminHero() {
     const [feature3Title, setFeature3Title] = useState('Track and report on efficiency');
     const [feature3Icon, setFeature3Icon] = useState('BarChart3');
 
+    // Detailed Card Content
+    const [f1Step1, setF1Step1] = useState('');
+    const [f1Step2, setF1Step2] = useState('');
+    const [f1Step3, setF1Step3] = useState('');
+    const [f1Step4, setF1Step4] = useState('');
+
+    const [f2Query, setF2Query] = useState('');
+    const [f2Response, setF2Response] = useState('');
+    const [f2FooterLeft, setF2FooterLeft] = useState('');
+    const [f2FooterRight, setF2FooterRight] = useState('');
+
+    const [f3UptimeLabel, setF3UptimeLabel] = useState('');
+    const [f3UptimeValue, setF3UptimeValue] = useState('');
+    const [f3Latency, setF3Latency] = useState('');
+    const [f3Edge, setF3Edge] = useState('');
+
     useEffect(() => {
         const d = getData();
         if (d) {
@@ -119,6 +135,23 @@ export default function AdminHero() {
             setFeature2Icon(d.feature2Icon || 'Smartphone');
             setFeature3Title(d.feature3Title || 'Track and report on efficiency');
             setFeature3Icon(d.feature3Icon || 'BarChart3');
+
+            // Detailed Card Content
+            const steps = d.feature1Steps || [];
+            setF1Step1(steps[0] || '');
+            setF1Step2(steps[1] || '');
+            setF1Step3(steps[2] || '');
+            setF1Step4(steps[3] || '');
+
+            setF2Query(d.feature2Query || '');
+            setF2Response(d.feature2Response || '');
+            setF2FooterLeft(d.feature2FooterLeft || '');
+            setF2FooterRight(d.feature2FooterRight || '');
+
+            setF3UptimeLabel(d.feature3UptimeLabel || '');
+            setF3UptimeValue(d.feature3UptimeValue || '');
+            setF3Latency(d.feature3Latency || '');
+            setF3Edge(d.feature3Edge || '');
         }
     }, [getData]);
 
@@ -128,7 +161,16 @@ export default function AdminHero() {
         taglineColor, titleColor, ctaGradientStart, ctaGradientEnd,
         feature1Title, feature1Icon,
         feature2Title, feature2Icon,
-        feature3Title, feature3Icon
+        feature3Title, feature3Icon,
+        feature1Steps: [f1Step1, f1Step2, f1Step3, f1Step4],
+        feature2Query: f2Query,
+        feature2Response: f2Response,
+        feature2FooterLeft: f2FooterLeft,
+        feature2FooterRight: f2FooterRight,
+        feature3UptimeLabel: f3UptimeLabel,
+        feature3UptimeValue: f3UptimeValue,
+        feature3Latency: f3Latency,
+        feature3Edge: f3Edge
     };
 
     return (
@@ -202,16 +244,38 @@ export default function AdminHero() {
                         <h4 className="text-sm font-bold opacity-70">Card 1 (Top)</h4>
                         <TextField label="Title" value={feature1Title} onChange={setFeature1Title} lang={lang} />
                         <IconPicker label="Icon" value={feature1Icon} onChange={setFeature1Icon} />
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                            <TextField label="Step 1" value={f1Step1} onChange={setF1Step1} lang={lang} />
+                            <TextField label="Step 2" value={f1Step2} onChange={setF1Step2} lang={lang} />
+                            <TextField label="Step 3" value={f1Step3} onChange={setF1Step3} lang={lang} />
+                            <TextField label="Step 4" value={f1Step4} onChange={setF1Step4} lang={lang} />
+                        </div>
                     </div>
                     <div className="space-y-3 p-4 border border-border/50 rounded-lg bg-background/50">
                         <h4 className="text-sm font-bold opacity-70">Card 2 (Middle)</h4>
                         <TextField label="Title" value={feature2Title} onChange={setFeature2Title} lang={lang} />
                         <IconPicker label="Icon" value={feature2Icon} onChange={setFeature2Icon} />
+                        <div className="space-y-2 mt-2">
+                            <TextField label="User Query" value={f2Query} onChange={setF2Query} lang={lang} />
+                            <TextField label="Bot Response" value={f2Response} onChange={setF2Response} lang={lang} />
+                            <div className="grid grid-cols-2 gap-2">
+                                <TextField label="Footer Left" value={f2FooterLeft} onChange={setF2FooterLeft} lang={lang} />
+                                <TextField label="Footer Right" value={f2FooterRight} onChange={setF2FooterRight} lang={lang} />
+                            </div>
+                        </div>
                     </div>
                     <div className="space-y-3 p-4 border border-border/50 rounded-lg bg-background/50">
                         <h4 className="text-sm font-bold opacity-70">Card 3 (Bottom)</h4>
                         <TextField label="Title" value={feature3Title} onChange={setFeature3Title} lang={lang} />
                         <IconPicker label="Icon" value={feature3Icon} onChange={setFeature3Icon} />
+                        <div className="space-y-2 mt-2">
+                            <TextField label="Metric Label" value={f3UptimeLabel} onChange={setF3UptimeLabel} lang={lang} />
+                            <TextField label="Metric Value" value={f3UptimeValue} onChange={setF3UptimeValue} lang={lang} />
+                            <div className="grid grid-cols-2 gap-2">
+                                <TextField label="Subtext 1" value={f3Latency} onChange={setF3Latency} lang={lang} />
+                                <TextField label="Subtext 2" value={f3Edge} onChange={setF3Edge} lang={lang} />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -241,6 +305,22 @@ export default function AdminHero() {
                         setFeature2Icon(parsed.feature2Icon || 'Smartphone');
                         setFeature3Title(parsed.feature3Title || 'Track and report on efficiency');
                         setFeature3Icon(parsed.feature3Icon || 'BarChart3');
+
+                        const steps = parsed.feature1Steps || [];
+                        setF1Step1(steps[0] || '');
+                        setF1Step2(steps[1] || '');
+                        setF1Step3(steps[2] || '');
+                        setF1Step4(steps[3] || '');
+
+                        setF2Query(parsed.feature2Query || '');
+                        setF2Response(parsed.feature2Response || '');
+                        setF2FooterLeft(parsed.feature2FooterLeft || '');
+                        setF2FooterRight(parsed.feature2FooterRight || '');
+
+                        setF3UptimeLabel(parsed.feature3UptimeLabel || '');
+                        setF3UptimeValue(parsed.feature3UptimeValue || '');
+                        setF3Latency(parsed.feature3Latency || '');
+                        setF3Edge(parsed.feature3Edge || '');
                     }}
                 />
             </div>

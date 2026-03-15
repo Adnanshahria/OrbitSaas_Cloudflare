@@ -20,6 +20,15 @@ export const translations = {
       subtitle: 'Web apps, AI chatbots, agentic automation, mobile apps, eCommerce & PWAs — end-to-end solutions powered by cutting-edge technology.',
       cta: 'Book an Appointment',
       learnMore: 'Explore Services',
+      feature1Steps: ['DISCOVERY', 'AGENT_INIT', 'EXECUTION', 'OPTIMIZE'],
+      feature2Query: 'How can I automate my business workflow?',
+      feature2Response: 'I can deploy Multi-Agent systems to...',
+      feature2FooterLeft: 'Custom Trained LLM',
+      feature2FooterRight: 'Active',
+      feature3UptimeLabel: 'Uptime',
+      feature3UptimeValue: '99.9%',
+      feature3Latency: 'Latency: 0.8ms',
+      feature3Edge: 'Global Edge',
     },
     stats: {
       items: [
@@ -78,7 +87,11 @@ export const translations = {
     },
     whyUs: {
       title: 'The ORBIT Advantage',
+      badge: 'Why Choose Us',
+      heading: 'The ORBIT Advantage',
       subtitle: 'We don\'t just build products — we become your technology partner, engineering for maximum ROI, global scale, and future-proof innovation.',
+      cta: 'Explore Our Projects',
+      ctaSub: 'High-Impact Engineering',
       items: [
         { 
           title: 'Direct ROI Impact', 
@@ -211,6 +224,15 @@ export const translations = {
       subtitle: 'ওয়েব অ্যাপস, এআই চ্যাটবট, এজেন্টিক অটোমেশন, মোবাইল অ্যাপস, ই-কমার্স ও PWA — অত্যাধুনিক প্রযুক্তি দিয়ে এন্ড-টু-এন্ড সলিউশন।',
       cta: 'অ্যাপয়েন্টমেন্ট বুক করুন',
       learnMore: 'সেবাসমূহ দেখুন',
+      feature1Steps: ['ডিসকভারি', 'এজেন্ট_ইনিট', 'এক্সিকিউশন', 'অপ্টিমাইজ'],
+      feature2Query: 'কিভাবে আমি আমার ব্যবসার কাজের গতি বাড়াতে পারি?',
+      feature2Response: 'আমি মাল্টি-এজেন্ট সিস্টেম ব্যবহার করে...',
+      feature2FooterLeft: 'কাস্টম ট্রেইনড এলএলএম',
+      feature2FooterRight: 'সক্রিয়',
+      feature3UptimeLabel: 'আপটাইম',
+      feature3UptimeValue: '৯৯.৯%',
+      feature3Latency: 'ল্যাটেন্সি: ০.৮ এমএস',
+      feature3Edge: 'গ্লোবাল এজ',
     },
     stats: {
       items: [
@@ -268,14 +290,17 @@ export const translations = {
       ] as any[],
     },
     whyUs: {
-      title: 'ORBIT-এর সুবিধাগুলো লুফে নিন',
-      subtitle: 'আমরা শুধু প্রোডাক্ট তৈরি করি না — আমরা আপনার প্রযুক্তি অংশীদার হিসেবে কাজ করি, যা সর্বোচ্চ আরআইও (ROI), গ্লোবাল স্কেল এবং ভবিষ্যৎ-মুখী উদ্ভাবন নিশ্চিত করে।',
+      title: 'কেন আমাদের নির্বাচন করবেন',
+      badge: 'কেন আমরা সেরা',
+      heading: 'অরবিট অ্যাডভান্টেজ',
+      subtitle: 'আমরা কেবল পণ্য তৈরি করি না — আমরা আপনার প্রযুক্তি সহযোগী হয়ে উঠি, যা সর্বোচ্চ ROI, গ্লোবাল স্কেল এবং ভবিষ্যৎ-প্রুফ উদ্ভাবনের জন্য কাজ করে।',
+      cta: 'আমাদের প্রজেক্টগুলো দেখুন',
+      ctaSub: 'উচ্চ-প্রভাবশালী ইঞ্জিনিয়ারিং',
       items: [
-        { 
-          title: 'সরাসরি আরআইও (ROI) প্রভাব', 
-          desc: 'আমাদের এআই-চালিত সリューションগুলো এমনভাবে তৈরি করা হয়েছে যাতে সেগুলো নিজেরাই নিজেদের খরচ মিটিয়ে দেয়। আমরা উচ্চ-মূল্যের কাজগুলো অটোমেট করার দিকে মনোযোগ দিই যা সরাসরি আপনার ব্যবসার মুনাফা বৃদ্ধি করে।', 
+        {
+          title: 'সরাসরি আরআইও (ROI) প্রভাব',
+          desc: 'আমাদের এআই-চালিত সলিউশনগুলো এমনভাবে তৈরি করা হয়েছে যাতে সেগুলো নিজেরাই নিজেদের খরচ মিটিয়ে দেয়। আমরা উচ্চ-মূল্যের কাজগুলো অটোমেট করার দিকে মনোযোগ দিই যা সরাসরি আপনার ব্যবসার মুনাফা বৃদ্ধি করে।',
           benefit: 'স্থাপনের প্রথম বছরের মধ্যেই বিনিয়োগের ওপর ৩.৫ গুণ রিটার্ন পাওয়ার সম্ভাবনা।',
-          bg: '#eef2ff', 
           color: '#4f46e5' 
         },
         { 

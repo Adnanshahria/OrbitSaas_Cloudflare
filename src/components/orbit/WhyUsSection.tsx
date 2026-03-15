@@ -858,23 +858,25 @@ export function WhyUsSection() {
       <div className="section-container relative z-10 w-full">
         {/* Header */}
         <div className="max-w-4xl mx-auto text-center mb-20">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="mb-8"
-          >
-            <span className="pill-badge pill-badge-accent uppercase tracking-[0.2em] text-[10px] px-6 py-2">
-              {t?.badge}
-            </span>
-          </motion.div>
+          {t?.badge && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="mb-8"
+            >
+              <span className="pill-badge pill-badge-accent uppercase tracking-[0.2em] text-[10px] px-6 py-2">
+                {t?.badge}
+              </span>
+            </motion.div>
+          )}
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="section-heading text-white text-4xl md:text-6xl mb-6 tracking-tighter"
           >
-            <span className="text-shimmer-accent">{t?.heading}</span>
+            <span className="text-shimmer-accent">{t?.heading || t?.title}</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}

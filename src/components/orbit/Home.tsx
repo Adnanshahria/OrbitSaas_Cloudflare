@@ -4,7 +4,13 @@ import { useLang } from '@/contexts/LanguageContext';
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RichText } from '@/components/ui/RichText';
-import { ArrowRight, Cpu, Zap, Activity, Globe, MessageSquare, Shield, Rocket } from 'lucide-react';
+import { 
+  ArrowRight, Cpu, Zap, Activity, Globe, MessageSquare, Shield, Rocket,
+  Bot, Smartphone, ShoppingCart, Code, Database, Cloud, Monitor, 
+  Wifi, Mail, Camera, Music, Heart, Star, Target, Briefcase, 
+  Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, 
+  Eye, Palette, Brain, Wrench, LucideIcon
+} from 'lucide-react';
 
 const BackgroundBlobs = () => (
   <div className="absolute inset-0 overflow-hidden -z-10 pointer-events-none">
@@ -183,6 +189,13 @@ function useThunderboltCanvas(
   }, [canvasRef, createBolt, prefersReducedMotion]);
 }
 
+const ICON_MAP: Record<string, LucideIcon | any> = {
+    Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket, Code, Database, Shield, Cloud,
+    Cpu, Monitor, Wifi, Mail, Camera, Music, Heart, Star, Target, Briefcase,
+    Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, Eye, Palette, Brain, Wrench,
+    Activity
+};
+
 /* ═══════════════════════════════════════════════════════════
    FLASHY CARDS — Premium glassmorphism interactive units
    ═══════════════════════════════════════════════════════════ */
@@ -212,20 +225,20 @@ function FlashyCard({ children, icon: Icon, title, delay, className = "" }: any)
   );
 }
 
-function AIWorkflow() {
+function AIWorkflow({ steps }: { steps: string[] }) {
   const [activeStep, setActiveStep] = useState(0);
-  const steps = ['DISCOVERY', 'AGENT_INIT', 'EXECUTION', 'OPTIMIZE'];
+  const displaySteps = steps?.length > 0 ? steps : ['DISCOVERY', 'AGENT_INIT', 'EXECUTION', 'OPTIMIZE'];
   
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveStep(s => (s + 1) % steps.length);
+      setActiveStep(s => (s + 1) % displaySteps.length);
     }, 1500);
     return () => clearInterval(interval);
-  }, []);
+  }, [displaySteps.length]);
 
   return (
     <div className="flex flex-col gap-2">
-      {steps.map((step, i) => (
+      {displaySteps.map((step, i) => (
         <div key={i} className="flex items-center gap-3">
           <div className={`w-1.5 h-1.5 rounded-full ${activeStep === i ? 'bg-indigo-400 animate-pulse shadow-[0_0_8px_rgba(129,140,248,0.8)]' : 'bg-white/10'}`} />
           <span className={`text-[10px] font-mono tracking-wider ${activeStep === i ? 'text-indigo-300' : 'text-white/20'}`}>
@@ -240,7 +253,7 @@ function AIWorkflow() {
   );
 }
 
-function ChatBotVisual() {
+function ChatBotVisual({ query, response }: { query: string; response: string }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-start gap-2">
@@ -248,7 +261,7 @@ function ChatBotVisual() {
             <div className="w-2 h-2 rounded-full bg-indigo-400" />
          </div>
          <div className="bg-white/5 rounded-2xl rounded-tl-none p-2 text-[10px] text-white/60 leading-tight">
-            How can I automate my business workflow?
+            {query || "How can I automate my business workflow?"}
          </div>
       </div>
       <div className="flex items-start gap-2 self-end flex-row-reverse">
@@ -256,20 +269,20 @@ function ChatBotVisual() {
             <Zap size={10} className="text-cyan-400" />
          </div>
          <div className="bg-indigo-500/20 border border-indigo-500/10 rounded-2xl rounded-tr-none p-2 text-[10px] text-indigo-100 leading-tight">
-            I can deploy Multi-Agent systems to...
+            {response || "I can deploy Multi-Agent systems to..."}
          </div>
       </div>
     </div>
   );
 }
 
-function PerformanceMetric() {
+function PerformanceMetric({ label, value, sub1, sub2 }: { label: string; value: string; sub1: string; sub2: string }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-end">
          <div className="flex flex-col">
-            <span className="text-[10px] text-white/30 uppercase tracking-[0.1em]">Uptime</span>
-            <span className="text-2xl font-black text-white">99.9%</span>
+            <span className="text-[10px] text-white/30 uppercase tracking-[0.1em]">{label || "Uptime"}</span>
+            <span className="text-2xl font-black text-white">{value || "99.9%"}</span>
          </div>
          <div className="h-8 flex items-end gap-[2px]">
             {[...Array(8)].map((_, i) => (
@@ -279,8 +292,8 @@ function PerformanceMetric() {
       </div>
       <div className="h-[1px] w-full bg-white/5" />
       <div className="flex justify-between text-[10px] font-mono text-indigo-400/60 uppercase">
-         <span>Latency: 0.8ms</span>
-         <span>Global Edge</span>
+         <span>{sub1 || "Latency: 0.8ms"}</span>
+         <span>{sub2 || "Global Edge"}</span>
       </div>
     </div>
   );
@@ -430,28 +443,33 @@ export function Home() {
           {/* Right Side: Flashy Cards */}
           <div className="lg:col-span-5 xl:col-span-4 hidden lg:block">
             <div className="relative h-[620px] w-full">
-              {/* Card 1: Agentic AI - Moved Down and Lefty */}
-              <div className="absolute top-[12%] right-[5%] z-10 transition-all duration-500">
-                <FlashyCard icon={Activity} title="Agentic AI nodes" delay={1.2} className="w-[280px]">
-                  <AIWorkflow />
+              {/* Card 1: Agentic AI - Top Right */}
+              <div className="absolute top-[2%] right-0 z-10 transition-all duration-500">
+                <FlashyCard icon={ICON_MAP[t?.feature1Icon] || Activity} title={t?.feature1Title || "Agentic AI nodes"} delay={1.2} className="w-[280px]">
+                  <AIWorkflow steps={t?.feature1Steps} />
                 </FlashyCard>
               </div>
 
-              {/* Card 2: Conversational AI - Middle Left (overlap area) */}
-              <div className="absolute top-[38%] left-[-45%] z-20 transition-all duration-500">
-                <FlashyCard icon={Cpu} title="Conversational AI" delay={1.4} className="w-[300px]">
-                  <ChatBotVisual />
+              {/* Card 2: Conversational AI - Shifted slightly down */}
+              <div className="absolute top-[35%] left-[-15%] z-20 transition-all duration-500">
+                <FlashyCard icon={ICON_MAP[t?.feature2Icon] || Cpu} title={t?.feature2Title || "Conversational AI"} delay={1.4} className="w-[300px]">
+                  <ChatBotVisual query={t?.feature2Query} response={t?.feature2Response} />
                   <div className="mt-4 flex justify-between items-center text-[10px] text-indigo-400 font-bold uppercase tracking-widest">
-                     <span>Custom Trained LLM</span>
-                     <span className="opacity-50">Active</span>
+                     <span>{t?.feature2FooterLeft || "Custom Trained LLM"}</span>
+                     <span className="opacity-50">{t?.feature2FooterRight || "Active"}</span>
                   </div>
                 </FlashyCard>
               </div>
 
-              {/* Card 3: Enterprise Solutions - Pushed towards Lefty */}
-              <div className="absolute bottom-[5%] right-[20%] z-10 transition-all duration-500">
-                <FlashyCard icon={Zap} title="Enterprise Solutions" delay={1.6} className="w-[260px]">
-                   <PerformanceMetric />
+              {/* Card 3: Enterprise Solutions - Pushed further down */}
+              <div className="absolute bottom-[-10%] right-[5%] z-10 transition-all duration-500">
+                <FlashyCard icon={ICON_MAP[t?.feature3Icon] || Zap} title={t?.feature3Title || "Enterprise Solutions"} delay={1.6} className="w-[260px]">
+                   <PerformanceMetric 
+                     label={t?.feature3UptimeLabel} 
+                     value={t?.feature3UptimeValue} 
+                     sub1={t?.feature3Latency} 
+                     sub2={t?.feature3Edge} 
+                   />
                 </FlashyCard>
               </div>
 
@@ -460,7 +478,6 @@ export function Home() {
               <div className="absolute top-[15%] right-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-[100px] -z-10" />
             </div>
           </div>
-
         </div>
       </div>
 

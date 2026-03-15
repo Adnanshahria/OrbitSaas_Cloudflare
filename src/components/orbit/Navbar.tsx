@@ -25,6 +25,7 @@ const PATH_TO_SECTION: Record<string, string> = {
   '/techstack': 'tech',
   '/why-us': 'why-us',
   '/proj': 'project',
+  '/project': 'project',
   '/reviews': 'reviews',
   '/leadership': 'leadership',
   '/contact': 'contact',
@@ -46,9 +47,11 @@ export function Navbar() {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const location = useLocation();
   const activeSection = PATH_TO_SECTION[location.pathname] || 'hero';
-  const isProjectRoute = location.pathname.startsWith('/project');
+  const isProjectRoot = location.pathname === '/project';
+  const isProjectDetail = location.pathname.startsWith('/project/') && location.pathname.length > 9;
 
   // Handle scroll state for subtle elevation change
   useEffect(() => {
@@ -57,29 +60,40 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Sync with Chatbot state to hide navbar on mobile
+  useEffect(() => {
+    const handleChatbotState = (e: any) => {
+      setIsChatbotOpen(e.detail?.isOpen ?? false);
+    };
+    window.addEventListener('orbit-chatbot-state-change', handleChatbotState);
+    return () => window.removeEventListener('orbit-chatbot-state-change', handleChatbotState);
+  }, []);
+
   // Sections that use Light Mode
   const isLightMode = ['services', 'project', 'leadership'].includes(activeSection);
 
   // Theme Variables
   const theme = {
-    bg: isProjectRoute 
-      ? 'rgba(255, 255, 255, 0.12)' 
-      : isLightMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(10, 10, 12, 0.25)',
-    border: isProjectRoute
-      ? 'rgba(0, 0, 0, 0.04)'
-      : isLightMode ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.12)',
-    text: isProjectRoute ? '#1B4332' : (isLightMode ? '#000000' : '#FFFFFF'),
-    textMuted: isProjectRoute ? '#1B433290' : (isLightMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)'),
+    bg: isProjectDetail 
+      ? 'rgba(10, 10, 12, 0.25)' 
+      : isLightMode ? 'rgba(243, 239, 224, 0.9)' : 'rgba(10, 10, 12, 0.25)',
+    border: isProjectDetail
+      ? 'rgba(255, 255, 255, 0.12)'
+      : isLightMode ? 'rgba(163, 123, 16, 0.12)' : 'rgba(255, 255, 255, 0.12)',
+    text: isProjectDetail ? '#FFFFFF' : (isLightMode ? '#000000' : '#FFFFFF'),
+    textMuted: isProjectDetail ? 'rgba(255, 255, 255, 0.5)' : (isLightMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)'),
     accent: '#10B981', // Emerald 500
-    glass: isProjectRoute 
-      ? 'backdrop-blur-[24px]' 
+    glass: isProjectDetail 
+      ? 'backdrop-blur-[40px]' 
       : isLightMode ? 'backdrop-blur-[32px]' : 'backdrop-blur-[40px]'
   };
 
   return (
     <>
       <nav
-        className={`fixed left-0 right-0 z-[1000] transition-all duration-500 ease-out flex justify-center px-4 ${scrolled ? 'top-2' : 'top-4'}`}
+        className={`fixed left-0 right-0 z-[1000] transition-all duration-500 ease-out flex justify-center px-4 ${scrolled ? 'top-2' : 'top-4'} ${
+          isChatbotOpen ? 'md:translate-y-0 opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto' : 'translate-y-0 opacity-100'
+        }`}
       >
         {/* Cinematic Glass Shell */}
         <div 
@@ -88,8 +102,8 @@ export function Navbar() {
             backgroundColor: theme.bg,
             borderColor: theme.border,
             boxShadow: isLightMode 
-              ? '0 10px 40px -10px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8), inset 0 -1px 0 rgba(0,0,0,0.02)' 
-              : '0 20px 50px -15px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.05)',
+              ? '0 40px 80px -20px rgba(0, 0, 0, 0.4), 0 20px 40px -15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.8)' 
+              : '0 50px 100px -25px rgba(0,0,0,0.9), 0 25px 50px -20px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.12)',
             backdropFilter: `${theme.glass} saturate(180%)`,
             WebkitBackdropFilter: `${theme.glass} saturate(180%)`
           }}
@@ -118,111 +132,129 @@ export function Navbar() {
             </Link>
 
             {/* Desktop Navigation (Sliding Capsule Style) */}
-            <div className={`hidden lg:flex items-center rounded-full p-1 border transition-all duration-300 ${
-              isProjectRoute
-                ? 'bg-black/5 border-black/5'
-                : isLightMode 
+            {!isProjectDetail && (
+              <div className={`hidden lg:flex items-center rounded-full p-1 border transition-all duration-300 ${
+                isLightMode 
                   ? 'bg-[#C2AF82]/15 border-[#C2AF82]/25 shadow-[inset_0_1px_2px_rgba(194,175,130,0.1)]' 
                   : 'bg-white/5 border-white/[0.03]'
-            }`}>
-                {isProjectRoute ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex justify-center"
-                  >
-                    <Link 
-                      to={location.pathname === '/project' ? '/' : '/project'}
-                      className="group relative px-6 py-2 flex items-center gap-3 overflow-hidden rounded-full border border-[#C2AF82]/30 bg-[#C2AF82]/5 backdrop-blur-xl transition-all duration-500 hover:bg-[#C2AF82]/15 hover:border-[#C2AF82]/50 hover:shadow-[0_0_20px_rgba(194,175,130,0.1)]"
-                    >
-                      {/* Animated Shimmer Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                      
-                      <ArrowLeft className="w-3.5 h-3.5 text-emerald-500 transition-transform duration-500 group-hover:-translate-x-1" />
-                      
-                      <span 
-                        className="text-[10px] font-black uppercase tracking-[0.3em] transition-colors duration-500 hover:text-white"
-                        style={{ color: theme.text, fontFamily: "'Outfit', sans-serif" }}
-                      >
-                        {location.pathname === '/project' ? 'Back to Orbit' : 'View All Projects'}
-                      </span>
-                      
-                      {/* Inner Glow Detail */}
-                      <div className="absolute inset-0 pointer-events-none rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] opacity-50" />
-                    </Link>
-                  </motion.div>
-                ) : (
-                  NAV_SECTIONS.filter(s => s.path !== '/').map((item) => {
-                    const sectionId = PATH_TO_SECTION[item.path];
-                    const visibility = t?.nav?.visibility?.[sectionId] !== false;
-                    if (!visibility) return null;
+              }`}>
+                {NAV_SECTIONS.filter(s => s.path !== '/').map((item) => {
+                  const sectionId = PATH_TO_SECTION[item.path];
+                  const visibility = t?.nav?.visibility?.[sectionId] !== false;
+                  if (!visibility) return null;
 
-                    const isActive = activeSection === sectionId;
-                    const label = t?.nav?.[sectionId === 'tech' ? 'techStack' : sectionId === 'project' ? 'projects' : sectionId] || item.label;
-                    const customUrl = t?.nav?.urls?.[sectionId];
-                    const isExternal = customUrl && (customUrl.startsWith('http') || customUrl.startsWith('mailto:'));
+                  const isActive = activeSection === sectionId;
+                  const label = t?.nav?.[sectionId === 'tech' ? 'techStack' : sectionId === 'project' ? 'projects' : sectionId] || item.label;
+                  const customUrl = t?.nav?.urls?.[sectionId];
+                  const isExternal = customUrl && (customUrl.startsWith('http') || customUrl.startsWith('mailto:'));
 
-                    if (isExternal) {
-                      return (
-                        <a
-                          key={item.path}
-                          href={customUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="relative px-5 py-2 z-10"
-                        >
-                          <motion.span 
-                            className={`relative z-10 transition-colors duration-500 text-[10px] font-medium tracking-[0.25em] uppercase`}
-                            style={{ 
-                              fontFamily: "'Outfit', sans-serif",
-                              color: theme.textMuted
-                            }}
-                          >
-                            {label}
-                          </motion.span>
-                        </a>
-                      );
-                    }
-
+                  if (isExternal) {
                     return (
-                      <Link
+                      <a
                         key={item.path}
-                        to={customUrl || item.path}
+                        href={customUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="relative px-5 py-2 z-10"
                       >
-                        {isActive && (
-                          <motion.div
-                            layoutId="active-nav-capsule"
-                            className="absolute inset-0 rounded-full z-[-1] overflow-hidden border border-[#C2AF82]/30 shadow-[0_4px_15px_rgba(16,185,129,0.35),inset_0_1px_2px_rgba(255,255,255,0.2)]"
-                            transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-                          >
-                            {/* Rich Nebula Gradient */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900" />
-                            
-                            {/* Inner Atmospheric Glow */}
-                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.2)_0%,transparent_50%)]" />
-                            
-                            {/* Bottom Edge Reflection */}
-                            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white/10" />
-                          </motion.div>
-                        )}
                         <motion.span 
                           className={`relative z-10 transition-colors duration-500 text-[10px] font-medium tracking-[0.25em] uppercase`}
                           style={{ 
                             fontFamily: "'Outfit', sans-serif",
-                            color: isActive ? '#FFFFFF' : theme.textMuted
+                            color: theme.textMuted
                           }}
                         >
                           {label}
                         </motion.span>
-                      </Link>
+                      </a>
                     );
-                  })
-                )}
-            </div>
+                  }
+
+                  return (
+                    <Link
+                      key={item.path}
+                      to={customUrl || item.path}
+                      className="relative px-5 py-2 z-10"
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="active-nav-capsule"
+                          className="absolute inset-0 rounded-full z-[-1] overflow-hidden border border-[#C2AF82]/30 shadow-[0_4px_15px_rgba(16,185,129,0.35),inset_0_1px_2px_rgba(255,255,255,0.2)]"
+                          transition={{ type: 'spring', stiffness: 280, damping: 28 }}
+                        >
+                          {/* Rich Nebula Gradient */}
+                          <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900" />
+                          
+                          {/* Inner Atmospheric Glow */}
+                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.2)_0%,transparent_50%)]" />
+                          
+                          {/* Bottom Edge Reflection */}
+                          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white/10" />
+                        </motion.div>
+                      )}
+                      <motion.span 
+                        className={`relative z-10 transition-colors duration-500 text-[10px] font-medium tracking-[0.25em] uppercase`}
+                        style={{ 
+                          fontFamily: "'Outfit', sans-serif",
+                          color: isActive ? '#FFFFFF' : theme.textMuted
+                        }}
+                      >
+                        {label}
+                      </motion.span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-2 sm:gap-4">
+              {/* Project Root Back Button */}
+              {isProjectRoot && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="hidden lg:flex"
+                >
+                  <Link 
+                    to="/"
+                    className="group relative px-5 py-2 flex items-center gap-3 overflow-hidden rounded-full border border-emerald-500/30 bg-emerald-500/5 backdrop-blur-xl transition-all duration-500 hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5 text-emerald-500 transition-transform duration-500 group-hover:-translate-x-1" />
+                    <span 
+                      className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-800"
+                      style={{ fontFamily: "'Outfit', sans-serif" }}
+                    >
+                      Back to Orbit
+                    </span>
+                  </Link>
+                </motion.div>
+              )}
+
+              {/* Project Detail Back Button */}
+              {isProjectDetail && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="hidden lg:flex"
+                >
+                  <Link 
+                    to="/project"
+                    className="group relative px-5 py-2 flex items-center gap-3 overflow-hidden rounded-full border border-emerald-500/30 bg-emerald-500/5 backdrop-blur-xl transition-all duration-500 hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]"
+                  >
+                    <ArrowLeft className="w-3 h-3 text-emerald-500 transition-transform duration-500 group-hover:-translate-x-1" />
+                    <span 
+                      className="text-[9px] font-black uppercase tracking-[0.2em] text-white"
+                      style={{ fontFamily: "'Outfit', sans-serif" }}
+                    >
+                      View All Projects
+                    </span>
+                    {/* Animated Shimmer Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                  </Link>
+                </motion.div>
+              )}
+
               {/* Language Switcher - Premium Toggle */}
               <button
                 onClick={() => toggleLang()}
