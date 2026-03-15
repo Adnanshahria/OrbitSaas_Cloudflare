@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
 import { Star, Quote, Twitter, Instagram, Facebook, Linkedin, Mail, ArrowUpRight, Github, MessageCircle, Briefcase, Globe, AtSign } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // ── WhatsApp Icon Component (Synced with Navbar) ──
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -182,7 +183,7 @@ export function ReviewsSection() {
                                             )}
                                         </div>
 
-                                        <p className="text-lg text-white/80 leading-relaxed mb-10 font-light italic">
+                                        <p className="text-lg text-white/80 leading-relaxed mb-10 font-light whitespace-pre-wrap">
                                             "{review.text || review.review}"
                                         </p>
 
@@ -250,10 +251,10 @@ export function ReviewsSection() {
                                                     ))}
                                                 </div>
                                                 {review.projectId && (
-                                                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-700 translate-x-4 group-hover:translate-x-0">
+                                                    <Link to={`/project/${review.projectId}`} className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-700 translate-x-4 group-hover:translate-x-0 cursor-pointer pointer-events-auto">
                                                         <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent)]">Deep Dive</span>
                                                         <ArrowUpRight size={14} className="text-[var(--accent)]" />
-                                                    </div>
+                                                    </Link>
                                                 )}
                                             </div>
                                         </div>
