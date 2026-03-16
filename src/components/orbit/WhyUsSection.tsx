@@ -14,12 +14,41 @@ import {
   BarChart3,
   Layers,
   Sparkles,
-  Headset
+  Headset,
+  Bot,
+  Smartphone,
+  ShoppingCart,
+  Code,
+  Database,
+  Shield,
+  Cloud,
+  Monitor,
+  Wifi,
+  Mail,
+  Camera,
+  Music,
+  Heart,
+  Star,
+  Target,
+  Briefcase,
+  Award,
+  BookOpen,
+  Users,
+  Settings2,
+  Eye,
+  Palette,
+  Wrench
 } from 'lucide-react';
 import { RichText } from '@/components/ui/RichText';
+import { NextSectionButton } from './NextSectionButton';
 
 const ICONS = [BarChart3, Layers, TrendingUp, Brain];
 const BENEFIT_ICONS = [Globe, ShieldCheck, Headset];
+
+const ALL_ICONS_MAP: Record<string, any> = {
+  TrendingUp, Globe, Rocket, Brain, Cpu, ShieldCheck, Zap, BarChart3, Layers, Sparkles, Headset,
+  Bot, Smartphone, ShoppingCart, Code, Database, Shield, Cloud, Monitor, Wifi, Mail, Camera, Music, Heart, Star, Target, Briefcase, Award, BookOpen, Users, Settings2, Eye, Palette, Wrench
+};
 
 /* ───────────────── Middle Aura Component (Agent Skill) ──────────────── */
 const MiddleAura = ({ color = 'var(--accent)', scale = 1 }: { color?: string; scale?: number }) => (
@@ -815,7 +844,10 @@ function TiltCard({
     y.set(0.5);
   }
 
-  const Icon = PassedIcon || ICONS[index % ICONS.length] || BarChart3;
+  const Icon = PassedIcon || 
+               (item.icon && ALL_ICONS_MAP[item.icon]) || 
+               ICONS[index % ICONS.length] || 
+               BarChart3;
   const Visual = ALL_VISUALS[index];
 
   return (
@@ -929,10 +961,11 @@ export function WhyUsSection() {
   const t = (content[lang] as any)?.whyUs;
   const items = t?.items || [];
   
-  // Force 24/7 Human Assistance branding if database has stale text
+  // Force 24/7 Human Assistance branding ONLY if database has stale text
   const rawBenefits = t?.benefits || [];
   const benefits = rawBenefits.map((b: any, i: number) => {
-    if (i === 2) { // 3rd Benefit: previously Elite Talent
+    const isOldTitle = b.title === 'Elite Talent' || b.title === 'অভিজাত প্রতিভা';
+    if (i === 2 && isOldTitle) { // 3rd Benefit: previously Elite Talent
       const isBengali = lang === 'bn';
       return {
         ...b,
@@ -1010,33 +1043,14 @@ export function WhyUsSection() {
                   item={benefit} 
                   index={absoluteIndex} 
                   layout={layout} 
-                  icon={BENEFIT_ICONS[i % BENEFIT_ICONS.length]} 
+                  icon={benefit.icon ? ALL_ICONS_MAP[benefit.icon] : BENEFIT_ICONS[i % BENEFIT_ICONS.length]} 
                 />
               );
             })}
           </div>
         </div>
 
-        {/* Call to Action */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1 }}
-          className="mt-20 flex flex-col items-center"
-        >
-          <button 
-            onClick={() => window.location.href = '/proj'}
-            className="group btn-primary px-16 py-5 text-xl golden-glow-lg rounded-2xl relative overflow-hidden"
-          >
-            <span className="relative z-10 flex items-center">
-              {t?.cta}
-              <ArrowRight size={22} className="ml-3 group-hover:translate-x-3 transition-transform" />
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] opacity-0 group-hover:opacity-100 transition-opacity" />
-          </button>
-          <p className="mt-6 text-[11px] text-white/30 uppercase tracking-[0.4em] font-semibold">{t?.ctaSub}</p>
-        </motion.div>
+        <NextSectionButton nextRoute="/proj" variant="dark" />
       </div>
     </section>
   );

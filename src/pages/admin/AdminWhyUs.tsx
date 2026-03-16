@@ -33,13 +33,13 @@ const DEFAULT_ITEM: UnifiedUSP = {
 };
 
 // ─── Icon Registry ───
-import { Settings2, Paintbrush, Palette, ChevronDown, Plus, Trash2, ArrowUp, ArrowDown, GripVertical, Eye, Layers, Sparkles, Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket, Code, Database, Shield, Cloud, Cpu, Monitor, Wifi, Mail, Camera, Music, Heart, Star, Target, Briefcase, Award, BookOpen, Users, BarChart3, Brain, Wrench } from 'lucide-react';
+import { Settings2, Paintbrush, Palette, ChevronDown, Plus, Trash2, ArrowUp, ArrowDown, GripVertical, Eye, Layers, Sparkles, Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket, Code, Database, Shield, Cloud, Cpu, Monitor, Wifi, Mail, Camera, Music, Heart, Star, Target, Briefcase, Award, BookOpen, Users, BarChart3, Brain, Wrench, Headset } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 const ICON_MAP: Record<string, LucideIcon> = {
     Globe, Bot, Zap, Smartphone, ShoppingCart, Rocket, Code, Database, Shield, Cloud,
     Cpu, Monitor, Wifi, Mail, Camera, Music, Heart, Star, Target, Briefcase,
-    Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, Eye, Palette, Brain, Wrench
+    Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, Eye, Palette, Brain, Wrench, Headset
 };
 const ICON_NAMES = Object.keys(ICON_MAP);
 const DEFAULT_ICONS = ['Brain', 'Wrench', 'Zap', 'Shield', 'Target', 'Rocket'];

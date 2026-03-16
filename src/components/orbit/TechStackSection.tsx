@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Cpu } from 'lucide-react';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
+import { NextSectionButton } from './NextSectionButton';
 
 /* ─── tech logo URLs (served from public/images/) ─── */
 const TECH_LOGOS = [
@@ -530,6 +531,9 @@ export function TechStackSection() {
               {t?.title || 'Our Expertise'}
             </motion.h2>
           </div>
+        </div>
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30">
+          <NextSectionButton nextRoute="/why-us" variant="dark" />
         </div>
       </div>
     </section>

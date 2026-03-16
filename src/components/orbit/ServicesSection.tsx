@@ -14,8 +14,8 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { parseRichText } from '@/lib/utils';
 import { RichText } from '@/components/ui/RichText';
+import { NextSectionButton } from './NextSectionButton';
 
 
 const SERVICE_ICONS = [MonitorSmartphone, BotMessageSquare, Cpu, Smartphone, ShoppingCart, Globe];
@@ -1019,18 +1019,7 @@ export function ServicesSection({ embedded }: { embedded?: boolean }) {
             </span>
           </button>
 
-          {/* Right: Premium Next Section */}
-          <motion.button
-            whileHover={{ scale: 1.05, x: 5 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate('/process')}
-            className="order-2 md:order-2 flex items-center gap-4 group px-8 py-4 rounded-2xl bg-white/40 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_30px_rgba(0,0,0,0.04)] text-slate-800 font-bold tracking-widest text-[11px] uppercase transition-all hover:bg-white hover:shadow-xl cursor-pointer"
-          >
-            <span className="opacity-60 group-hover:opacity-100 transition-opacity">{lang === 'en' ? 'Explore Process' : 'প্রক্রিয়া দেখুন'}</span>
-            <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center transition-all group-hover:bg-emerald-500 group-hover:rotate-90">
-              <ChevronRight size={18} />
-            </div>
-          </motion.button>
+          <NextSectionButton nextRoute="/process" variant="light" />
         </motion.div>
         
       </div>

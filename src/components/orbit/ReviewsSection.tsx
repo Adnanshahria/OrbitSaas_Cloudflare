@@ -3,6 +3,7 @@ import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
 import { Star, Quote, Twitter, Instagram, Facebook, Linkedin, Mail, ArrowUpRight, Github, MessageCircle, Briefcase, Globe, AtSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { NextSectionButton } from './NextSectionButton';
 
 // ── WhatsApp Icon Component (Synced with Navbar) ──
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -267,17 +268,8 @@ export function ReviewsSection() {
                         ))}
                     </div>
                 </AnimatePresence>
-
-                {reviews.length === 0 && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-center py-40 border-t border-white/5 mt-20"
-                    >
-                        <span className="text-6xl font-serif italic text-white/10 tracking-tighter">Echoes Pending</span>
-                        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 mt-8">Establishing transmission...</p>
-                    </motion.div>
-                )}
+                
+                <NextSectionButton nextRoute="/leadership" variant="dark" />
             </div>
         </section>
     );

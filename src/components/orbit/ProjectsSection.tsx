@@ -3,8 +3,9 @@ import { motion, useInView, useMotionValue, useSpring, useTransform, AnimatePres
 import { useLang } from '@/contexts/LanguageContext';
 import { useContent } from '@/contexts/ContentContext';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { ArrowUpRight, FolderOpen, MoveRight } from 'lucide-react';
+import { NextSectionButton } from './NextSectionButton';
 
 // --- Types ---
 interface ProjectItem {
@@ -170,6 +171,7 @@ export function ProjectsSection() {
     const { content } = useContent();
     const sectionRef = useRef<HTMLElement>(null);
     const isInView = useInView(sectionRef, { once: true, amount: 0.1 });
+    const navigate = useNavigate();
     const [page, setPage] = useState(0);
 
     const enData = (content.en as any).projects || {};
@@ -257,12 +259,12 @@ export function ProjectsSection() {
                     className="mt-32 flex flex-col sm:flex-row items-center justify-center gap-6"
                 >
                     {/* Enhanced Explore Full Archive Button */}
-                    <Link to="/project" className="group relative px-14 py-6 bg-[#2C2A24] text-[#FCD34D] rounded-full overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95 shadow-[0_20px_40px_rgba(44,42,36,0.2)] border border-[#B69762]/30">
+                    <Link to="/project" className="group relative px-14 py-6 bg-[#F3EFE0] text-[#B69762] rounded-full overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95 shadow-[0_20px_40px_rgba(182,151,98,0.1)] border border-[#B69762]/40">
                         {/* Metallic Border Glow */}
                         <div className="absolute inset-0 border border-amber-500/0 group-hover:border-amber-500/30 rounded-full transition-colors duration-500" />
-                        <div className="absolute inset-[1px] border border-white/10 rounded-full pointer-events-none" />
+                        <div className="absolute inset-[1px] border border-white/40 rounded-full pointer-events-none" />
                         
-                        <span className="relative z-10 font-bold uppercase tracking-[0.3em] text-[11px] flex items-center gap-4 transition-colors duration-500 group-hover:text-amber-100">
+                        <span className="relative z-10 font-bold uppercase tracking-[0.3em] text-[11px] flex items-center gap-4 transition-colors duration-500 group-hover:text-amber-900">
                             Explore Full Archive
                             <MoveRight className="w-4 h-4 group-hover:translate-x-3 transition-transform duration-700 ease-in-out" />
                         </span>
@@ -273,35 +275,7 @@ export function ProjectsSection() {
                     </Link>
 
                     {totalPages > 1 && (
-                        <div className="flex items-center gap-4 mt-6 sm:mt-0">
-                            <button 
-                                onClick={() => setPage(p => Math.max(0, p - 1))}
-                                disabled={page === 0}
-                                className="group relative p-6 bg-[#FAF8F1] text-[#B69762] rounded-full overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed border border-amber-900/10 shadow-[0_10px_20px_rgba(182,151,98,0.05)]"
-                                aria-label="Previous Projects"
-                            >
-                                <span className="relative z-10 flex items-center justify-center">
-                                    <MoveRight className="w-5 h-5 rotate-180" />
-                                </span>
-                                <div className="absolute inset-0 bg-gradient-to-tr from-amber-50/0 via-amber-50/30 to-white/60 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                            </button>
-                            
-                            <span className="text-[10px] font-bold text-amber-900/60 tracking-[0.2em] min-w-[3rem] text-center">
-                                {page + 1}/{totalPages}
-                            </span>
-
-                            <button 
-                                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-                                disabled={page === totalPages - 1}
-                                className="group relative p-6 bg-[#FAF8F1] text-[#B69762] rounded-full overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed border border-amber-900/10 shadow-[0_10px_20px_rgba(182,151,98,0.05)]"
-                                aria-label="Next Projects"
-                            >
-                                <span className="relative z-10 flex items-center justify-center">
-                                    <MoveRight className="w-5 h-5" />
-                                </span>
-                                <div className="absolute inset-0 bg-gradient-to-tr from-amber-50/0 via-amber-50/30 to-white/60 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                            </button>
-                        </div>
+                        <NextSectionButton nextRoute="/reviews" variant="light" />
                     )}
                 </motion.div>
             </div>

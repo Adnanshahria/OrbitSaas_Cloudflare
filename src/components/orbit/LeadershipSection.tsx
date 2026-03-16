@@ -2,12 +2,63 @@ import { motion } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
 import { Users, Linkedin, Twitter, Mail } from 'lucide-react';
+import { NextSectionButton } from './NextSectionButton';
+import { useState, useEffect, useRef } from 'react';
 
 export function LeadershipSection() {
   const { content } = useContent();
   const { lang } = useLang();
   const t = (content[lang] as any)?.leadership;
   const members = t?.members || [];
+
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const [isMobile, setIsMobile] = useState(false);
+  const memberRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024); // lg breakpoint
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Desktop outline rotational animation
+  useEffect(() => {
+    if (isMobile || members.length === 0) return;
+    
+    let i = 0;
+    setActiveIndex(i);
+    const interval = setInterval(() => {
+      i = (i + 1) % members.length;
+      setActiveIndex(i);
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [isMobile, members.length]);
+
+  // Mobile focused glow logic
+  useEffect(() => {
+    if (!isMobile || members.length === 0) return;
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const idx = memberRefs.current.indexOf(entry.target as HTMLDivElement);
+          if (idx !== -1) setActiveIndex(idx);
+        }
+      });
+    }, {
+      threshold: 0.5,
+      rootMargin: "-20% 0px -20% 0px"
+    });
+
+    memberRefs.current.forEach(ref => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => observer.disconnect();
+  }, [isMobile, members.length]);
 
   return (
     <section id="leadership" className="relative overflow-hidden min-h-[100dvh] flex flex-col justify-center bg-[#FAFAFA]">
@@ -71,45 +122,49 @@ export function LeadershipSection() {
         </div>
 
         {/* Members grid */}
-        {members.length > 0 ? (
+        {members.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {members.map((member: any, i: number) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                className="group relative flex flex-col items-center p-8 rounded-3xl bg-white/40 backdrop-blur-md border border-amber-900/5 transition-all duration-500 hover:bg-white/60 hover:shadow-2xl hover:shadow-amber-900/5 hover:-translate-y-2"
-              >
-                {/* Rising Aura Effect */}
-                <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-amber-400/20 rounded-full blur-3xl" />
-                </div>
-
-                {/* Avatar Container */}
-                <div className="relative w-32 h-32 mb-8 z-10">
-                  {/* Rotating Border */}
-                  <div className="absolute -inset-2 rounded-full border border-dashed border-amber-500/0 group-hover:border-amber-500/40 group-hover:rotate-[30deg] transition-all duration-1000" />
-                  
-                  <div className="w-full h-full rounded-full overflow-hidden ring-4 ring-white shadow-xl transition-transform duration-500 group-hover:scale-105">
-                    {member.image || member.avatar ? (
-                      <img
-                        src={member.image || member.avatar}
-                        alt={member.name}
-                        className="w-full h-full object-cover transition-all duration-700 grayscale group-hover:grayscale-0 scale-100 group-hover:scale-110"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div
-                        className="w-full h-full flex items-center justify-center text-white font-bold text-3xl"
-                        style={{ background: 'linear-gradient(135deg, #059669, #10B981)' }}
-                      >
-                        {member.name?.charAt(0) || 'M'}
-                      </div>
-                    )}
+            {members.map((member: any, i: number) => {
+              const isActive = activeIndex === i;
+              return (
+                <motion.div
+                  key={i}
+                  ref={(el) => { memberRefs.current[i] = el; }}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                  className={`group relative flex flex-col items-center p-8 rounded-3xl backdrop-blur-md border border-amber-900/5 transition-all duration-500 hover:bg-white/60 hover:shadow-2xl hover:shadow-amber-900/5 hover:-translate-y-2 ${isActive ? 'bg-white/60 shadow-2xl shadow-amber-900/5 -translate-y-2' : 'bg-white/40'}`}
+                  onMouseEnter={() => !isMobile && setActiveIndex(i)}
+                >
+                  {/* Rising Aura Effect */}
+                  <div className={`absolute inset-0 rounded-3xl transition-opacity duration-700 pointer-events-none ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-amber-400/20 rounded-full blur-3xl" />
                   </div>
-                </div>
+
+                  {/* Avatar Container */}
+                  <div className="relative w-32 h-32 mb-8 z-10">
+                    {/* Rotating Border */}
+                    <div className={`absolute -inset-2 rounded-full border border-dashed transition-all duration-1000 ${isActive ? 'border-amber-500/40 rotate-[30deg]' : 'border-amber-500/0 group-hover:border-amber-500/40 group-hover:rotate-[30deg]'}`} />
+                    
+                    <div className={`w-full h-full rounded-full overflow-hidden ring-4 ring-white shadow-xl transition-transform duration-500 ${isActive ? 'scale-105' : 'group-hover:scale-105'}`}>
+                      {member.image || member.avatar ? (
+                        <img
+                          src={member.image || member.avatar}
+                          alt={member.name}
+                          className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'grayscale-0 scale-110' : 'grayscale scale-100 group-hover:grayscale-0 group-hover:scale-110'}`}
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div
+                          className="w-full h-full flex items-center justify-center text-white font-bold text-3xl"
+                          style={{ background: 'linear-gradient(135deg, #059669, #10B981)' }}
+                        >
+                          {member.name?.charAt(0) || 'M'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
                 <h3 className="text-2xl text-[#1A1A1A] mb-2 text-center" style={{ fontFamily: "'Abril Fatface', serif" }}>
                   {member.name}
@@ -150,18 +205,12 @@ export function LeadershipSection() {
                   )}
                 </div>
               </motion.div>
-            ))}
+            );
+          })}
           </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center py-20"
-          >
-             <p className="text-slate-400 font-medium tracking-widest uppercase text-xs">Architecting the future of SaaS...</p>
-          </motion.div>
         )}
+
+        <NextSectionButton nextRoute="/contact" variant="light" />
       </div>
     </section>
   );

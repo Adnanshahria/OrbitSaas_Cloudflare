@@ -138,7 +138,7 @@ function PublicPageContent({ index }: { index: number }) {
     case 5: return <div className="snap-page-light" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ProjectsSection /></Suspense></div>;
     case 6: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ReviewsSection /></Suspense></div>;
     case 7: return <div className="snap-page-light" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><LeadershipSection /></Suspense></div>;
-    case 8: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ContactSection /><OrbitFooter /></Suspense></div>;
+    case 8: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ContactSection /><div className="hidden md:block"><OrbitFooter /></div></Suspense></div>;
     default: return null;
   }
 }

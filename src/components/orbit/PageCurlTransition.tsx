@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect, ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 
 const SECTION_ROUTE_MAP: Record<string, number> = {
   '/': 0,
@@ -557,16 +558,36 @@ export function PageCurlTransition({ children }: PageCurlTransitionProps) {
         <polygon id="curl-polygon" ref={polygonRef} fill="url(#curl-gradient)" />
       </svg>
 
-      {/* Persistent Nav Dots (Optional/Removable) */}
+      {/* Persistent Nav Dots with Arrows */}
       <div className="flip-page-dots">
-        {Object.keys(SECTION_ROUTE_MAP).map((_, i) => (
-          <button
-            key={i}
-            className={`flip-dot ${i === activePage ? 'flip-dot-active' : ''}`}
-            onClick={() => goToPage(i)}
-            aria-label={`Go to page ${i + 1}`}
-          />
-        ))}
+        <button
+          className="nav-arrow"
+          onClick={() => goToPage(activePage - 1)}
+          disabled={activePage === 0 || targetPage !== null}
+          aria-label="Previous page"
+        >
+          <ChevronUp size={16} />
+        </button>
+
+        <div className="flex flex-col gap-2 my-1">
+          {Object.keys(SECTION_ROUTE_MAP).map((_, i) => (
+            <button
+              key={i}
+              className={`flip-dot ${i === activePage ? 'flip-dot-active' : ''}`}
+              onClick={() => goToPage(i)}
+              aria-label={`Go to page ${i + 1}`}
+            />
+          ))}
+        </div>
+
+        <button
+          className="nav-arrow"
+          onClick={() => goToPage(activePage + 1)}
+          disabled={activePage === totalPages - 1 || targetPage !== null}
+          aria-label="Next page"
+        >
+          <ChevronDown size={16} />
+        </button>
       </div>
     </div>
   );

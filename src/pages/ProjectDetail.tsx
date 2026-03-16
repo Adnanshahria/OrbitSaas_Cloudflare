@@ -153,7 +153,7 @@ function ImageGallery({ images, title, videoUrl, onLightboxChange }: { images: s
                             <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
                         </button>
 
-                        <div className="flex justify-center flex-wrap gap-2 max-w-[60%] sm:max-w-none">
+                        <div className="flex justify-center flex-wrap gap-2.5 max-w-[70%] sm:max-w-none">
                             {media.map((item, idx) => (
                                 <motion.button
                                     key={idx}
@@ -163,8 +163,8 @@ function ImageGallery({ images, title, videoUrl, onLightboxChange }: { images: s
                                         setCurrentIndex(idx);
                                     }}
                                     className={`h-2 sm:h-2.5 rounded-full transition-all duration-300 shrink-0 ${idx === currentIndex
-                                        ? 'bg-primary w-5 sm:w-6'
-                                        : 'bg-muted-foreground/30 hover:bg-muted-foreground w-2 sm:w-2.5'
+                                        ? 'bg-primary w-8 sm:w-10'
+                                        : 'bg-white/20 hover:bg-white/40 w-2 sm:w-2.5'
                                         }`}
                                     title={item.type === 'video' ? 'Video' : `Image ${idx + 1}`}
                                 />
@@ -587,7 +587,7 @@ export default function ProjectDetail() {
                                 className="w-full lg:w-[380px] flex-shrink-0"
                             >
                                 <div className="lg:sticky lg:top-24">
-                                    {/* Project Reviews — same card style as ReviewsSection */}
+                                    {/* Project Reviews — Redesigned with Glassmorphism */}
                                     {(() => {
                                         const reviewsData = (content.en as any).reviews;
                                         const reviewItems: any[] = reviewsData?.items || [];
@@ -596,24 +596,45 @@ export default function ProjectDetail() {
                                         if (projectReviews.length === 0) return null;
                                         return (
                                             <div className="mb-2">
-                                                <h2 className="font-display text-lg font-bold text-foreground mb-4">Reviews</h2>
-                                                <div className="flex flex-col gap-3">
+                                                <div className="flex items-center gap-2 mb-6">
+                                                    <div className="w-8 h-1 bg-primary rounded-full" />
+                                                    <h2 className="font-display text-xl font-bold text-foreground">Client Reviews</h2>
+                                                </div>
+                                                <div className="flex flex-col gap-4">
                                                     {projectReviews.map((review: any, ri: number) => (
-                                                        <div key={ri} className="rounded-xl bg-card border border-border p-4 flex flex-col transition-all duration-300 hover:bg-muted/50">
+                                                        <motion.div 
+                                                            key={ri}
+                                                            initial={{ opacity: 0, y: 10 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            transition={{ delay: 0.1 * ri }}
+                                                            className="relative group p-5 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md transition-all duration-500 hover:bg-white/[0.06] hover:border-primary/30 overflow-hidden"
+                                                        >
+                                                            {/* Background Glow */}
+                                                            <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                                                            
                                                             {/* Top row: Stars */}
-                                                            <div className="flex gap-0.5 mb-2.5">
+                                                            <div className="flex gap-1 mb-4">
                                                                 {Array.from({ length: 5 }).map((_, si) => (
-                                                                    <Star key={si} className={`w-3.5 h-3.5 ${si < (review.rating || 5) ? 'text-amber-400 fill-amber-400' : 'text-white/10'}`} />
+                                                                    <Star key={si} className={`w-3.5 h-3.5 ${si < (review.rating || 5) ? 'text-primary fill-primary' : 'text-white/10'}`} />
                                                                 ))}
                                                             </div>
-                                                            <p className="text-muted-foreground text-xs leading-relaxed mb-3 line-clamp-4">
-                                                                "{review.text}"
-                                                            </p>
-                                                            <div className="pt-2.5 border-t border-white/[0.06]">
-                                                                <span className="font-bold text-foreground text-xs block">{review.name}</span>
-                                                                <span className="text-muted-foreground text-[11px]">{review.role}</span>
+
+                                                            <blockquote className="relative">
+                                                                <p className="text-muted-foreground text-sm leading-relaxed mb-5 italic font-medium">
+                                                                    "{review.text}"
+                                                                </p>
+                                                            </blockquote>
+
+                                                            <div className="flex items-center gap-3 pt-4 border-t border-white/[0.05]">
+                                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+                                                                    {review.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <span className="font-bold text-foreground text-sm block truncate">{review.name}</span>
+                                                                    <span className="text-primary/70 text-[11px] font-medium uppercase tracking-wider">{review.role}</span>
+                                                                </div>
                                                             </div>
-                                                        </div>
+                                                        </motion.div>
                                                     ))}
                                                 </div>
                                             </div>

@@ -11,6 +11,7 @@ import {
   Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, 
   Eye, Palette, Brain, Wrench, LucideIcon
 } from 'lucide-react';
+import { NextSectionButton } from './NextSectionButton';
 
 const BackgroundBlobs = () => (
   <div className="absolute inset-0 overflow-hidden -z-10 pointer-events-none">
@@ -481,6 +482,7 @@ export function Home() {
         </div>
       </div>
 
+      <NextSectionButton nextRoute="/services" variant="dark" />
     </section>
   );
 }

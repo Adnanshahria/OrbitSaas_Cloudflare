@@ -4,6 +4,7 @@ import { useLang } from '@/contexts/LanguageContext';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Search, PenTool, Code, CheckCircle2, Truck } from 'lucide-react';
+import { NextSectionButton } from './NextSectionButton';
 
 function ProcessCard({ card, icon: Icon, isPeak, node, isDelivery }: any) {
   const x = useMotionValue(0);
@@ -133,7 +134,39 @@ export function ProcessSection() {
     setHasMounted(true);
     setStep(0);
     mountTime.current = Date.now();
-  }, []);
+
+    // Auto-scroll logic: progress steps automatically after 2.5s delay
+    let autoScrollInterval: ReturnType<typeof setInterval>;
+    const delayTimeout = setTimeout(() => {
+      autoScrollInterval = setInterval(() => {
+        setStep(prev => {
+          if (prev < sortedSteps.length) {
+            return prev + 1;
+          }
+          clearInterval(autoScrollInterval);
+          return prev;
+        });
+      }, 1500); // 1.5s per step
+    }, 2500); // 2.5s initial delay
+
+    // Interaction handler to cancel auto-scroll
+    const cancelAutoScroll = () => {
+      clearTimeout(delayTimeout);
+      if (autoScrollInterval) clearInterval(autoScrollInterval);
+    };
+
+    window.addEventListener('wheel', cancelAutoScroll, { once: true });
+    window.addEventListener('touchstart', cancelAutoScroll, { once: true });
+    window.addEventListener('keydown', cancelAutoScroll, { once: true });
+
+    return () => {
+      clearTimeout(delayTimeout);
+      if (autoScrollInterval) clearInterval(autoScrollInterval);
+      window.removeEventListener('wheel', cancelAutoScroll);
+      window.removeEventListener('touchstart', cancelAutoScroll);
+      window.removeEventListener('keydown', cancelAutoScroll);
+    };
+  }, [sortedSteps.length]);
 
   // Sync ref with state
   useEffect(() => {
@@ -261,25 +294,25 @@ export function ProcessSection() {
     <section
       ref={sectionRef}
       id="process"
-      className="section-dark relative overflow-hidden min-h-[100dvh] flex flex-col items-center pt-6 pb-12 lg:pt-4"
+      className="section-dark relative overflow-hidden min-h-[100dvh] flex flex-col items-center justify-center pt-2 lg:pt-0"
     >
       <div className="absolute top-0 left-1/4 w-full h-1/2 bg-[#00ff80]/5 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-[#00ff80]/5 blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="section-container relative z-10 w-full flex flex-col items-center px-4 h-full">
+      <div className="section-container relative z-10 w-full flex flex-col justify-center items-center px-4 h-full" style={{ paddingTop: '24px', paddingBottom: '16px' }}>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center mb-6 lg:mb-8 text-center"
+          className="flex flex-col items-center mb-2 lg:mb-16 lg:-mt-16 text-center shrink-0"
         >
-          <h2 className="section-heading text-white max-w-5xl tracking-tighter leading-[1] text-[clamp(2rem,5vw,3.5rem)]">
+          <h2 className="section-heading text-white max-w-5xl tracking-tighter leading-[1] text-[clamp(2rem,4vw,3.5rem)]">
             {t?.title || 'How We Transform Your Vision'}
           </h2>
         </motion.div>
 
         {/* Desktop Layout (lg+) */}
-        <div className="hidden lg:block relative w-full h-[55vh] max-h-[500px] max-w-7xl">
+        <div className="hidden lg:block relative w-full h-[45vh] max-h-[420px] max-w-7xl shrink-0 mt-4 mb-2">
           <div className="absolute inset-0 pointer-events-none overflow-visible">
             <svg viewBox="0 0 1000 400" preserveAspectRatio="none" className="w-full h-full" fill="none">
               <defs>
@@ -541,21 +574,15 @@ export function ProcessSection() {
                   className="absolute w-72 xs:w-80"
                   style={{ filter: blur !== "0px" ? `blur(${blur})` : "none" }}
                 >
-                  {/* Outer Glow & Border */}
                   <div className="relative p-[1.5px] rounded-[1.8rem] bg-gradient-to-br from-[var(--accent)]/60 via-[var(--accent)]/20 to-transparent shadow-[0_0_30px_rgba(var(--accent-rgb),0.1)] backdrop-blur-3xl overflow-hidden">
-                    {/* Inner Glass Container */}
                     <div className="relative bg-[var(--bg-dark)]/95 rounded-[1.75rem] p-7 text-center flex flex-col items-center border border-white/5">
-                      {/* Decorative Corner Glow */}
                       <div className="absolute -top-10 -right-10 w-24 h-24 bg-[var(--accent)]/10 blur-3xl rounded-full" />
-
-                      {/* Icon Container - More defined */}
                       <div className="relative mb-5">
                         <div className="absolute inset-0 bg-[var(--accent)]/20 blur-xl rounded-full opacity-50" />
                         <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--accent)]/20 to-transparent flex items-center justify-center text-[var(--accent)] border border-[var(--accent)]/30 shadow-[inset_0_0_15px_rgba(var(--accent-rgb),0.1)]">
                           <Icon size={28} />
                         </div>
                       </div>
-
                       <div className="space-y-1 mb-2">
                         <span className="text-[var(--accent)] font-display font-black text-[10px] tracking-[0.3em] uppercase opacity-70 block">
                           Step {card.id}
@@ -564,12 +591,9 @@ export function ProcessSection() {
                           {card.title}
                         </h3>
                       </div>
-
                       <p className="text-xs leading-relaxed opacity-70 px-1 font-medium" style={{ color: 'var(--text-secondary)' }}>
                         {card.desc}
                       </p>
-
-                      {/* Bottom Accent Line */}
                       <div className="mt-6 w-8 h-[2px] bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent" />
                     </div>
                   </div>
@@ -578,23 +602,6 @@ export function ProcessSection() {
             })}
           </AnimatePresence>
         </div>
-
-        {/* Universal Status Indicator */}
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="absolute bottom-8 lg:bottom-[-80px] left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 pointer-events-none"
-        >
-          <div className="relative w-[1px] h-10 lg:h-12 overflow-hidden">
-            <div className="absolute inset-0 bg-[var(--accent)] opacity-20" />
-            <motion.div
-              animate={{ y: [0, 48] }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-              className="absolute top-0 left-0 w-full h-1/3 bg-[var(--accent)]"
-            />
-          </div>
-          <span className="text-[var(--accent)] text-[9px] md:text-[10px] tracking-[0.4em] font-black uppercase">
-            {step === sortedSteps.length ? "Proceed" : step === 0 ? "Explore" : "Scroll"}
-          </span>
-        </motion.div>
       </div>
     </section>
   );

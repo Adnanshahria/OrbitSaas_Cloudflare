@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { ArrowRight, Facebook, Instagram, Linkedin, Send, Twitter, Youtube, Github, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import orbitLogo from '@/assets/orbit-logo.png';
 
 // Social icons map using Lucide components
 const socialIconComponents: Record<string, any> = {
@@ -65,20 +66,32 @@ export function OrbitFooter() {
   ];
 
   return (
-    <footer className="section-dark" style={{ borderTop: '1px solid rgba(212,160,23,0.08)' }}>
-      <div className="section-container !py-16">
+    <footer className="relative overflow-hidden bg-[#060608]" style={{ borderTop: '1px solid rgba(16, 185, 129, 0.1)' }}>
+      {/* Premium Background Elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] opacity-20" />
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-emerald-600/5 rounded-full blur-[100px] opacity-10" />
+        {/* Grain Overlay */}
+        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")' }} />
+      </div>
+
+      <div className="section-container relative z-10 !py-20">
         <div className="grid md:grid-cols-4 gap-12 mb-12">
           {/* Brand */}
           <div className="md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs"
-                style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-deep))' }}
-              >
-                O
+            <Link to="/" className="flex items-center gap-3 mb-6 group">
+              <div className="relative">
+                <img
+                  src={orbitLogo}
+                  alt="Orbit"
+                  className="w-10 h-10 object-contain transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <span className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>{t?.brandName || 'ORBIT SaaS'}</span>
-            </div>
+              <span className="text-2xl font-bold text-white tracking-tight" style={{ fontFamily: "'Abril Fatface', serif" }}>
+                {t?.brandName || 'Orbit'}
+              </span>
+            </Link>
             <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
               {t?.tagline || 'Full-Service Software & AI Agency'}
             </p>
@@ -112,14 +125,13 @@ export function OrbitFooter() {
 
           {/* Navigation links */}
           <div>
-            <h4 className="text-sm font-semibold text-white mb-4" style={{ fontFamily: 'var(--font-display)' }}>Navigation</h4>
-            <ul className="space-y-2">
+            <h4 className="text-xs font-black text-primary uppercase tracking-[0.3em] mb-6">Navigation</h4>
+            <ul className="space-y-3">
               {footerNavLinks.map((link, i) => (
                 <li key={i}>
                   <a
                     href={link.href}
-                    className="text-sm transition-colors hover:text-[var(--accent-luminous)] cursor-pointer"
-                    style={{ color: 'var(--text-secondary)' }}
+                    className="text-sm font-medium text-white/50 transition-all duration-300 hover:text-primary hover:translate-x-1 inline-block"
                   >
                     {link.label}
                   </a>
@@ -130,16 +142,15 @@ export function OrbitFooter() {
 
           {/* Important links */}
           <div>
-            <h4 className="text-sm font-semibold text-white mb-4" style={{ fontFamily: 'var(--font-display)' }}>{links?.title || 'Links'}</h4>
-            <ul className="space-y-2">
+            <h4 className="text-xs font-black text-primary uppercase tracking-[0.3em] mb-6">{links?.title || 'Links'}</h4>
+            <ul className="space-y-3">
               {(links?.items || []).map((link: any, i: number) => (
                 <li key={i}>
                   <a
                     href={link.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm transition-colors hover:text-[var(--accent-luminous)] cursor-pointer"
-                    style={{ color: 'var(--text-secondary)' }}
+                    className="text-sm font-medium text-white/50 transition-all duration-300 hover:text-primary hover:translate-x-1 inline-block"
                   >
                     {link.title}
                   </a>
@@ -148,8 +159,7 @@ export function OrbitFooter() {
               <li>
                 <Link
                   to="/privacy"
-                  className="text-sm transition-colors hover:text-[var(--accent-luminous)] cursor-pointer"
-                  style={{ color: 'var(--text-secondary)' }}
+                  className="text-sm font-medium text-white/50 transition-all duration-300 hover:text-primary hover:translate-x-1 inline-block"
                 >
                   Privacy Policy
                 </Link>
@@ -157,8 +167,7 @@ export function OrbitFooter() {
               <li>
                 <Link
                   to="/terms"
-                  className="text-sm transition-colors hover:text-[var(--accent-luminous)] cursor-pointer"
-                  style={{ color: 'var(--text-secondary)' }}
+                  className="text-sm font-medium text-white/50 transition-all duration-300 hover:text-primary hover:translate-x-1 inline-block"
                 >
                   Terms of Service
                 </Link>
@@ -168,34 +177,25 @@ export function OrbitFooter() {
 
           {/* Newsletter */}
           <div>
-            <h4 className="text-sm font-semibold text-white mb-4" style={{ fontFamily: 'var(--font-display)' }}>Stay Updated</h4>
-            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+            <h4 className="text-xs font-black text-primary uppercase tracking-[0.3em] mb-6">Stay Updated</h4>
+            <p className="text-sm text-white/50 mb-6 leading-relaxed">
               Subscribe to discover the latest updates, news, and features.
             </p>
-            <form onSubmit={handleSubscribe} className="flex gap-2">
+            <form onSubmit={handleSubscribe} className="relative">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="flex-1 px-4 py-2.5 rounded-full text-sm outline-none transition-all focus:ring-2 focus:ring-[rgba(212,160,23,0.30)] focus:border-[rgba(212,160,23,0.25)]"
-                style={{
-                  background: 'var(--card-bg)',
-                  border: '1px solid var(--card-border)',
-                  color: 'var(--text-primary)',
-                }}
+                className="w-full px-6 py-4 rounded-2xl text-sm bg-white/5 border border-white/10 text-white outline-none focus:border-primary/50 transition-all pr-14"
                 required
               />
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all cursor-pointer hover:shadow-[0_0_20px_rgba(212,160,23,0.3)]"
-                style={{
-                  background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
-                  color: '#fff',
-                }}
+                className="absolute right-2 top-2 bottom-2 w-10 h-10 rounded-xl flex items-center justify-center transition-all bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20"
               >
-                <ArrowRight size={16} />
+                <ArrowRight size={18} />
               </button>
             </form>
           </div>

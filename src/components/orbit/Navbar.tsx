@@ -113,21 +113,34 @@ export function Navbar() {
             <Link
               to="/"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-3 group"
+              className="flex items-center gap-3 group px-4 py-2 rounded-full transition-all duration-500 hover:bg-white/5"
             >
               <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <img
                   src={orbitLogo}
                   alt="Orbit"
-                  className="h-9 sm:h-10 w-auto object-contain transition-transform duration-500 group-hover:scale-110"
+                  className="h-9 sm:h-10 w-auto object-contain relative z-10 transition-transform duration-700 group-hover:scale-110 group-hover:rotate-[5deg]"
                 />
-                <div className="absolute -inset-2 bg-gradient-to-tr from-green-400 to-emerald-600 rounded-full blur-xl opacity-0 group-hover:opacity-20 transition-opacity duration-700" />
+                {/* Premium Shimmer Effect */}
+                <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden rounded-full">
+                  <motion.div 
+                    animate={{ x: ['-200%', '200%'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent w-1/2 -skew-x-12"
+                  />
+                </div>
               </div>
               <span 
-                className="font-normal tracking-[0.1em] text-xl sm:text-2xl transition-colors duration-500"
+                className="font-normal tracking-[0.1em] text-xl sm:text-2xl transition-all duration-500 group-hover:tracking-[0.15em] relative"
                 style={{ color: theme.text, fontFamily: "'Abril Fatface', serif" }}
               >
                 Orbit
+                <motion.div 
+                  initial={{ width: 0 }}
+                  whileHover={{ width: '100%' }}
+                  className="absolute -bottom-1 left-0 h-[1.5px] bg-primary/50 rounded-full"
+                />
               </span>
             </Link>
 
