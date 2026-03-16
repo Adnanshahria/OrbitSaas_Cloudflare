@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Cpu } from 'lucide-react';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
-import { NextSectionButton } from './NextSectionButton';
+
 
 /* ─── tech logo URLs (served from public/images/) ─── */
 const TECH_LOGOS = [

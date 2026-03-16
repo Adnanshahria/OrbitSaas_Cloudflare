@@ -4,7 +4,7 @@ import { useLang } from '@/contexts/LanguageContext';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Search, PenTool, Code, CheckCircle2, Truck } from 'lucide-react';
-import { NextSectionButton } from './NextSectionButton';
+
 
 function ProcessCard({ card, icon: Icon, isPeak, node, isDelivery }: any) {
   const x = useMotionValue(0);

@@ -4,8 +4,8 @@ import { ImageWithSkeleton } from './ImageWithSkeleton';
 import { useLang } from '@/contexts/LanguageContext';
 import { useContent } from '@/contexts/ContentContext';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
 import { ArrowUpRight, FolderOpen } from 'lucide-react';
+import { ProjectDetailModal } from './ProjectDetailModal';
 
 // --- Types ---
 interface ProjectItem {
@@ -23,9 +23,8 @@ interface ProjectItem {
     tags?: string[];
 }
 
-// --- Cinematic Project Card (Light Theme) ---
-function CinematicCard({ item, i }: { item: ProjectItem; i: number }) {
-    const routeId = item._id || item._originalIndex;
+// --- Cinematic Project Card ---
+function CinematicCard({ item, i, onClick }: { item: ProjectItem; i: number; onClick: () => void }) {
     const coverImage = item.images?.[0] || item.image || '/placeholder.png';
     const cats: string[] = item.categories || (item.category ? [item.category] : []);
     const ref = useRef<HTMLDivElement>(null);
@@ -82,11 +81,11 @@ function CinematicCard({ item, i }: { item: ProjectItem; i: number }) {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <Link 
-                to={`/project/${routeId}`} 
-                className="block relative h-full flex flex-col overflow-hidden rounded-2xl bg-white border border-[#22C55E]/30 transition-all duration-700 hover:border-[#FACC15]/60 hover:shadow-[0_10px_40px_rgba(34,197,94,0.06)]"
+            <button 
+                onClick={onClick}
+                className="w-full block relative h-full flex flex-col overflow-hidden text-left rounded-2xl bg-white border border-[#22C55E]/30 transition-all duration-700 hover:border-[#FACC15]/60 hover:shadow-[0_10px_40px_rgba(34,197,94,0.06)] cursor-pointer"
             >
-                {/* Cover Photo — Full 16:9 */}
+                {/* Cover Photo */}
                 <div className="relative aspect-video overflow-hidden group/img">
                     <AnimatePresence mode="popLayout">
                         <motion.div
@@ -152,51 +151,64 @@ function CinematicCard({ item, i }: { item: ProjectItem; i: number }) {
 
                 {/* Hover Border Glow (Golden) */}
                 <div className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 shadow-[inset_0_0_0_1.5px_#FACC15]" />
-            </Link>
+            </button>
         </motion.div>
     );
 }
 
-// --- Many More Card ---
-function ManyMoreCard({ i }: { i: number }) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: (i % 3) * 0.12 }}
-            className="group relative h-full"
-        >
-            <div className="h-full min-h-[300px] rounded-2xl bg-white border border-dashed border-[#22C55E]/30 flex flex-col items-center justify-center p-8 text-center transition-all duration-700 hover:bg-[#FDFBF7] hover:border-[#FACC15]/60 hover:scale-[1.01] hover:shadow-[0_10px_30px_rgba(34,197,94,0.04)]">
-                <div className="w-14 h-14 rounded-full bg-[#22C55E]/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-                    <FolderOpen className="w-6 h-6 text-[#22C55E]/40" />
-                </div>
-                <h3 className="text-sm font-bold text-gray-400 group-hover:text-[#22C55E] transition-colors uppercase tracking-[0.2em]">And Many More</h3>
-                <p className="text-[11px] text-gray-400 mt-4 max-w-[180px] leading-relaxed italic">
-                    Pushing boundaries with custom solutions tailored to visionaries.
-                </p>
-                
-                {/* Subtle Glow */}
-                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 shadow-[inset_0_0_0_1.5px_#FACC15] pointer-events-none" />
-            </div>
-        </motion.div>
-    );
-}
+const DEFAULT_CATEGORIES = ['SaaS', 'eCommerce', 'Enterprise', 'Education', 'Portfolio'];
 
 export function ProjectsSection() {
     const { lang } = useLang();
     const { content } = useContent();
+
+    const [activeCategory, setActiveCategory] = useState('All');
+    const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
     const enData = (content.en as any).projects || {};
     const bnData = (content.bn as any).projects || {};
     const enItems: any[] = Array.isArray(enData.items) ? enData.items : [];
     const bnItems: any[] = Array.isArray(bnData.items) ? bnData.items : [];
 
+    // URL Hash logic for modal (listen to hash changes)
+    useEffect(() => {
+        const handleHashChange = () => {
+            const hash = window.location.hash;
+            if (hash.startsWith('#project-')) {
+                setSelectedProjectId(hash.replace('#project-', ''));
+            } else {
+                setSelectedProjectId(null);
+            }
+        };
+
+        // Check on mount
+        handleHashChange();
+
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
+    }, []);
+
+    const openModal = (id: string) => {
+        window.location.hash = `#project-${id}`;
+    };
+
+    const closeModal = () => {
+        // Remove hash without scrolling to top
+        history.pushState('', document.title, window.location.pathname + window.location.search);
+        setSelectedProjectId(null);
+    };
+
     const displayItems = enItems.map((enItem, i) => {
         const bnItem = bnItems[i];
         const showBn = lang === 'bn' && bnItem && bnItem.title && bnItem.title.trim() !== '';
         return { ...(showBn ? bnItem : enItem), _originalIndex: i, _id: enItem.id || '' };
-    }).sort((a, b) => (a.order ?? a._originalIndex) - (b.order ?? b._originalIndex));
+    });
+
+    const items = [...displayItems]
+        .sort((a, b) => (a.order ?? a._originalIndex) - (b.order ?? b._originalIndex))
+        .filter(item => activeCategory === 'All' || (item.categories || [item.category]).includes(activeCategory));
+
+    const ALL_CATEGORIES = ['All', ...(enData.categories || DEFAULT_CATEGORIES)];
 
     return (
         <section id="projects" className="py-16 sm:py-20 bg-[#FDFBF7] relative overflow-hidden">
@@ -222,11 +234,11 @@ export function ProjectsSection() {
                     >
                         <div className="w-8 h-[2px] bg-[#22C55E]" />
                         <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#22C55E]">
-                            Featured Portfolio
+                            Creative Archive
                         </span>
                     </motion.div>
 
-                    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+                    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                         <motion.h2
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -235,32 +247,73 @@ export function ProjectsSection() {
                             className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none text-gray-900"
                             style={{ fontFamily: "'Outfit', sans-serif" }}
                         >
-                            Our <span className="text-gray-300">Creative</span><br />
-                            Universe
+                            All <span className="text-gray-300">Projects</span>
                         </motion.h2>
 
-                        <motion.p
-                            initial={{ opacity: 0, y: 15 }}
-                            whileInView={{ opacity: 1, y: 0 }}
+                        {/* Minimal Filter */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.8, delay: 0.2 }}
-                            className="max-w-md text-gray-500 text-base leading-relaxed mb-1"
+                            className="flex flex-wrap gap-2 lg:max-w-md"
                         >
-                            Crafting high-performance digital experiences that merge cutting-edge technology with cinematic design.
-                        </motion.p>
+                            {ALL_CATEGORIES.map((cat) => {
+                                const isActive = activeCategory === cat;
+                                return (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setActiveCategory(cat)}
+                                        className={`relative px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all duration-300 border ${
+                                            isActive
+                                                ? 'bg-[#22C55E]/10 border-[#22C55E]/20 text-[#22C55E]'
+                                                : 'bg-white border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        {cat}
+                                    </button>
+                                );
+                            })}
+                        </motion.div>
                     </div>
                 </div>
 
-                {/* Projects Grid — All Projects */}
+                {/* Projects Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
-                    {displayItems.map((item, i) => (
-                        <CinematicCard key={item._id || item._originalIndex} item={item} i={i} />
-                    ))}
-                    {/* The "Many More" Card */}
-                    <ManyMoreCard i={displayItems.length} />
+                    <AnimatePresence mode="popLayout">
+                        {items.map((item, i) => (
+                            <motion.div
+                                key={item._id || item._originalIndex}
+                                layout
+                                initial={{ opacity: 0, scale: 0.95, y: 40 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                transition={{ duration: 0.5 }}
+                            >
+                                <CinematicCard 
+                                    item={item} 
+                                    i={i} 
+                                    onClick={() => openModal(item._id || String(item._originalIndex))} 
+                                />
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 </div>
-
+                
+                {items.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-24 text-center">
+                        <span className="text-4xl font-extrabold tracking-tight text-gray-200" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                            No Projects
+                        </span>
+                        <p className="text-sm text-gray-400 mt-2">No projects found in this category.</p>
+                    </div>
+                )}
             </div>
+
+            {/* Modal Portal */}
+            <ProjectDetailModal 
+                projectId={selectedProjectId} 
+                onClose={closeModal} 
+            />
         </section>
     );
 }

@@ -40,7 +40,7 @@ import {
   Wrench
 } from 'lucide-react';
 import { RichText } from '@/components/ui/RichText';
-import { NextSectionButton } from './NextSectionButton';
+
 
 const ICONS = [BarChart3, Layers, TrendingUp, Brain];
 const BENEFIT_ICONS = [Globe, ShieldCheck, Headset];
@@ -1050,7 +1050,7 @@ export function WhyUsSection() {
           </div>
         </div>
 
-        <NextSectionButton nextRoute="/proj" variant="dark" />
+
       </div>
     </section>
   );

@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 import { HelmetProvider } from 'react-helmet-async';
 import { SEOHead } from './components/seo/SEOHead';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { PageCurlTransition } from './components/orbit/PageCurlTransition';
 
 // Lazy load public sections
 const StatsSection = lazy(() => import('./components/orbit/StatsSection').then(m => ({ default: m.StatsSection })));
@@ -29,8 +28,6 @@ const Chatbot = lazy(() => import('./components/orbit/Chatbot').then(m => ({ def
 const LeadMagnetPopup = lazy(() => import('./components/orbit/LeadMagnetPopup').then(m => ({ default: m.LeadMagnetPopup })));
 
 // Lazy load public pages
-const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
-const ProjectsPage = lazy(() => import('./pages/ProjectsPage'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 
@@ -128,24 +125,10 @@ function VisitorGateway({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function PublicPageContent({ index }: { index: number }) {
-  switch (index) {
-    case 0: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Home /></div>;
-    case 1: return <div className="snap-page-light" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ServicesSection /></Suspense></div>;
-    case 2: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ProcessSection /></Suspense></div>;
-    case 3: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><TechStackSection /></Suspense></div>;
-    case 4: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><WhyUsSection /></Suspense></div>;
-    case 5: return <div className="snap-page-light" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ProjectsSection /></Suspense></div>;
-    case 6: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ReviewsSection /></Suspense></div>;
-    case 7: return <div className="snap-page-light" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><LeadershipSection /></Suspense></div>;
-    case 8: return <div className="snap-page-dark" style={{ width: '100%', minHeight: '100%' }}><Suspense fallback={null}><ContactSection /><div className="hidden md:block"><OrbitFooter /></div></Suspense></div>;
-    default: return null;
-  }
-}
-
 function PublicSite() {
   const [showChatbot, setShowChatbot] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     let sessionId = localStorage.getItem('orbit_visitor_session_id');
@@ -163,28 +146,40 @@ function PublicSite() {
 
   useEffect(() => {
     setIsLoaded(true);
-    const preloadSections = () => {
-      Promise.all([
-        import('./components/orbit/StatsSection'),
-        import('./components/orbit/ServicesSection'),
-        import('./components/orbit/ProcessSection'),
-        import('./components/orbit/TechStackSection'),
-        import('./components/orbit/WhyUsSection'),
-        import('./components/orbit/ProjectsSection'),
-        import('./components/orbit/ReviewsSection'),
-        import('./components/orbit/LeadershipSection'),
-        import('./components/orbit/ContactSection'),
-        import('./components/orbit/OrbitFooter')
-      ]).catch(() => {});
-    };
-    // Start preloading sooner to catch the first transition
-    setTimeout(preloadSections, 200); 
-
     // Signal pre-renderer
     setTimeout(() => {
       document.dispatchEvent(new Event('custom-render-trigger'));
     }, 1500); 
   }, []);
+
+  // Handle direct navigation to routes via anchor scrolling
+  useEffect(() => {
+    if (!isLoaded) return;
+    
+    // Map existing paths to section IDs
+    const routeToId: Record<string, string> = {
+      '/services': 'services',
+      '/process': 'process',
+      '/techstack': 'techstack',
+      '/why-us': 'why-us',
+      '/proj': 'projects',
+      '/reviews': 'reviews',
+      '/leadership': 'leadership',
+      '/contact': 'contact'
+    };
+    
+    const targetId = routeToId[location.pathname];
+    if (targetId) {
+      setTimeout(() => {
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 300); // slight delay to ensure full render
+    } else if (location.pathname === '/') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location.pathname, isLoaded]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -193,10 +188,16 @@ function PublicSite() {
   }, [isLoaded]);
 
   return (
-    <>
-      <PageCurlTransition>
-        {(index) => <PublicPageContent index={index} />}
-      </PageCurlTransition>
+    <div className="flex flex-col w-full min-h-screen">
+      <div id="hero" className="w-full"><Home /></div>
+      <div id="services" className="w-full"><Suspense fallback={null}><ServicesSection /></Suspense></div>
+      <div id="process" className="w-full"><Suspense fallback={null}><ProcessSection /></Suspense></div>
+      <div id="techstack" className="w-full"><Suspense fallback={null}><TechStackSection /></Suspense></div>
+      <div id="why-us" className="w-full"><Suspense fallback={null}><WhyUsSection /></Suspense></div>
+      <div id="projects" className="w-full"><Suspense fallback={null}><ProjectsSection /></Suspense></div>
+      <div id="reviews" className="w-full"><Suspense fallback={null}><ReviewsSection /></Suspense></div>
+      <div id="leadership" className="w-full"><Suspense fallback={null}><LeadershipSection /></Suspense></div>
+      <div id="contact" className="w-full"><Suspense fallback={null}><ContactSection /><div className="hidden md:block"><OrbitFooter /></div></Suspense></div>
 
       {isLoaded && (
         <Suspense fallback={null}>
@@ -208,7 +209,7 @@ function PublicSite() {
           <Chatbot />
         </Suspense>
       )}
-    </>
+    </div>
   );
 }
 
@@ -259,18 +260,6 @@ export default function App() {
                       <Route key={path} path={path} element={null} />
                     ))}
                   </Route>
-                  <Route path="/project" element={
-                    <VisitorGateway>
-                      <StructuredData />
-                      <ProjectsPage />
-                    </VisitorGateway>
-                  } />
-                  <Route path="/project/:id" element={
-                    <VisitorGateway>
-                      <StructuredData />
-                      <ProjectDetail />
-                    </VisitorGateway>
-                  } />
                   <Route path="/privacy" element={
                     <VisitorGateway>
                       <StructuredData />

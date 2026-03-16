@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { RichText } from '@/components/ui/RichText';
-import { NextSectionButton } from './NextSectionButton';
+
 
 
 const SERVICE_ICONS = [MonitorSmartphone, BotMessageSquare, Cpu, Smartphone, ShoppingCart, Globe];
@@ -1019,7 +1019,7 @@ export function ServicesSection({ embedded }: { embedded?: boolean }) {
             </span>
           </button>
 
-          <NextSectionButton nextRoute="/process" variant="light" />
+
         </motion.div>
         
       </div>

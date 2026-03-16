@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
 import { Users, Linkedin, Twitter, Mail } from 'lucide-react';
-import { NextSectionButton } from './NextSectionButton';
+
 import { useState, useEffect, useRef } from 'react';
 
 export function LeadershipSection() {
@@ -210,7 +210,7 @@ export function LeadershipSection() {
           </div>
         )}
 
-        <NextSectionButton nextRoute="/contact" variant="light" />
+
       </div>
     </section>
   );

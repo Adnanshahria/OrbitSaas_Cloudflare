@@ -49,16 +49,45 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const location = useLocation();
-  const activeSection = PATH_TO_SECTION[location.pathname] || 'hero';
-  const isProjectRoot = location.pathname === '/project';
-  const isProjectDetail = location.pathname.startsWith('/project/') && location.pathname.length > 9;
+  const [activeSection, setActiveSection] = useState(PATH_TO_SECTION[location.pathname] || 'hero');
 
-  // Handle scroll state for subtle elevation change
+  // Handle scroll state for subtle elevation change & Scroll Spy
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+
+      // Scroll Spy Logic
+      const sections = ['hero', 'services', 'process', 'techstack', 'why-us', 'projects', 'reviews', 'leadership', 'contact'];
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const id = sections[i];
+        const element = document.getElementById(id);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          // Adjust offset as needed (150px from top)
+          if (rect.top <= 150) {
+            // Map the internal DOM ID back to our route-based activeSection identifier
+            const virtualSection = id === 'projects' ? 'project' : id === 'techstack' ? 'tech' : id;
+            if (activeSection !== virtualSection) {
+               setActiveSection(virtualSection);
+               
+               // Optionally update URL gracefully based on mapped path, avoiding reload
+               const pathRecord = Object.entries(PATH_TO_SECTION).find(([path, sec]) => sec === virtualSection && path !== '/project' && path !== '/proj');
+               if (pathRecord && window.location.pathname !== pathRecord[0]) {
+                 window.history.replaceState(null, '', pathRecord[0]);
+               }
+            }
+            break;
+          }
+        }
+      }
+    };
+    
+    // Check eagerly on mount in case they loaded halfway down
+    handleScroll();
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [activeSection]);
 
   // Sync with Chatbot state to hide navbar on mobile
   useEffect(() => {
@@ -74,22 +103,16 @@ export function Navbar() {
 
   // Theme Variables
   const theme = {
-    bg: isProjectDetail
-      ? scrolled ? 'rgba(10, 10, 12, 0.8)' : 'rgba(10, 10, 12, 0.25)'
-      : isLightMode
+    bg: isLightMode
         ? scrolled ? 'rgba(243, 239, 224, 0.95)' : 'rgba(243, 239, 224, 0.9)'
         : scrolled ? 'rgba(6, 6, 8, 0.8)' : 'rgba(10, 10, 12, 0.25)',
-    border: isProjectDetail
-      ? scrolled ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.12)'
-      : isLightMode
+    border: isLightMode
         ? 'rgba(163, 123, 16, 0.12)'
         : scrolled ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.12)',
-    text: isProjectDetail ? '#FFFFFF' : (isLightMode ? '#000000' : '#FFFFFF'),
-    textMuted: isProjectDetail ? 'rgba(255, 255, 255, 0.6)' : (isLightMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.6)'),
+    text: isLightMode ? '#000000' : '#FFFFFF',
+    textMuted: isLightMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.6)',
     accent: '#10B981', // Emerald 500
-    glass: isProjectDetail
-      ? 'backdrop-blur-[40px]'
-      : isLightMode ? 'backdrop-blur-[32px]' : 'backdrop-blur-[40px]',
+    glass: isLightMode ? 'backdrop-blur-[32px]' : 'backdrop-blur-[40px]',
     violetBorder: 'rgba(167, 139, 250, 0.3)' // Thin violet border
   };
 
@@ -147,8 +170,7 @@ export function Navbar() {
             </Link>
 
             {/* Desktop Navigation */}
-            {!isProjectDetail && (
-              <div className="hidden lg:flex items-center gap-4 xl:gap-6 transition-all duration-300">
+            <div className="hidden lg:flex items-center gap-4 xl:gap-6 transition-all duration-300">
                 {NAV_SECTIONS.filter(s => s.path !== '/').map((item) => {
                   const sectionId = PATH_TO_SECTION[item.path];
                   const visibility = t?.nav?.visibility?.[sectionId] !== false;
@@ -183,9 +205,20 @@ export function Navbar() {
                   }
 
                   return (
-                    <Link
+                    <button
                       key={item.path}
-                      to={customUrl || item.path}
+                      onClick={() => {
+                        const targetId = sectionId === 'hero' ? 'hero' : sectionId === 'project' ? 'projects' : sectionId;
+                        const el = document.getElementById(targetId);
+                        if (el) {
+                          el.scrollIntoView({ behavior: 'smooth' });
+                          // Optionally update URL without navigating
+                          window.history.pushState(null, '', customUrl || item.path);
+                        } else {
+                          // Fallback if somehow not on the homepage yet
+                          window.location.href = customUrl || item.path;
+                        }
+                      }}
                       className="relative flex items-center justify-center z-10 px-3 py-2 transition-all duration-300"
                     >
                       {isActive && (
@@ -225,60 +258,13 @@ export function Navbar() {
                           label
                         )}
                       </motion.span>
-                    </Link>
+                    </button>
                   );
                 })}
               </div>
-            )}
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-2 sm:gap-4">
-              {/* Project Root Back Button */}
-              {isProjectRoot && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="hidden lg:flex"
-                >
-                  <Link
-                    to="/"
-                    className="group relative px-5 py-2 flex items-center gap-3 overflow-hidden rounded-full border border-emerald-500/30 bg-emerald-500/5 backdrop-blur-xl transition-all duration-500 hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]"
-                  >
-                    <ArrowLeft className="w-3.5 h-3.5 text-emerald-500 transition-transform duration-500 group-hover:-translate-x-1" />
-                    <span
-                      className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-800"
-                      style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
-                      Back to Orbit
-                    </span>
-                  </Link>
-                </motion.div>
-              )}
-
-              {/* Project Detail Back Button */}
-              {isProjectDetail && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="hidden lg:flex"
-                >
-                  <Link
-                    to="/project"
-                    className="group relative px-5 py-2 flex items-center gap-3 overflow-hidden rounded-full border border-emerald-500/30 bg-emerald-500/5 backdrop-blur-xl transition-all duration-500 hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]"
-                  >
-                    <ArrowLeft className="w-3 h-3 text-emerald-500 transition-transform duration-500 group-hover:-translate-x-1" />
-                    <span
-                      className="text-[9px] font-black uppercase tracking-[0.2em] text-white"
-                      style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
-                      View All Projects
-                    </span>
-                    {/* Animated Shimmer Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                  </Link>
-                </motion.div>
-              )}
-
               {/* Language Switcher - Premium Toggle */}
               <button
                 onClick={() => toggleLang()}
@@ -313,9 +299,16 @@ export function Navbar() {
                   )}
                 </AnimatePresence>
 
-                {/* Standalone Call Icon */}
-                <Link
-                  to="/contact"
+                <button
+                  onClick={() => {
+                    const el = document.getElementById('contact');
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth' });
+                      window.history.pushState(null, '', '/contact');
+                    } else {
+                      window.location.href = '/contact';
+                    }
+                  }}
                   className="group relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border backdrop-blur-md transition-all duration-500 hover:text-white"
                 >
                   <style>{`
@@ -360,7 +353,7 @@ export function Navbar() {
 
                   {/* Subtle inner wiggle on hover */}
                   <WhatsAppIcon className="relative z-10 w-4 h-4 sm:w-[18px] sm:h-[18px] transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12 whatsapp-theme-anim" />
-                </Link>
+                </button>
               </div>
 
               {/* Mobile Burger - Custom Animated Button */}
@@ -443,10 +436,19 @@ export function Navbar() {
                         </span>
                       </a>
                     ) : (
-                      <Link
-                        to={customUrl || item.path}
-                        onClick={() => setMobileOpen(false)}
-                        className="group flex items-baseline gap-4"
+                      <button
+                        onClick={() => {
+                          const targetId = sectionId === 'hero' ? 'hero' : sectionId === 'project' ? 'projects' : sectionId;
+                          const el = document.getElementById(targetId);
+                          if (el) {
+                            el.scrollIntoView({ behavior: 'smooth' });
+                            window.history.pushState(null, '', customUrl || item.path);
+                          } else {
+                            window.location.href = customUrl || item.path;
+                          }
+                          setMobileOpen(false);
+                        }}
+                        className="group flex items-baseline gap-4 w-full text-left"
                       >
                         <span className="text-xs font-black text-emerald-500/40 tabular-nums">0{i + 1}</span>
                         <span
@@ -458,7 +460,7 @@ export function Navbar() {
                         >
                           {label}
                         </span>
-                      </Link>
+                      </button>
                     )}
                   </motion.div>
                 );
