@@ -1,12 +1,12 @@
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, X, ArrowRight, Star } from 'lucide-react';
+import { ArrowLeft, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, X, ArrowRight, Star, ArrowUpRight } from 'lucide-react';
 import { useLang } from '@/contexts/LanguageContext';
 import { useContent } from '@/contexts/ContentContext';
 import { Navbar } from '@/components/orbit/Navbar';
 import { OrbitFooter } from '@/components/orbit/OrbitFooter';
 import { Chatbot } from '@/components/orbit/Chatbot';
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ensureAbsoluteUrl } from '@/lib/utils';
 import DOMPurify from 'dompurify';
@@ -381,6 +381,106 @@ function CollapsibleCards({ blocks }: { blocks: string[] }) {
     );
 }
 
+// --- Helper Components ---
+function SuggestedProjectCard({ item, routeId }: { item: any, routeId: string }) {
+    const coverImage = item.images?.[0] || item.image || '/placeholder.png';
+    const itemCats: string[] = item.categories || (item.category ? [item.category] : []);
+    
+    const [isHovered, setIsHovered] = useState(false);
+
+    // Ported Hover Cycling Logic
+    const hoverImageUrls: string[] = (() => {
+        const indices: number[] = (item as any).hoverImages || [];
+        if (indices.length > 0) {
+            return indices
+                .filter((idx: number) => idx < (item.images?.length || 0))
+                .map((idx: number) => item.images![idx]);
+        }
+        return item.images && item.images.length > 1 ? [item.images[1]] : [];
+    })();
+
+    const [activeIndex, setActiveIndex] = useState(-1);
+    const [isTransitioning, setIsTransitioning] = useState(false);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const clearCycling = useCallback(() => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isHovered && hoverImageUrls.length > 0) {
+            setIsTransitioning(true);
+            const t1 = setTimeout(() => {
+                setActiveIndex(0);
+                setIsTransitioning(false);
+            }, 50);
+
+            intervalRef.current = setInterval(() => {
+                setIsTransitioning(true);
+                const t2 = setTimeout(() => {
+                    setActiveIndex((prev: number) => (prev + 1) % hoverImageUrls.length);
+                    setIsTransitioning(false);
+                }, 300);
+            }, 2000);
+
+            return () => {
+                clearCycling();
+                clearTimeout(t1);
+            };
+        } else {
+            clearCycling();
+            if (!isHovered) {
+                setIsTransitioning(true);
+                const t3 = setTimeout(() => {
+                    setActiveIndex(-1);
+                    setIsTransitioning(false);
+                }, 150);
+                return () => clearTimeout(t3);
+            }
+        }
+    }, [isHovered, hoverImageUrls.length, clearCycling]);
+
+    const currentImage = activeIndex >= 0 && activeIndex < hoverImageUrls.length
+        ? hoverImageUrls[activeIndex]
+        : coverImage;
+
+    return (
+        <Link
+            to={`/project/${routeId}`}
+            className="group flex gap-3 rounded-xl overflow-hidden border border-[#22C55E]/20 bg-white transition-all duration-500 hover:border-[#FACC15]/60 hover:bg-[#FDFBF7] hover:shadow-[0_10px_20px_rgba(34,197,94,0.03)] p-2"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            <div className="relative w-28 sm:w-36 flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-gray-100">
+                <img
+                    src={currentImage}
+                    alt={item.title}
+                    draggable="false"
+                    className={`w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110 no-browser-trigger ${isTransitioning ? 'opacity-0 scale-105' : 'opacity-100'}`}
+                />
+                <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1.2s] ease-in-out bg-gradient-to-r from-transparent via-white/[0.2] to-transparent" />
+                </div>
+                {/* Bottom Fade */}
+                <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+            </div>
+            <div className="flex flex-col justify-center py-0.5 min-w-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#22C55E] mb-1 line-clamp-1">
+                    {itemCats.slice(0, 2).join(' · ')}
+                </span>
+                <h3 className="font-display text-xs sm:text-sm font-bold text-gray-900 group-hover:text-[#22C55E] transition-colors line-clamp-2 leading-snug">
+                    {item.title}
+                </h3>
+            </div>
+            {/* Hover Border Glow (Golden) */}
+            <div className="absolute inset-0 rounded-xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 shadow-[inset_0_0_0_1.5px_#FACC15]" />
+        </Link>
+    );
+}
+
 export default function ProjectDetail() {
     const { id } = useParams<{ id: string }>();
     const { lang } = useLang();
@@ -648,28 +748,7 @@ export default function ProjectDetail() {
                                             const itemCats: string[] = item.categories || (item.category ? [item.category] : []);
 
                                             return (
-                                                <Link
-                                                    key={routeId}
-                                                    to={`/project/${routeId}`}
-                                                    className="group flex gap-3 rounded-xl overflow-hidden border border-border bg-card transition-all duration-300 hover:border-primary/50 hover:bg-muted p-2"
-                                                >
-                                                    <div className="relative w-36 flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-muted">
-                                                        <img
-                                                            src={coverImage}
-                                                            alt={item.title}
-                                                            draggable="false"
-                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 no-browser-trigger"
-                                                        />
-                                                    </div>
-                                                    <div className="flex flex-col justify-center py-0.5 min-w-0">
-                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-primary mb-1 line-clamp-1">
-                                                            {itemCats.slice(0, 2).join(' · ')}
-                                                        </span>
-                                                        <h3 className="font-display text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
-                                                            {item.title}
-                                                        </h3>
-                                                    </div>
-                                                </Link>
+                                                <SuggestedProjectCard key={routeId} item={item} routeId={routeId} />
                                             );
                                         })}
                                     </div>
