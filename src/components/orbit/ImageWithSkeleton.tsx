@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ImageWithSkeletonProps {
@@ -11,11 +11,21 @@ interface ImageWithSkeletonProps {
 export function ImageWithSkeleton({ src, alt, className, showSkeleton = true }: ImageWithSkeletonProps) {
     const [isLoaded, setIsLoaded] = useState(false);
     const [hasError, setHasError] = useState(false);
+    const imgRef = useRef<HTMLImageElement>(null);
+
+    // Initial check for cached images
+    useLayoutEffect(() => {
+        if (imgRef.current?.complete) {
+            setIsLoaded(true);
+        }
+    }, []);
 
     // Reset state when src changes
     useEffect(() => {
-        setIsLoaded(false);
-        setHasError(false);
+        if (imgRef.current?.src !== src) {
+            setIsLoaded(false);
+            setHasError(false);
+        }
     }, [src]);
 
     return (
@@ -26,8 +36,8 @@ export function ImageWithSkeleton({ src, alt, className, showSkeleton = true }: 
                     <motion.div
                         initial={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.4 }}
-                        className="absolute inset-0 z-10"
+                        transition={{ duration: 0.3 }}
+                        className="absolute inset-0 z-20"
                     >
                         {/* Shimmer Background */}
                         <div className="absolute inset-0 shimmer-skeleton" />
@@ -39,8 +49,7 @@ export function ImageWithSkeleton({ src, alt, className, showSkeleton = true }: 
                                 animate={{ width: "95%" }}
                                 transition={{ 
                                     duration: 3, 
-                                    ease: [0.22, 1, 0.36, 1],
-                                    repeat: 0 
+                                    ease: [0.22, 1, 0.36, 1]
                                 }}
                                 className="h-full bg-[#22C55E]"
                             />
@@ -66,30 +75,31 @@ export function ImageWithSkeleton({ src, alt, className, showSkeleton = true }: 
                     <motion.div
                         initial={{ width: "95%", opacity: 1 }}
                         animate={{ width: "100%", opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="absolute bottom-0 left-0 h-1 bg-[#22C55E] z-20 pointer-events-none"
+                        transition={{ duration: 0.4 }}
+                        className="absolute bottom-0 left-0 h-1 bg-[#22C55E] z-30 pointer-events-none"
                     />
                 )}
             </AnimatePresence>
 
             {/* Error State */}
             {hasError && (
-                <div className="absolute inset-0 z-10 bg-gray-50 flex items-center justify-center text-gray-400 text-[10px] uppercase font-bold">
+                <div className="absolute inset-0 z-40 bg-gray-50 flex items-center justify-center text-gray-400 text-[10px] uppercase font-bold">
                     Image failed to load
                 </div>
             )}
 
             {/* The Actual Image */}
             <img
+                ref={imgRef}
                 src={src}
                 alt={alt}
                 onLoad={() => setIsLoaded(true)}
                 onError={() => {
-                    setIsLoaded(true); // Stop showing shimmer
+                    setIsLoaded(true); 
                     setHasError(true);
                 }}
-                className={`w-full h-full transition-opacity duration-700 ${isLoaded && !hasError ? 'opacity-100' : 'opacity-0'}`}
-                style={{ objectFit: 'cover' }}
+                className={`w-full h-full transition-all duration-700 ${isLoaded && !hasError ? 'opacity-100 scale-100' : 'opacity-0 scale-[1.02]'}`}
+                style={{ objectFit: 'cover', position: 'relative', zIndex: isLoaded ? 30 : 10 }}
             />
         </div>
     );

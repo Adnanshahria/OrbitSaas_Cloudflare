@@ -90,7 +90,7 @@ function ArchiveCard({ item, i }: { item: ProjectItem; i: number }) {
         >
             <Link 
                 to={`/project/${routeId}`} 
-                className="block relative overflow-hidden rounded-2xl bg-white border border-[#22C55E]/30 transition-all duration-700 hover:border-[#FACC15]/60 hover:shadow-[0_10px_40px_rgba(34,197,94,0.06)]"
+                className="block relative h-full flex flex-col overflow-hidden rounded-2xl bg-white border border-[#22C55E]/30 transition-all duration-700 hover:border-[#FACC15]/60 hover:shadow-[0_10px_40px_rgba(34,197,94,0.06)]"
             >
                 
                 {/* Cover Photo */}
@@ -135,7 +135,7 @@ function ArchiveCard({ item, i }: { item: ProjectItem; i: number }) {
                 </div>
 
                 {/* Content */}
-                <div className="p-5 sm:p-6">
+                <div className="p-5 sm:p-6 flex-1 flex flex-col">
                     <div className="flex flex-wrap gap-2 mb-3">
                         {cats.slice(0, 2).map((cat, ci) => (
                             <span key={ci} className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] text-[#22C55E] border border-[#22C55E]/20 bg-[#22C55E]/5">
@@ -148,12 +148,12 @@ function ArchiveCard({ item, i }: { item: ProjectItem; i: number }) {
                         {item.title}
                     </h3>
 
-                    <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
-                        {item.desc?.replace(/<[^>]*>?/gm, '').substring(0, 120)}
+                    <p className="text-gray-500 text-sm leading-relaxed line-clamp-3">
+                        {item.desc?.replace(/<[^>]*>?/gm, '').substring(0, 200)}
                     </p>
 
                     {item.tags && item.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-4">
+                        <div className="flex flex-wrap gap-1.5 mt-auto pt-4">
                             {item.tags.slice(0, 4).map((tag: string) => (
                                 <span key={tag} className="text-[10px] text-gray-400 font-medium">
                                     #{tag}

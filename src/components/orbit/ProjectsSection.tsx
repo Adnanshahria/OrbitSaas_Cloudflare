@@ -84,7 +84,7 @@ function CinematicCard({ item, i }: { item: ProjectItem; i: number }) {
         >
             <Link 
                 to={`/project/${routeId}`} 
-                className="block relative overflow-hidden rounded-2xl bg-white border border-[#22C55E]/30 transition-all duration-700 hover:border-[#FACC15]/60 hover:shadow-[0_10px_40px_rgba(34,197,94,0.06)]"
+                className="block relative h-full flex flex-col overflow-hidden rounded-2xl bg-white border border-[#22C55E]/30 transition-all duration-700 hover:border-[#FACC15]/60 hover:shadow-[0_10px_40px_rgba(34,197,94,0.06)]"
             >
                 {/* Cover Photo — Full 16:9 */}
                 <div className="relative aspect-video overflow-hidden group/img">
@@ -128,7 +128,7 @@ function CinematicCard({ item, i }: { item: ProjectItem; i: number }) {
                 </div>
 
                 {/* Content Strip */}
-                <div className="p-5 sm:p-6 bg-white">
+                <div className="p-5 sm:p-6 bg-white flex-1 flex flex-col">
                     {/* Category Pills */}
                     <div className="flex flex-wrap gap-2 mb-3">
                         {cats.slice(0, 2).map((cat, ci) => (
@@ -145,8 +145,8 @@ function CinematicCard({ item, i }: { item: ProjectItem; i: number }) {
                         {item.title}
                     </h3>
 
-                    <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
-                        {item.desc?.replace(/<[^>]*>?/gm, '').substring(0, 120)}
+                    <p className="text-gray-500 text-sm leading-relaxed line-clamp-3">
+                        {item.desc?.replace(/<[^>]*>?/gm, '').substring(0, 200)}
                     </p>
                 </div>
 

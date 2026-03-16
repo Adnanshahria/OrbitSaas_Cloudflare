@@ -28,24 +28,27 @@ const SocialIcon = ({ type, url }: { type: string, url?: string }) => {
     const Icon = icons[type.toLowerCase()] || Mail;
     if (type.toLowerCase() === 'whatsapp') {
         const pulseStyles = `
-            @keyframes whatsappThemePulse-Review-Light {
+            @keyframes whatsappThemePulse-Review-Dark {
                 0%, 100% {
                     color: #22C55E;
                     border-color: rgba(34, 197, 94, 0.4);
                     background-color: rgba(34, 197, 94, 0.05);
+                    box-shadow: 0 0 15px rgba(34, 197, 94, 0.1);
                 }
                 50% {
                     color: #FACC15;
                     border-color: rgba(250, 204, 21, 0.4);
                     background-color: rgba(250, 204, 21, 0.05);
+                    box-shadow: 0 0 15px rgba(250, 204, 21, 0.1);
                 }
             }
-            .whatsapp-review-pulse-light { animation: whatsappThemePulse-Review-Light 4s ease-in-out infinite; }
-            .whatsapp-review-pulse-light:hover {
+            .whatsapp-review-pulse-dark { animation: whatsappThemePulse-Review-Dark 4s ease-in-out infinite; }
+            .whatsapp-review-pulse-dark:hover {
                  animation: NONE !important;
                  background-color: #22C55E !important;
                  border-color: #22C55E !important;
                  color: white !important;
+                 box-shadow: 0 0 20px rgba(34, 197, 94, 0.4) !important;
             }
         `;
         
@@ -57,20 +60,20 @@ const SocialIcon = ({ type, url }: { type: string, url?: string }) => {
                         href={url} 
                         target="_blank" 
                         rel="noopener noreferrer" 
-                        className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-300 whatsapp-review-pulse-light`}
+                        className={`w-7 h-7 rounded-full border flex items-center justify-center transition-all duration-300 whatsapp-review-pulse-dark`}
                     >
-                        <WhatsAppIcon className="w-3 h-3 transition-transform group-hover:scale-110" />
+                        <WhatsAppIcon className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
                     </a>
                 ) : (
-                    <div className={`w-6 h-6 rounded-full border flex items-center justify-center whatsapp-review-pulse-light opacity-50`}>
-                        <WhatsAppIcon className="w-3 h-3" />
+                    <div className={`w-7 h-7 rounded-full border flex items-center justify-center whatsapp-review-pulse-dark opacity-50`}>
+                        <WhatsAppIcon className="w-3.5 h-3.5" />
                     </div>
                 )}
             </>
         );
     }
 
-    const commonClasses = "w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-300";
+    const commonClasses = "w-7 h-7 rounded-full border flex items-center justify-center transition-all duration-300";
     
     if (url) {
         return (
@@ -78,16 +81,16 @@ const SocialIcon = ({ type, url }: { type: string, url?: string }) => {
                 href={url} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className={`${commonClasses} bg-gray-50 border-gray-100 text-gray-400 hover:text-white hover:border-[#22C55E] hover:bg-[#22C55E]`}
+                className={`${commonClasses} bg-white/[0.03] border-white/10 text-gray-400 hover:text-white hover:border-[#22C55E] hover:bg-[#22C55E]/20 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]`}
             >
-                <Icon size={12} />
+                <Icon size={14} />
             </a>
         );
     }
 
     return (
-        <div className={`${commonClasses} bg-gray-50/50 border-gray-100 text-gray-300`} title={`${type} (No link)`}>
-            <Icon size={10} />
+        <div className={`${commonClasses} bg-white/[0.01] border-white/5 text-gray-600`} title={`${type} (No link)`}>
+            <Icon size={12} />
         </div>
     );
 };
@@ -100,17 +103,22 @@ export function ReviewsSection() {
     const showSocials = reviewsData.showSocials !== false;
 
     return (
-        <section id="reviews" className="relative min-h-[100dvh] bg-[#FDFBF7] overflow-hidden py-16 sm:py-24 flex flex-col justify-center">
-            {/* High-End Background Effects */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-[#22C55E]/[0.03] blur-[120px] rounded-full" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-[#FACC15]/[0.03] blur-[120px] rounded-full" />
-                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.01] mix-blend-overlay" />
+        <section id="reviews" className="relative min-h-[100dvh] bg-[#0A0A0A] overflow-hidden py-16 sm:py-24 flex flex-col justify-center">
+            {/* Ultra Premium Atmospheric Effects */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-[#22C55E]/[0.05] blur-[150px] rounded-full mix-blend-screen" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[800px] h-[800px] bg-[#FACC15]/[0.05] blur-[150px] rounded-full mix-blend-screen" />
+                
+                {/* Subtle Cinematic Grid */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:100px_100px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_10%,transparent_100%)]" />
+                
+                {/* Noise Texture for that premium matte finish */}
+                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay" />
             </div>
 
             <div className="container relative z-10 px-5 sm:px-8 mx-auto">
-                {/* Header - Consistent with ProjectsSection */}
-                <div className="mb-10 sm:mb-14">
+                {/* Header */}
+                <div className="mb-12 sm:mb-16">
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -118,29 +126,29 @@ export function ReviewsSection() {
                         transition={{ duration: 0.8 }}
                         className="flex items-center gap-4 mb-6"
                     >
-                        <div className="w-10 h-[2px] bg-[#22C55E]" />
+                        <div className="w-10 h-[2px] bg-gradient-to-r from-[#22C55E] to-transparent" />
                         <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#22C55E]">
                            {reviewsData?.badge || 'Voices of Trust'}
                         </span>
                     </motion.div>
 
-                    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+                    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                         <motion.h2
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8, delay: 0.1 }}
-                            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none text-gray-900"
+                            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none text-white"
                             style={{ fontFamily: "'Outfit', sans-serif" }}
                         >
                             Masterpieces <br />
-                            <span className="text-gray-300 ml-[0.2em] relative inline-block">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-600 ml-[0.2em] relative inline-block">
                                 of Collaboration
                                 <motion.div 
-                                    className="absolute -bottom-2 left-0 h-[2px] bg-[#22C55E]/30 w-full"
-                                    initial={{ scaleX: 0 }}
+                                    className="absolute -bottom-2 left-0 h-[2px] bg-gradient-to-r from-[#22C55E]/50 to-transparent w-full"
+                                    initial={{ scaleX: 0, originX: 0 }}
                                     whileInView={{ scaleX: 1 }}
-                                    transition={{ duration: 1.5, delay: 0.5 }}
+                                    transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
                                 />
                             </span>
                         </motion.h2>
@@ -150,7 +158,7 @@ export function ReviewsSection() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8, delay: 0.2 }}
-                            className="max-w-md text-gray-500 text-base leading-relaxed mb-1"
+                            className="max-w-md text-gray-400 text-base leading-relaxed mb-1 font-light"
                         >
                             {reviewsData?.subtitle || "Hear from the visionaries we've partnered with to redefine digital excellence."}
                         </motion.p>
@@ -169,17 +177,23 @@ export function ReviewsSection() {
                                 transition={{ duration: 0.8, delay: i * 0.1, ease: [0.23, 1, 0.32, 1] }}
                                 className="group relative h-full"
                             >
-                                <div className="h-full bg-white backdrop-blur-3xl rounded-2xl border border-[#22C55E]/20 p-8 flex flex-col transition-all duration-700 hover:border-[#FACC15]/60 hover:translate-y-[-8px] shadow-sm hover:shadow-xl relative overflow-hidden">
-                                    {/* Glass reflection */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                                <div className="h-full bg-white/[0.02] backdrop-blur-[40px] rounded-2xl border border-white/[0.08] p-8 flex flex-col transition-all duration-700 hover:border-[#FACC15]/40 hover:bg-white/[0.04] hover:-translate-y-2 shadow-2xl relative overflow-hidden">
                                     
+                                    {/* Glass reflection gradient sweep */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+                                    
+                                    {/* Oversized background Quote Icon */}
+                                    <Quote size={180} className="absolute -top-10 -right-10 text-white/[0.02] rotate-12 group-hover:rotate-0 transition-transform duration-1000 ease-out pointer-events-none" />
+
                                     <div className="relative z-10 flex flex-col h-full">
-                                        <div className="flex items-start justify-between mb-6">
-                                            <Quote size={32} className="text-[#22C55E] opacity-10 group-hover:opacity-40 group-hover:scale-110 transition-all duration-700 ease-out" />
+                                        <div className="flex items-start justify-between mb-8">
+                                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/[0.03] border border-white/10 group-hover:border-[#FACC15]/30 group-hover:bg-[#FACC15]/10 transition-colors duration-500">
+                                                <Quote size={16} className="text-[#22C55E] group-hover:text-[#FACC15] transition-colors duration-500" />
+                                            </div>
                                             
                                             {/* Project Badge */}
                                             {review.badgeName && (
-                                                <div className="px-2.5 py-1 rounded-full bg-[#22C55E]/5 border border-[#22C55E]/10">
+                                                <div className="px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-md">
                                                     <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#22C55E]">
                                                         {review.badgeName}
                                                     </span>
@@ -187,24 +201,29 @@ export function ReviewsSection() {
                                             )}
                                         </div>
 
-                                        <p className="text-gray-600 text-[15px] leading-relaxed mb-8 font-light italic whitespace-pre-wrap">
+                                        <p className="text-gray-300 text-[15px] leading-relaxed mb-8 font-light whitespace-pre-wrap">
                                             "{review.text || review.review}"
                                         </p>
 
-                                        <div className="mt-auto pt-6 border-t border-gray-100 flex flex-col gap-5">
+                                        <div className="mt-auto pt-6 border-t border-white/[0.08] flex flex-col gap-5">
                                             <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-4">
                                                     <div className="relative">
+                                                        {/* Avatar Glow Ring */}
+                                                        <div className="absolute inset-[-4px] rounded-full border border-[#22C55E]/20 group-hover:border-[#FACC15]/50 scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-500" />
+                                                        
                                                         {review.avatar ? (
-                                                            <div className="w-10 h-10 rounded-full overflow-hidden border border-[#22C55E]/20 group-hover:border-[#FACC15]/50 transition-colors duration-500">
+                                                            <div className="w-11 h-11 rounded-full overflow-hidden border border-white/10 relative z-10 bg-black">
                                                                 <img src={review.avatar} alt={review.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                                             </div>
                                                         ) : (
-                                                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#22C55E] to-[#166534] flex items-center justify-center text-white font-bold text-sm">
+                                                            <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-gray-800 to-gray-900 border border-white/10 flex items-center justify-center text-white font-bold text-sm relative z-10">
                                                                 {review.name?.charAt(0) || 'U'}
                                                             </div>
                                                         )}
-                                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center border border-gray-100 group-hover:border-[#FACC15]/50 transition-colors shadow-sm">
+                                                        
+                                                        {/* Avatar Icon Badge */}
+                                                        <div className="absolute -bottom-1 -right-1 w-4.5 h-4.5 bg-[#0A0A0A] rounded-full flex items-center justify-center border border-gray-800 group-hover:border-[#FACC15]/50 transition-colors shadow-black/50 z-20">
                                                             {(() => {
                                                                 const firstSocial = review.social ? Object.entries(review.social).find(([_, val]) => {
                                                                     const v = val as any;
@@ -219,25 +238,25 @@ export function ReviewsSection() {
                                                                         fiverr: Briefcase, upwork: Globe, linkedin: Linkedin, github: Github
                                                                     };
                                                                     const Icon = icons[type.toLowerCase()] || Star;
-                                                                    return <Icon size={8} className="text-[#22C55E]" />;
+                                                                    return <Icon size={9} className="text-[#22C55E] group-hover:text-[#FACC15] transition-colors duration-500" />;
                                                                 }
-                                                                return <Star size={8} fill="#22C55E" color="#22C55E" />;
+                                                                return <Star size={9} fill="#22C55E" color="#22C55E" className="group-hover:fill-[#FACC15] group-hover:text-[#FACC15] transition-colors duration-500" />;
                                                             })()}
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <div className="text-xl font-bold text-gray-900 group-hover:text-[#22C55E] transition-colors duration-500">
+                                                        <div className="text-[17px] font-bold text-white group-hover:text-[#22C55E] transition-colors duration-500">
                                                             {review.name}
                                                         </div>
-                                                        <div className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+                                                        <div className="text-[10px] font-medium uppercase tracking-[0.15em] text-gray-500 mt-0.5">
                                                             {review.role}
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                {/* Social Links */}
+                                                {/* Social Links Container */}
                                                 {showSocials && review.social && (
-                                                    <div className="flex flex-wrap gap-1.5">
+                                                    <div className="flex flex-wrap gap-1.5 relative z-20">
                                                         {Object.entries(review.social).map(([type, val]: [string, any]) => {
                                                             const url = typeof val === 'string' ? val : val?.url;
                                                             const enabled = typeof val === 'string' ? true : val?.enabled !== false;
@@ -248,31 +267,37 @@ export function ReviewsSection() {
                                             </div>
 
                                             {/* Stars and Project Link */}
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex gap-0.5">
+                                            <div className="flex items-center justify-between mt-1">
+                                                <div className="flex gap-1">
                                                     {Array.from({ length: review.rating || 5 }, (_, si) => (
-                                                        <Star key={si} size={12} fill="#FACC15" color="#FACC15" className="opacity-80" />
+                                                        <Star key={si} size={11} fill="#FACC15" color="#FACC15" className="opacity-90" />
                                                     ))}
                                                 </div>
                                                 {review.projectId && (
-                                                    <Link to={`/project/${review.projectId}`} className="flex items-center gap-1.5 group/link">
-                                                        <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 group-hover/link:text-[#22C55E] transition-colors">Deep Dive</span>
-                                                        <ArrowUpRight size={12} className="text-gray-300 group-hover/link:text-[#22C55E] transition-colors" />
+                                                    <Link to={`/project/${review.projectId}`} className="flex items-center gap-1.5 group/link relative z-20 bg-white/[0.03] hover:bg-white/[0.08] px-3 py-1.5 rounded-full border border-white/[0.05] transition-all duration-300">
+                                                        <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 group-hover/link:text-white transition-colors duration-300">Deep Dive</span>
+                                                        <ArrowUpRight size={12} className="text-[#22C55E] group-hover/link:rotate-12 transition-transform duration-300" />
                                                     </Link>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
                                     
-                                    {/* Interactive Aura */}
-                                    <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-[#FACC15]/[0.05] opacity-0 group-hover:opacity-100 blur-[60px] rounded-full transition-opacity duration-700" />
+                                    {/* Directional Interactive Glow */}
+                                    <div className="absolute -inset-px opacity-0 group-hover:opacity-100 transition-opacity duration-1000 z-0 pointer-events-none rounded-2xl" 
+                                         style={{ background: 'radial-gradient(400px circle at top right, rgba(250, 204, 21, 0.1), transparent 40%)' }} 
+                                    />
+                                    <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[#22C55E]/[0.1] opacity-0 group-hover:opacity-100 blur-[50px] rounded-full transition-opacity duration-1000 pointer-events-none z-0" />
                                 </div>
                             </motion.div>
                         ))}
                     </div>
                 </AnimatePresence>
                 
-                <NextSectionButton nextRoute="/leadership" variant="light" />
+                <div className="mt-16 flex justify-center w-full">
+                   <NextSectionButton nextRoute="/leadership" variant="dark" />
+                </div>
+
             </div>
         </section>
     );

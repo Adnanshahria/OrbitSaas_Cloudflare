@@ -74,41 +74,43 @@ export function Navbar() {
 
   // Theme Variables
   const theme = {
-    bg: isProjectDetail 
-      ? 'rgba(10, 10, 12, 0.25)' 
-      : isLightMode ? 'rgba(243, 239, 224, 0.9)' : 'rgba(10, 10, 12, 0.25)',
+    bg: isProjectDetail
+      ? scrolled ? 'rgba(10, 10, 12, 0.8)' : 'rgba(10, 10, 12, 0.25)'
+      : isLightMode
+        ? scrolled ? 'rgba(243, 239, 224, 0.95)' : 'rgba(243, 239, 224, 0.9)'
+        : scrolled ? 'rgba(6, 6, 8, 0.8)' : 'rgba(10, 10, 12, 0.25)',
     border: isProjectDetail
-      ? 'rgba(255, 255, 255, 0.12)'
-      : isLightMode ? 'rgba(163, 123, 16, 0.12)' : 'rgba(255, 255, 255, 0.12)',
+      ? scrolled ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.12)'
+      : isLightMode
+        ? 'rgba(163, 123, 16, 0.12)'
+        : scrolled ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.12)',
     text: isProjectDetail ? '#FFFFFF' : (isLightMode ? '#000000' : '#FFFFFF'),
     textMuted: isProjectDetail ? 'rgba(255, 255, 255, 0.6)' : (isLightMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.6)'),
     accent: '#10B981', // Emerald 500
-    glass: isProjectDetail 
-      ? 'backdrop-blur-[40px]' 
-      : isLightMode ? 'backdrop-blur-[32px]' : 'backdrop-blur-[40px]'
+    glass: isProjectDetail
+      ? 'backdrop-blur-[40px]'
+      : isLightMode ? 'backdrop-blur-[32px]' : 'backdrop-blur-[40px]',
+    violetBorder: 'rgba(167, 139, 250, 0.3)' // Thin violet border
   };
 
   return (
     <>
       <nav
-        className={`fixed left-0 right-0 z-[1000] transition-all duration-500 ease-out flex justify-center px-4 ${scrolled ? 'top-2' : 'top-4'} ${
-          isChatbotOpen ? 'md:translate-y-0 opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto' : 'translate-y-0 opacity-100'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-[1000] transition-all duration-500 ease-out flex justify-center ${isChatbotOpen ? 'md:translate-y-0 opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto' : 'translate-y-0 opacity-100'
+          }`}
       >
         {/* Cinematic Glass Shell */}
-        <div 
-          className={`relative w-full max-w-[1400px] px-4 sm:px-8 py-2.5 rounded-full border ${theme.glass} shadow-2xl transition-all duration-500`}
-          style={{ 
+        <div
+          className={`relative w-full px-5 sm:px-8 py-2 transition-all duration-500 border rounded-b-3xl ${theme.glass} backdrop-saturate-[180%]`}
+          style={{
             backgroundColor: theme.bg,
-            borderColor: theme.border,
-            boxShadow: isLightMode 
-              ? '0 40px 80px -20px rgba(0, 0, 0, 0.4), 0 20px 40px -15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.8)' 
-              : '0 50px 100px -25px rgba(0,0,0,0.9), 0 25px 50px -20px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.12)',
-            backdropFilter: `${theme.glass} saturate(180%)`,
-            WebkitBackdropFilter: `${theme.glass} saturate(180%)`
+            borderColor: theme.violetBorder,
+            boxShadow: isLightMode
+              ? '0 10px 30px -10px rgba(0, 0, 0, 0.05)'
+              : '0 10px 30px -15px rgba(0,0,0,0.5)'
           }}
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between max-w-[1400px] mx-auto w-full">
             {/* Logo area */}
             <Link
               to="/"
@@ -124,19 +126,19 @@ export function Navbar() {
                 />
                 {/* Premium Shimmer Effect */}
                 <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden rounded-full">
-                  <motion.div 
+                  <motion.div
                     animate={{ x: ['-200%', '200%'] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent w-1/2 -skew-x-12"
                   />
                 </div>
               </div>
-              <span 
+              <span
                 className="font-normal tracking-[0.1em] text-xl sm:text-2xl transition-all duration-500 group-hover:tracking-[0.15em] relative"
                 style={{ color: theme.text, fontFamily: "'Abril Fatface', serif" }}
               >
-                Orbit
-                <motion.div 
+                OrbitSaaS
+                <motion.div
                   initial={{ width: 0 }}
                   whileHover={{ width: '100%' }}
                   className="absolute -bottom-1 left-0 h-[1.5px] bg-primary/50 rounded-full"
@@ -144,13 +146,9 @@ export function Navbar() {
               </span>
             </Link>
 
-            {/* Desktop Navigation (Sliding Capsule Style) */}
+            {/* Desktop Navigation */}
             {!isProjectDetail && (
-              <div className={`hidden lg:flex items-center rounded-full p-1 border transition-all duration-300 ${
-                isLightMode 
-                  ? 'bg-[#C2AF82]/15 border-[#C2AF82]/25 shadow-[inset_0_1px_2px_rgba(194,175,130,0.1)]' 
-                  : 'bg-white/5 border-white/[0.03]'
-              }`}>
+              <div className="hidden lg:flex items-center gap-4 xl:gap-6 transition-all duration-300">
                 {NAV_SECTIONS.filter(s => s.path !== '/').map((item) => {
                   const sectionId = PATH_TO_SECTION[item.path];
                   const visibility = t?.nav?.visibility?.[sectionId] !== false;
@@ -160,6 +158,7 @@ export function Navbar() {
                   const label = t?.nav?.[sectionId === 'tech' ? 'techStack' : sectionId === 'project' ? 'projects' : sectionId] || item.label;
                   const customUrl = t?.nav?.urls?.[sectionId];
                   const isExternal = customUrl && (customUrl.startsWith('http') || customUrl.startsWith('mailto:'));
+                  const isContact = item.path === '/contact';
 
                   if (isExternal) {
                     return (
@@ -168,13 +167,13 @@ export function Navbar() {
                         href={customUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="relative px-5 py-2 z-10"
+                        className={`relative z-10 ${isContact ? 'px-6 py-2.5 bg-[#059669] rounded-full shadow-[0_4px_15px_rgba(5,150,105,0.3)] hover:scale-105 transition-transform' : 'px-2 py-2'}`}
                       >
-                        <motion.span 
+                        <motion.span
                           className={`relative z-10 transition-colors duration-500 text-[10px] font-medium tracking-[0.25em] uppercase`}
-                          style={{ 
+                          style={{
                             fontFamily: "'Outfit', sans-serif",
-                            color: theme.textMuted
+                            color: isContact ? '#FFFFFF' : theme.textMuted
                           }}
                         >
                           {label}
@@ -187,32 +186,44 @@ export function Navbar() {
                     <Link
                       key={item.path}
                       to={customUrl || item.path}
-                      className="relative px-5 py-2 z-10"
+                      className="relative flex items-center justify-center z-10 px-3 py-2 transition-all duration-300"
                     >
                       {isActive && (
                         <motion.div
-                          layoutId="active-nav-capsule"
-                          className="absolute inset-0 rounded-full z-[-1] overflow-hidden border border-[#C2AF82]/30 shadow-[0_4px_15px_rgba(16,185,129,0.35),inset_0_1px_2px_rgba(255,255,255,0.2)]"
+                          layoutId="active-nav-indicator"
+                          className="absolute -bottom-1 w-1/2 h-[2px] bg-[#059669] rounded-full"
                           transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-                        >
-                          {/* Rich Nebula Gradient */}
-                          <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900" />
-                          
-                          {/* Inner Atmospheric Glow */}
-                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.2)_0%,transparent_50%)]" />
-                          
-                          {/* Bottom Edge Reflection */}
-                          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white/10" />
-                        </motion.div>
+                        />
                       )}
                       <motion.span 
-                        className={`relative z-10 transition-colors duration-500 text-[10px] font-medium tracking-[0.25em] uppercase`}
+                        className={`relative z-10 transition-colors duration-500 text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase whitespace-nowrap flex overflow-hidden`}
                         style={{ 
                           fontFamily: "'Outfit', sans-serif",
-                          color: isActive ? '#FFFFFF' : theme.textMuted
+                          color: isActive 
+                            ? '#059669' // Emerald for active text
+                            : theme.textMuted
                         }}
                       >
-                        {label}
+                        {sectionId === 'project' && !isActive ? (
+                          label.split('').map((char: string, i: number) => (
+                            <motion.span
+                              key={i}
+                              animate={{ 
+                                color: ['#EF4444', '#A78BFA', '#EF4444'] 
+                              }}
+                              transition={{ 
+                                duration: 2.5, 
+                                repeat: Infinity, 
+                                delay: i * 0.1,
+                                ease: "easeInOut"
+                              }}
+                            >
+                              {char}
+                            </motion.span>
+                          ))
+                        ) : (
+                          label
+                        )}
                       </motion.span>
                     </Link>
                   );
@@ -229,12 +240,12 @@ export function Navbar() {
                   animate={{ opacity: 1, x: 0 }}
                   className="hidden lg:flex"
                 >
-                  <Link 
+                  <Link
                     to="/"
                     className="group relative px-5 py-2 flex items-center gap-3 overflow-hidden rounded-full border border-emerald-500/30 bg-emerald-500/5 backdrop-blur-xl transition-all duration-500 hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]"
                   >
                     <ArrowLeft className="w-3.5 h-3.5 text-emerald-500 transition-transform duration-500 group-hover:-translate-x-1" />
-                    <span 
+                    <span
                       className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-800"
                       style={{ fontFamily: "'Outfit', sans-serif" }}
                     >
@@ -251,12 +262,12 @@ export function Navbar() {
                   animate={{ opacity: 1, x: 0 }}
                   className="hidden lg:flex"
                 >
-                  <Link 
+                  <Link
                     to="/project"
                     className="group relative px-5 py-2 flex items-center gap-3 overflow-hidden rounded-full border border-emerald-500/30 bg-emerald-500/5 backdrop-blur-xl transition-all duration-500 hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]"
                   >
                     <ArrowLeft className="w-3 h-3 text-emerald-500 transition-transform duration-500 group-hover:-translate-x-1" />
-                    <span 
+                    <span
                       className="text-[9px] font-black uppercase tracking-[0.2em] text-white"
                       style={{ fontFamily: "'Outfit', sans-serif" }}
                     >
@@ -272,7 +283,7 @@ export function Navbar() {
               <button
                 onClick={() => toggleLang()}
                 className="hidden sm:flex items-center justify-center min-w-[3.2rem] h-9 sm:h-10 px-3 rounded-full border border-emerald-500/30 bg-emerald-500/5 text-emerald-500 backdrop-blur-md text-[10px] font-black uppercase tracking-widest transition-all duration-500 hover:bg-emerald-500 hover:border-emerald-500 hover:text-white shadow-lg hover:shadow-emerald-500/20 active:scale-95"
-                style={{ 
+                style={{
                   fontFamily: "'Abril Fatface', serif"
                 }}
               >
@@ -292,7 +303,7 @@ export function Navbar() {
                       className="flex lg:hidden items-center gap-3 px-3 sm:px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/5 backdrop-blur-md"
                     >
                       <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                      <span 
+                      <span
                         className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em]"
                         style={{ color: theme.text, fontFamily: "'Outfit', sans-serif" }}
                       >
@@ -303,7 +314,7 @@ export function Navbar() {
                 </AnimatePresence>
 
                 {/* Standalone Call Icon */}
-                <Link 
+                <Link
                   to="/contact"
                   className="group relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border backdrop-blur-md transition-all duration-500 hover:text-white"
                 >
@@ -340,13 +351,13 @@ export function Navbar() {
                       animation: whatsappPingTheme 4s ease-in-out infinite;
                     }
                   `}</style>
-                  
+
                   {/* Outer pulsating ring */}
                   <div className="absolute inset-0 rounded-full border animate-ping opacity-20 whatsapp-ping-anim" style={{ animationDuration: '3s' }} />
-                  
+
                   {/* Button Background Base (to receive animation) */}
                   <div className="absolute inset-0 rounded-full whatsapp-theme-anim transition-all duration-300" />
-                  
+
                   {/* Subtle inner wiggle on hover */}
                   <WhatsAppIcon className="relative z-10 w-4 h-4 sm:w-[18px] sm:h-[18px] transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12 whatsapp-theme-anim" />
                 </Link>
@@ -359,15 +370,15 @@ export function Navbar() {
                 style={{ color: mobileOpen ? '#FFFFFF' : theme.text }}
               >
                 <div className="flex flex-col gap-1.5 items-end">
-                  <motion.span 
+                  <motion.span
                     animate={mobileOpen ? { rotate: 45, y: 7.5, width: 24 } : { rotate: 0, y: 0, width: 24 }}
                     className="h-[2px] bg-current rounded-full"
                   />
-                  <motion.span 
+                  <motion.span
                     animate={mobileOpen ? { opacity: 0, x: 20 } : { opacity: 1, x: 0, width: 18 }}
                     className="h-[2px] bg-current rounded-full"
                   />
-                  <motion.span 
+                  <motion.span
                     animate={mobileOpen ? { rotate: -45, y: -7.5, width: 24 } : { rotate: 0, y: 0, width: 12 }}
                     className="h-[2px] bg-current rounded-full"
                   />
@@ -387,7 +398,7 @@ export function Navbar() {
             exit={{ opacity: 0, clipPath: 'circle(30px at calc(100% - 60px) 40px)' }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="fixed inset-0 z-[999] flex flex-col p-8 sm:p-12 overflow-hidden"
-            style={{ 
+            style={{
               backgroundColor: isLightMode ? 'rgba(255,255,255,0.98)' : 'rgba(6,6,8,0.98)',
               backdropFilter: 'blur(10px)'
             }}
@@ -407,10 +418,10 @@ export function Navbar() {
                 const label = t?.nav?.[sectionId === 'tech' ? 'techStack' : sectionId === 'project' ? 'projects' : sectionId] || item.label;
 
                 return (
-                  <motion.div 
-                    key={item.path} 
-                    initial={{ opacity: 0, x: -30 }} 
-                    animate={{ opacity: 1, x: 0 }} 
+                  <motion.div
+                    key={item.path}
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.1 + i * 0.05, duration: 0.5 }}
                   >
                     {isExternal ? (
@@ -421,9 +432,9 @@ export function Navbar() {
                         className="group flex items-baseline gap-4"
                       >
                         <span className="text-xs font-black text-emerald-500/40 tabular-nums">0{i + 1}</span>
-                        <span 
+                        <span
                           className={`text-4xl sm:text-7xl transition-all duration-300 hover:translate-x-4`}
-                          style={{ 
+                          style={{
                             color: theme.text,
                             fontFamily: "'Abril Fatface', serif"
                           }}
@@ -438,9 +449,9 @@ export function Navbar() {
                         className="group flex items-baseline gap-4"
                       >
                         <span className="text-xs font-black text-emerald-500/40 tabular-nums">0{i + 1}</span>
-                        <span 
+                        <span
                           className={`text-4xl sm:text-7xl transition-all duration-300 ${isActive ? 'text-emerald-500' : 'hover:translate-x-4'}`}
-                          style={{ 
+                          style={{
                             color: !isActive ? (isLightMode ? '#1a1a1a' : '#ffffff') : undefined,
                             fontFamily: "'Abril Fatface', serif"
                           }}
@@ -455,13 +466,13 @@ export function Navbar() {
             </div>
 
             {/* Bottom Actions for Mobile */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
               className="mt-auto pb-12"
             >
-               <button
+              <button
                 onClick={() => { toggleLang(); setMobileOpen(false); }}
                 className="w-full flex items-center justify-center p-4 rounded-2xl border border-current text-xs font-black uppercase tracking-widest transition-all"
                 style={{ color: isLightMode ? '#1a1a1a' : '#ffffff', borderColor: isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)' }}
