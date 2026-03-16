@@ -10,6 +10,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ensureAbsoluteUrl } from '@/lib/utils';
 import DOMPurify from 'dompurify';
+import { ImageWithSkeleton } from '@/components/orbit/ImageWithSkeleton';
 import { RichText } from '@/components/ui/RichText';
 
 type MediaItem = { type: 'image'; url: string } | { type: 'video'; url: string };
@@ -455,17 +456,21 @@ function SuggestedProjectCard({ item, routeId }: { item: any, routeId: string })
             onMouseLeave={() => setIsHovered(false)}
         >
             <div className="relative w-28 sm:w-36 flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-gray-100">
-                <AnimatePresence mode="popLayout">
-                    <motion.img
-                        key={currentImage}
-                        src={currentImage}
-                        alt={item.title}
-                        initial={{ opacity: 0, scale: 1.05 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.5, ease: "easeInOut" }}
-                        className="w-full h-full object-cover no-browser-trigger"
-                    />
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={currentImage + "_wrapper"}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="w-full h-full relative"
+                    >
+                        <ImageWithSkeleton
+                            src={currentImage}
+                            alt={item.title}
+                            className="w-full h-full object-cover no-browser-trigger"
+                        />
+                    </motion.div>
                 </AnimatePresence>
                 <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                     <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1.2s] ease-in-out bg-gradient-to-r from-transparent via-white/[0.2] to-transparent" />

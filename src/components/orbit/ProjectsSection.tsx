@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { ImageWithSkeleton } from './ImageWithSkeleton';
 import { useLang } from '@/contexts/LanguageContext';
 import { useContent } from '@/contexts/ContentContext';
 import { Helmet } from 'react-helmet-async';
@@ -86,18 +87,22 @@ function CinematicCard({ item, i }: { item: ProjectItem; i: number }) {
                 className="block relative overflow-hidden rounded-2xl bg-white border border-[#22C55E]/30 transition-all duration-700 hover:border-[#FACC15]/60 hover:shadow-[0_10px_40px_rgba(34,197,94,0.06)]"
             >
                 {/* Cover Photo — Full 16:9 */}
-                <div className="relative aspect-video overflow-hidden">
-                    <AnimatePresence mode="popLayout">
-                        <motion.img
-                            key={currentImage}
-                            src={currentImage}
-                            alt={item.title}
-                            initial={{ opacity: 0, scale: 1.05 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 0.6, ease: "easeInOut" }}
-                            className="w-full h-full object-cover no-browser-trigger"
-                        />
+                <div className="relative aspect-video overflow-hidden group/img">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentImage + "_wrapper"}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.4 }}
+                            className="w-full h-full relative"
+                        >
+                            <ImageWithSkeleton
+                                src={currentImage}
+                                alt={item.title}
+                                className="w-full h-full object-cover no-browser-trigger"
+                            />
+                        </motion.div>
                     </AnimatePresence>
 
                     {/* Shimmer Light Sweep */}

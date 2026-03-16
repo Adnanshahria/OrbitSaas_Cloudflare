@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useInView } from 'framer-motion';
 import { useLang } from '@/contexts/LanguageContext';
 import { useContent } from '@/contexts/ContentContext';
+import { ImageWithSkeleton } from '@/components/orbit/ImageWithSkeleton';
 import { Navbar } from '@/components/orbit/Navbar';
 import { OrbitFooter } from '@/components/orbit/OrbitFooter';
 import { Chatbot } from '@/components/orbit/Chatbot';
@@ -94,17 +95,21 @@ function ArchiveCard({ item, i }: { item: ProjectItem; i: number }) {
                 
                 {/* Cover Photo */}
                 <div className="relative aspect-video overflow-hidden">
-                    <AnimatePresence mode="popLayout">
-                        <motion.img
-                            key={currentImage}
-                            src={currentImage}
-                            alt={item.title}
-                            initial={{ opacity: 0, scale: 1.05 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 0.6, ease: "easeInOut" }}
-                            className="w-full h-full object-cover no-browser-trigger"
-                        />
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentImage + "_wrapper"}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.4 }}
+                            className="w-full h-full relative"
+                        >
+                            <ImageWithSkeleton
+                                src={currentImage}
+                                alt={item.title}
+                                className="w-full h-full object-cover no-browser-trigger"
+                            />
+                        </motion.div>
                     </AnimatePresence>
 
                     {/* Shimmer */}
