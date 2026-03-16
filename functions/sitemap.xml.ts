@@ -19,15 +19,12 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
         const baseUrl = 'https://orbitsaas.cloud';
 
-        // Static routes
+        // Single-Page Architecture
         const staticRoutes = [
-            '',
-            '/#services',
-            '/#tech-stack',
-            '/#why-us',
-            '/#projects',
-            '/#leadership',
-            '/#contact'
+            { path: '', priority: '1.0' },
+            { path: '/#services', priority: '0.8' },
+            { path: '/#projects', priority: '0.9' },
+            { path: '/#contact', priority: '0.8' }
         ];
 
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
@@ -35,24 +32,25 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
         const today = new Date().toISOString().split('T')[0];
 
-        // Add static routes
+        // Add core unified routes
         for (const route of staticRoutes) {
             xml += `  <url>\n`;
-            xml += `    <loc>${baseUrl}${route}</loc>\n`;
+            xml += `    <loc>${baseUrl}${route.path}</loc>\n`;
             xml += `    <lastmod>${today}</lastmod>\n`;
             xml += `    <changefreq>weekly</changefreq>\n`;
-            xml += `    <priority>${route === '' ? '1.0' : '0.8'}</priority>\n`;
+            xml += `    <priority>${route.priority}</priority>\n`;
             xml += `  </url>\n`;
         }
 
-        // Add dynamic project routes
+        // We no longer add `/project/:id` standalone routes, as the site is an SPA.
+        // Instead, we can add query params if desired to direct link to modal states, e.g., /?project=foo 
         projects.forEach((proj: any, index: number) => {
             const id = proj.id || String(index);
             xml += `  <url>\n`;
-            xml += `    <loc>${baseUrl}/project/${encodeURIComponent(id)}</loc>\n`;
+            xml += `    <loc>${baseUrl}/?project=${encodeURIComponent(id)}</loc>\n`;
             xml += `    <lastmod>${today}</lastmod>\n`;
-            xml += `    <changefreq>weekly</changefreq>\n`;
-            xml += `    <priority>0.9</priority>\n`;
+            xml += `    <changefreq>monthly</changefreq>\n`;
+            xml += `    <priority>0.7</priority>\n`;
             xml += `  </url>\n`;
         });
 

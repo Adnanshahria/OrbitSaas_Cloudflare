@@ -10,9 +10,9 @@ export function SEOHead() {
     const seoData = content[lang] as Record<string, any> || {};
 
     // Keyword-optimized defaults
-    const defaultTitle = "ORBIT SaaS | Custom SaaS, AI Agency & Web Development";
-    const defaultDesc = "ORBIT SaaS is a top-tier software and AI agency. We specialize in custom SaaS platforms, AI chatbots, agentic automation, mobile apps, and enterprise web applications. Get your custom orbit saas solutions today.";
-    const defaultKeywords = "orbit, ORBIT SaaS, orbit sas, orbit saas, orbit sass, orbit software, orbit web solutions, orbit SaaS solutions, orbot, orbot saas, orbot sas, Orbot, assa, Assa, orbitsaas, OrbitSaaS, orbit tech, orbit agency, orbit web agency, orbit software agency, orbit ai, orbit ai agency, orbit development, orbit web development, orbit saass, orbir saas, orbt saas, obit saas, saas development, saas platform, custom saas, best saas company, saas products, enterprise saas, web development company, full stack web development, custom website development, AI chatbot development, custom AI chatbot, chatbot integration, LLM chatbot, conversational AI, AI automation, agentic AI, AI agent development, intelligent automation, workflow automation, mobile app development, Flutter app development, React Native app development, eCommerce website development, enterprise web application, PWA development, progressive web app, React development, Node.js development, software development agency, web development Bangladesh, best web development company Bangladesh, top saas agency, custom software development, orbit cloud, orbitsaas.cloud";
+    const defaultTitle = "ORBIT SaaS | Custom Software, AI & Web Development Agency";
+    const defaultDesc = "ORBIT SaaS — custom web development, AI chatbot integration, SaaS platforms, mobile apps & enterprise solutions. Hire our expert full-stack team. Get a free consultation today.";
+    const defaultKeywords = "web development, web development company, custom web development, best web development company, hire web developers, full stack web development, custom website development, web application development, website design and development, responsive web design, frontend development, backend development, React development, Node.js development, Next.js development, TypeScript development, web development agency, web development Bangladesh, best web development company Bangladesh, software development agency, custom software development, SaaS development, custom SaaS platform, AI chatbot development, custom AI chatbot, chatbot integration, conversational AI, AI automation, agentic AI, mobile app development, Flutter app development, React Native app development, eCommerce website development, enterprise web application, PWA development, progressive web app, orbit, ORBIT SaaS, orbit saas, orbot saas, OrbitSaaS, orbitsaas, orbit sass, orbit sas, Orbot, Assa, orbit software, orbit agency, orbit ai, orbitsaas.cloud, orboit, orboit saas, orboit assa, orbit sasa, orbit assa, orbt saas, obit saas, orbir saas, orbit saass, orbot sas, orbot assa, orbit cloud, orbit development, orbit web agency, orbit software agency, orbit ai agency";
 
     // Data from DB (saved via AdminSEO)
     const title = (content[lang]?.['seo_title'] as string) || defaultTitle;
@@ -21,7 +21,7 @@ export function SEOHead() {
 
     const currentUrl = typeof window !== 'undefined' ? window.location.href : 'https://orbitsaas.cloud';
     const canonicalUrl = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : 'https://orbitsaas.cloud';
-    const image = 'https://orbitsaas.cloud/og-banner.png';
+    const image = 'https://orbitsaas.cloud/og-banner-v2.png';
 
     return (
         <Helmet>
@@ -50,13 +50,16 @@ export function SEOHead() {
             {/* Canonical */}
             <link rel="canonical" href={canonicalUrl} />
 
+            {/* AEO / Googlebot Directives */}
+            <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+
             {/* Language alternates */}
-            <link rel="alternate" hrefLang="en" href="https://orbitsaas.com/" />
-            <link rel="alternate" hrefLang="bn" href="https://orbitsaas.com/?lang=bn" />
-            <link rel="alternate" hrefLang="x-default" href="https://orbitsaas.com/" />
+            <link rel="alternate" hrefLang="en" href="https://orbitsaas.cloud/" />
+            <link rel="alternate" hrefLang="bn" href="https://orbitsaas.cloud/?lang=bn" />
+            <link rel="alternate" hrefLang="x-default" href="https://orbitsaas.cloud/" />
 
             {/* Additional SEO meta */}
             <meta name="language" content={lang === 'bn' ? 'Bengali' : 'English'} />
-        </Helmet >
+        </Helmet>
     );
 }
