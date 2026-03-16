@@ -135,7 +135,7 @@ export function ProcessSection() {
     setStep(0);
     mountTime.current = Date.now();
 
-    // Auto-scroll logic: progress steps automatically after 2.5s delay
+    // Auto-scroll logic: progress steps automatically after 1.5s delay
     let autoScrollInterval: ReturnType<typeof setInterval>;
     const delayTimeout = setTimeout(() => {
       autoScrollInterval = setInterval(() => {
@@ -147,7 +147,7 @@ export function ProcessSection() {
           return prev;
         });
       }, 1500); // 1.5s per step
-    }, 2500); // 2.5s initial delay
+    }, 1500); // 1.5s initial delay
 
     // Interaction handler to cancel auto-scroll
     const cancelAutoScroll = () => {

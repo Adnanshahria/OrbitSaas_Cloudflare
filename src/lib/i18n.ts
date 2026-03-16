@@ -59,6 +59,21 @@ export const translations = {
       subtitle: 'Technologies We Power Your Vision With',
       categories: [
         {
+          name: 'AI Automation & Agents',
+          color: '#d63384',
+          items: ['n8n', 'Agentic AI', 'Chatbot', 'OmniChannel', 'Automation']
+        },
+        {
+          name: 'AI & Machine Learning',
+          color: '#8b5cf6',
+          items: ['OpenAI API', 'LangChain', 'Pinecone (Vector DB)', 'PyTorch', 'TensorFlow', 'Hugging Face']
+        },
+        {
+          name: 'Mobile App Development',
+          color: '#8b5cf6',
+          items: ['Flutter', 'React Native', 'Java', 'Kotlin', 'Swift', 'Android', 'iOS']
+        },
+        {
           name: 'Frontend Development',
           color: '#3b82f6',
           items: ['React 18', 'Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion', 'Redux ToolKit', 'Zustand', 'Ant Design', 'Shadcn UI', 'GraphQL', 'Socket.io']
@@ -72,16 +87,6 @@ export const translations = {
           name: 'Cloud & DevOps',
           color: '#f97316',
           items: ['Vercel', 'AWS', 'Docker', 'GitHub Actions', 'Cloudinary', 'ImgBB', 'Kubernetes', 'Nginx', 'CI/CD Pipelines', 'DigitalOcean', 'Cloudflare']
-        },
-        {
-          name: 'AI/ML Stack',
-          color: '#d63384',
-          items: ['OpenAI API', 'LangChain', 'Pinecone (Vector DB)', 'PyTorch', 'TensorFlow', 'Hugging Face']
-        },
-        {
-          name: 'Mobile App Development',
-          color: '#8b5cf6',
-          items: ['Flutter', 'React Native', 'Java', 'Kotlin', 'Swift', 'Android', 'iOS']
         }
       ] as any[],
     },
@@ -263,6 +268,21 @@ export const translations = {
       subtitle: 'যে প্রযুক্তিগুলো দিয়ে আমরা আপনার ভিশন বাস্তবায়ন করি',
       categories: [
         {
+          name: 'এআই অটোমেশন এবং এজেন্ট',
+          color: '#d63384',
+          items: ['n8n', 'Agentic AI', 'Chatbot', 'OmniChannel', 'Automation']
+        },
+        {
+          name: 'এআই এবং মেশিন লার্নিং',
+          color: '#8b5cf6',
+          items: ['OpenAI API', 'LangChain', 'Pinecone (Vector DB)', 'PyTorch', 'TensorFlow', 'Hugging Face']
+        },
+        {
+          name: 'মোবাইল অ্যাপ ডেভেলপমেন্ট',
+          color: '#8b5cf6',
+          items: ['Flutter', 'React Native', 'Java', 'Kotlin', 'Swift', 'Android', 'iOS']
+        },
+        {
           name: 'ফ্রন্টএন্ড ডেভেলপমেন্ট',
           color: '#3b82f6',
           items: ['React 18', 'Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion', 'Redux ToolKit', 'Zustand', 'Ant Design', 'Shadcn UI', 'GraphQL', 'Socket.io']
@@ -276,16 +296,6 @@ export const translations = {
           name: 'ক্লাউড ও ডেভঅপস',
           color: '#f97316',
           items: ['Vercel', 'AWS', 'Docker', 'GitHub Actions', 'Cloudinary', 'ImgBB', 'Kubernetes', 'Nginx', 'CI/CD Pipelines', 'DigitalOcean', 'Cloudflare']
-        },
-        {
-          name: 'এআই এবং এমএল স্ট্যাক',
-          color: '#d63384',
-          items: ['OpenAI API', 'LangChain', 'Pinecone (Vector DB)', 'PyTorch', 'TensorFlow', 'Hugging Face']
-        },
-        {
-          name: 'মোবাইল অ্যাপ ডেভেলপমেন্ট',
-          color: '#8b5cf6',
-          items: ['Flutter', 'React Native', 'Java', 'Kotlin', 'Swift', 'Android', 'iOS']
         }
       ] as any[],
     },

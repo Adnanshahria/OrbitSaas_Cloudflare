@@ -14,23 +14,34 @@ const TECH_LOGOS = [
   { src: '/images/mongo.webp',       label: 'MongoDB',    isDouble: true },
   { src: '/images/mysql.webp',       label: 'MySQL',      isDouble: true },
   { src: '/images/typescript.webp',  label: 'TypeScript', isDouble: true },
-  { src: '/images/javascript.webp',  label: 'JavaScript', isDouble: true },
   { src: '/images/tailwind.png',     label: 'Tailwind',   isDouble: false },
   { src: '/images/prisma.png',       label: 'Prisma',     isDouble: false },
   { src: '/images/docker.png',       label: 'Docker',     isDouble: false },
-  { src: '/images/python.png',       label: 'Python',     isDouble: false },
   { src: '/images/redis.png',        label: 'Redis',      isDouble: false },
   { src: '/images/aws.png',          label: 'AWS',        isDouble: false },
   { src: '/images/graphql.png',      label: 'GraphQL',    isDouble: false },
   { src: '/images/firebase.png',     label: 'Firebase',   isDouble: false },
   { src: '/images/flutter.png',      label: 'Flutter',    isDouble: false },
-  { src: '/images/go.png',           label: 'Go',         isDouble: false },
-  { src: '/images/rust.png',         label: 'Rust',       isDouble: false },
   { src: '/images/kubernetes.png',   label: 'Kubernetes', isDouble: false },
-  { src: '/images/vue.png',          label: 'Vue.js',     isDouble: false },
-  { src: '/images/angular.png',      label: 'Angular',    isDouble: false },
   { src: '/images/tensorflow.png',   label: 'TensorFlow', isDouble: false },
   { src: '/images/pytorch.png',      label: 'PyTorch',    isDouble: false },
+  { src: '/images/n8n.png',          label: 'n8n',        isDouble: false },
+  { src: '/images/openai.png',       label: 'OpenAI',     isDouble: false },
+  { src: '/images/supabase.png',     label: 'Supabase',   isDouble: false },
+  { src: '/images/vercel.png',       label: 'Vercel',     isDouble: false },
+  { src: '/images/cloudflare_new.png', label: 'Cloudflare', isDouble: false },
+  { src: '/images/digitalocean.png', label: 'DigitalOcean', isDouble: false },
+  { src: '/images/githubactions.png', label: 'GitHub Actions', isDouble: false },
+  { src: '/images/android.png',      label: 'Android',    isDouble: false },
+  { src: '/images/ios.png',          label: 'iOS',        isDouble: false },
+  { src: '/images/swift.png',        label: 'Swift',      isDouble: false },
+  { src: '/images/langchain.png',    label: 'LangChain',  isDouble: false },
+  { src: '/images/pinecone.png',     label: 'Pinecone',   isDouble: false },
+  { src: '/images/huggingface.png',  label: 'Hugging Face', isDouble: false },
+  { src: '/images/kotlin.png',       label: 'Kotlin',     isDouble: false },
+  { src: '/images/java.png',         label: 'Java',       isDouble: false },
+  { src: '/images/postgresql.png',   label: 'PostgreSQL', isDouble: false },
+  { src: '/images/reactnative.png',  label: 'React Native', isDouble: false },
 ];
 
 /* ─── Ball Interface ─── */
@@ -69,21 +80,17 @@ function createBalls(
   const isMobile = cw < 768;
   const isSmallMobile = cw < 450;
   
-  // Create choreographed logos
-  // On mobile, only use a subset of techs to avoid overcrowding (16 instead of 24)
-  const techCount = isMobile ? 16 : images.length;
+  const techCount = isMobile ? Math.min(30, images.length) : images.length;
 
   for (let i = 0; i < techCount; i++) {
-    const rBase = isSmallMobile ? (24 + Math.random() * 5) : isMobile ? (28 + Math.random() * 6) : (32 + Math.random() * 8);
+    const rBase = isSmallMobile ? (22 + Math.random() * 4) : isMobile ? (26 + Math.random() * 5) : (30 + Math.random() * 8);
     
-    // Ball 1: Always created
-    const spawnFromLeft = isMobile ? Math.random() > 0.5 : true;
-    
+    // Drop balls directly through the funnel top
     balls.push({
-      x: spawnFromLeft ? Math.random() * (cw * 0.25) : cw - Math.random() * (cw * 0.25),
-      y: -rBase - Math.random() * ch * (isMobile ? 0.8 : 1.5), 
-      vx: spawnFromLeft ? (1.5 + Math.random() * 2) : -(1.5 + Math.random() * 2),
-      vy: Math.random() * 2 + 1,
+      x: cw * 0.35 + Math.random() * (cw * 0.3),
+      y: -rBase - Math.random() * ch * 2.5, 
+      vx: (Math.random() - 0.5) * 3,
+      vy: Math.random() * 2 + 3,
       r: rBase,
       img: images[i],
       label: TECH_LOGOS[i].label,
@@ -91,26 +98,8 @@ function createBalls(
       opacity: 0,
       glowHue: 35 + Math.random() * 15,
       rotation: Math.random() * Math.PI * 2,
-      rotationSpeed: (Math.random() - 0.5) * 0.02,
+      rotationSpeed: (Math.random() - 0.5) * 0.03,
     });
-
-    // Ball 2: Only on Laptop (Mirrored Team)
-    if (!isMobile) {
-      balls.push({
-        x: cw - Math.random() * (cw * 0.25), // Right side
-        y: -rBase - Math.random() * ch * 1.5,
-        vx: -(1.5 + Math.random() * 2), // Moving Left
-        vy: Math.random() * 2 + 1,
-        r: rBase + (Math.random() - 0.5) * 4,
-        img: images[i],
-        label: TECH_LOGOS[i].label,
-        isDouble: !!TECH_LOGOS[i].isDouble,
-        opacity: 0,
-        glowHue: 35 + Math.random() * 15,
-        rotation: Math.random() * Math.PI * 2,
-        rotationSpeed: (Math.random() - 0.5) * 0.02,
-      });
-    }
   }
 
   return balls.sort(() => Math.random() - 0.5);
@@ -133,6 +122,45 @@ function createParticles(count: number, cw: number, ch: number): Particle[] {
 }
 
 /* ─── Physics step ─── */
+// Physics Helper: Line Segment Collision
+function checkLineCollision(b: Ball, p1x: number, p1y: number, p2x: number, p2y: number, BOUNCE: number) {
+  const dx = p2x - p1x;
+  const dy = p2y - p1y;
+  const l2 = dx * dx + dy * dy;
+  if (l2 === 0) return;
+
+  let t = ((b.x - p1x) * dx + (b.y - p1y) * dy) / l2;
+  t = Math.max(0, Math.min(1, t));
+
+  const closestX = p1x + t * dx;
+  const closestY = p1y + t * dy;
+
+  const distDx = b.x - closestX;
+  const distDy = b.y - closestY;
+  const distSq = distDx * distDx + distDy * distDy;
+
+  if (distSq < b.r * b.r) {
+    const dist = Math.sqrt(distSq);
+    const nx = distDx / dist;
+    const ny = distDy / dist;
+
+    // Push out
+    const overlap = b.r - dist;
+    b.x += nx * overlap;
+    b.y += ny * overlap;
+
+    // Reflect velocity
+    const dot = b.vx * nx + b.vy * ny;
+    if (dot < 0) {
+      b.vx -= 2 * dot * nx * BOUNCE;
+      b.vy -= 2 * dot * ny * BOUNCE;
+    }
+    // Friction skip
+    b.vx *= 0.98;
+    b.vy *= 0.98;
+  }
+}
+
 function stepPhysics(
   balls: Ball[],
   particles: Particle[],
@@ -142,11 +170,21 @@ function stepPhysics(
   mouseY: number,
   mouseActive: boolean,
 ) {
-  const GRAVITY = 0.15;
-  const FRICTION = 0.995;
-  const BOUNCE = 0.7;
+  const GRAVITY = 0.25;
+  const FRICTION = 0.99;
+  const BOUNCE = 0.5;
   const MOUSE_RADIUS = 150;
-  const MOUSE_FORCE = 2.5;
+  const MOUSE_FORCE = 4.0;
+
+  const isMobile = cw < 768;
+  const bucketW = isMobile ? cw * 0.85 : cw * 0.6;
+  const bucketBottom = ch - 60;
+  const bucketTop = bucketBottom - (isMobile ? ch * 0.45 : ch * 0.4);
+  const bucketLeft = (cw - bucketW) / 2;
+  const bucketRight = bucketLeft + bucketW;
+
+  const funnelH = isMobile ? 60 : 100;
+  const funnelW = isMobile ? 40 : 80;
 
   // Balls
   for (let i = 0; i < balls.length; i++) {
@@ -165,8 +203,7 @@ function stepPhysics(
         const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS * MOUSE_FORCE;
         b.vx += (dx / dist) * force;
         b.vy += (dy / dist) * force;
-        // Interaction spin
-        b.rotationSpeed += (dx / dist) * 0.001;
+        b.rotationSpeed += (dx / dist) * 0.002;
       }
     }
 
@@ -175,11 +212,33 @@ function stepPhysics(
 
     if (b.opacity < 1) b.opacity = Math.min(1, b.opacity + 0.015);
 
-    // Wall bounce
+    // Dynamic Bucket Constraints (Line Segments)
+    // 1. Funnel Slants
+    if (b.y < bucketTop) {
+      checkLineCollision(b, bucketLeft - funnelW, bucketTop - funnelH, bucketLeft, bucketTop, BOUNCE);
+      checkLineCollision(b, bucketRight + funnelW, bucketTop - funnelH, bucketRight, bucketTop, BOUNCE);
+    }
+
+    // 2. Vertical Walls
+    if (b.y >= bucketTop - b.r && b.y <= bucketBottom + b.r) {
+      checkLineCollision(b, bucketLeft, bucketTop, bucketLeft, bucketBottom - 30, BOUNCE);
+      checkLineCollision(b, bucketRight, bucketTop, bucketRight, bucketBottom - 30, BOUNCE);
+    }
+
+    // 3. Bottom & Corners
+    if (b.y >= bucketBottom - b.r) {
+      // Main floor
+      checkLineCollision(b, bucketLeft + 30, bucketBottom, bucketRight - 30, bucketBottom, BOUNCE);
+      // Curved corners (approximated with small segments for better physics than just hitting a wall)
+      checkLineCollision(b, bucketLeft, bucketBottom - 30, bucketLeft + 30, bucketBottom, BOUNCE);
+      checkLineCollision(b, bucketRight, bucketBottom - 30, bucketRight - 30, bucketBottom, BOUNCE);
+    }
+
+    // Screen edge bounce (only horizontal)
     if (b.x - b.r < 0) { b.x = b.r; b.vx = Math.abs(b.vx) * BOUNCE; }
     if (b.x + b.r > cw) { b.x = cw - b.r; b.vx = -Math.abs(b.vx) * BOUNCE; }
+    // Bottom floor fallback (prevent sinking)
     if (b.y + b.r > ch) { b.y = ch - b.r; b.vy = -Math.abs(b.vy) * BOUNCE; }
-    if (b.y - b.r < 0) { b.y = b.r; b.vy = Math.abs(b.vy) * BOUNCE; }
 
     // Multi-ball collision
     for (let j = i + 1; j < balls.length; j++) {
@@ -234,7 +293,16 @@ function drawScene(
   ctx.save();
   ctx.scale(dpr, dpr);
 
-  // Background Nebula Auras
+  const isMobile = cw < 768;
+  const bucketW = isMobile ? cw * 0.85 : cw * 0.6;
+  const bucketBottom = ch - 60;
+  const bucketTop = bucketBottom - (isMobile ? ch * 0.45 : ch * 0.4);
+  const bucketLeft = (cw - bucketW) / 2;
+  const bucketRight = bucketLeft + bucketW;
+  const funnelH = isMobile ? 60 : 100;
+  const funnelW = isMobile ? 40 : 80;
+
+  // 1. Background Nebula Auras
   ctx.globalCompositeOperation = 'screen';
   const time = Date.now() * 0.0005;
   const auroraCount = 3;
@@ -248,7 +316,7 @@ function drawScene(
     ctx.fillRect(0, 0, cw, ch);
   }
 
-  // Particles
+  // 2. Particles
   ctx.globalCompositeOperation = 'lighter';
   for (const p of particles) {
     ctx.fillStyle = `hsla(${p.hue}, 50%, 80%, ${p.opacity})`;
@@ -257,7 +325,99 @@ function drawScene(
     ctx.fill();
   }
 
+  // 3. DRAW AGENTIC BUCKET (Behind Balls)
   ctx.globalCompositeOperation = 'source-over';
+  
+  // High-Tech Funnel Shape
+  ctx.beginPath();
+  // Left Funnel
+  ctx.moveTo(bucketLeft - funnelW, bucketTop - funnelH);
+  ctx.lineTo(bucketLeft, bucketTop);
+  // Left Body
+  ctx.lineTo(bucketLeft, bucketBottom - 30);
+  ctx.quadraticCurveTo(bucketLeft, bucketBottom, bucketLeft + 30, bucketBottom);
+  // Bottom
+  ctx.lineTo(bucketRight - 30, bucketBottom);
+  ctx.quadraticCurveTo(bucketRight, bucketBottom, bucketRight, bucketBottom - 30);
+  // Right Body
+  ctx.lineTo(bucketRight, bucketTop);
+  // Right Funnel
+  ctx.lineTo(bucketRight + funnelW, bucketTop - funnelH);
+  
+  // Glass Body
+  const glassGrad = ctx.createLinearGradient(0, bucketTop - funnelH, 0, bucketBottom);
+  glassGrad.addColorStop(0, 'rgba(255, 255, 255, 0.01)');
+  glassGrad.addColorStop(0.6, 'rgba(255, 255, 255, 0.03)');
+  glassGrad.addColorStop(1, 'rgba(255, 255, 255, 0.08)');
+  ctx.fillStyle = glassGrad;
+  ctx.fill();
+
+  // Premium Glass Reflection layer
+  ctx.save();
+  ctx.beginPath();
+  // Reuse the path by duplicating logic or just clip
+  ctx.moveTo(bucketLeft - funnelW, bucketTop - funnelH);
+  ctx.lineTo(bucketLeft, bucketTop);
+  ctx.lineTo(bucketLeft, bucketBottom - 30);
+  ctx.quadraticCurveTo(bucketLeft, bucketBottom, bucketLeft + 30, bucketBottom);
+  ctx.lineTo(bucketRight - 30, bucketBottom);
+  ctx.quadraticCurveTo(bucketRight, bucketBottom, bucketRight, bucketBottom - 30);
+  ctx.lineTo(bucketRight, bucketTop);
+  ctx.lineTo(bucketRight + funnelW, bucketTop - funnelH);
+  ctx.clip();
+
+  const reflectGrad = ctx.createLinearGradient(bucketLeft, bucketTop, bucketRight, bucketBottom);
+  reflectGrad.addColorStop(0, 'transparent');
+  reflectGrad.addColorStop(0.48, 'transparent');
+  reflectGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.04)');
+  reflectGrad.addColorStop(0.52, 'transparent');
+  reflectGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = reflectGrad;
+  ctx.fillRect(bucketLeft - funnelW, bucketTop - funnelH, bucketRight - bucketLeft + funnelW * 2, bucketBottom - bucketTop + funnelH);
+  ctx.restore();
+
+  // Glowing Agentic Rims (Yellow/Gold)
+  const pulse = Math.sin(Date.now() * 0.003) * 0.2 + 0.8;
+  const rimColor = `rgba(212, 175, 55, ${0.4 * pulse})`;
+  ctx.strokeStyle = rimColor;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // High-Energy Slants (Matching Screenshot)
+  const drawEnergySlant = (x1: number, y1: number, x2: number, y2: number) => {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineWidth = 3;
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = 'rgba(212, 175, 55, 0.8)';
+    ctx.strokeStyle = 'rgba(212, 175, 55, 1)';
+    ctx.stroke();
+    
+    // Double accent line
+    ctx.beginPath();
+    ctx.moveTo(x1 + (x1 < x2 ? -5 : 5), y1 - 2);
+    ctx.lineTo(x2 + (x1 < x2 ? -5 : 5), y2 - 2);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.3)';
+    ctx.stroke();
+    ctx.restore();
+  };
+  
+  drawEnergySlant(bucketLeft - funnelW, bucketTop - funnelH, bucketLeft, bucketTop);
+  drawEnergySlant(bucketRight + funnelW, bucketTop - funnelH, bucketRight, bucketTop);
+
+  // Bottom corner glows
+  const drawCornerGlow = (x: number, y: number) => {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, 80);
+    g.addColorStop(0, `rgba(212, 175, 55, ${0.1 * pulse})`);
+    g.addColorStop(1, 'transparent');
+    ctx.fillStyle = g;
+    ctx.fillRect(x - 80, y - 80, 160, 160);
+  };
+  drawCornerGlow(bucketLeft, bucketBottom);
+  drawCornerGlow(bucketRight, bucketBottom);
 
   // Balls
   for (const b of balls) {
@@ -503,7 +663,7 @@ export function TechStackSection() {
 
       {/* Header Overlay */}
       <div className="relative z-20 pointer-events-none h-full flex flex-col items-center w-full">
-        <div className="section-container !pt-32 sm:!pt-48 w-full">
+        <div className="section-container !pt-12 sm:!pt-16 w-full">
           <div className="text-center">
             <motion.div
               initial={{ opacity: 0, y: 15 }}
@@ -531,9 +691,6 @@ export function TechStackSection() {
               {t?.title || 'Our Expertise'}
             </motion.h2>
           </div>
-        </div>
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30">
-          <NextSectionButton nextRoute="/why-us" variant="dark" />
         </div>
       </div>
     </section>
