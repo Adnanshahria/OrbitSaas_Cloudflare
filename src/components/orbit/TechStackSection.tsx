@@ -7,41 +7,41 @@ import { NextSectionButton } from './NextSectionButton';
 
 /* ─── tech logo URLs (served from public/images/) ─── */
 const TECH_LOGOS = [
-  { src: '/images/react2.webp',      label: 'React',      isDouble: true },
-  { src: '/images/next2.webp',       label: 'Next.js',    isDouble: true },
-  { src: '/images/node2.webp',       label: 'Node.js',    isDouble: true },
-  { src: '/images/express.webp',     label: 'Express',    isDouble: true },
-  { src: '/images/mongo.webp',       label: 'MongoDB',    isDouble: true },
-  { src: '/images/mysql.webp',       label: 'MySQL',      isDouble: true },
-  { src: '/images/typescript.webp',  label: 'TypeScript', isDouble: true },
-  { src: '/images/tailwind.png',     label: 'Tailwind',   isDouble: false },
-  { src: '/images/prisma.png',       label: 'Prisma',     isDouble: false },
-  { src: '/images/docker.png',       label: 'Docker',     isDouble: false },
-  { src: '/images/redis.png',        label: 'Redis',      isDouble: false },
-  { src: '/images/aws.png',          label: 'AWS',        isDouble: false },
-  { src: '/images/graphql.png',      label: 'GraphQL',    isDouble: false },
-  { src: '/images/firebase.png',     label: 'Firebase',   isDouble: false },
-  { src: '/images/flutter.png',      label: 'Flutter',    isDouble: false },
-  { src: '/images/kubernetes.png',   label: 'Kubernetes', isDouble: false },
-  { src: '/images/tensorflow.png',   label: 'TensorFlow', isDouble: false },
-  { src: '/images/pytorch.png',      label: 'PyTorch',    isDouble: false },
-  { src: '/images/n8n.png',          label: 'n8n',        isDouble: false },
-  { src: '/images/openai.png',       label: 'OpenAI',     isDouble: false },
-  { src: '/images/supabase.png',     label: 'Supabase',   isDouble: false },
-  { src: '/images/vercel.png',       label: 'Vercel',     isDouble: false },
+  { src: '/images/react2.webp', label: 'React', isDouble: true },
+  { src: '/images/next2.webp', label: 'Next.js', isDouble: true },
+  { src: '/images/node2.webp', label: 'Node.js', isDouble: true },
+  { src: '/images/express.webp', label: 'Express', isDouble: true },
+  { src: '/images/mongo.webp', label: 'MongoDB', isDouble: true },
+  { src: '/images/mysql.webp', label: 'MySQL', isDouble: true },
+  { src: '/images/typescript.webp', label: 'TypeScript', isDouble: true },
+  { src: '/images/tailwind.png', label: 'Tailwind', isDouble: false },
+  { src: '/images/prisma.png', label: 'Prisma', isDouble: false },
+  { src: '/images/docker.png', label: 'Docker', isDouble: false },
+  { src: '/images/redis.png', label: 'Redis', isDouble: false },
+  { src: '/images/aws.png', label: 'AWS', isDouble: false },
+  { src: '/images/graphql.png', label: 'GraphQL', isDouble: false },
+  { src: '/images/firebase.png', label: 'Firebase', isDouble: false },
+  { src: '/images/flutter.png', label: 'Flutter', isDouble: false },
+  { src: '/images/kubernetes.png', label: 'Kubernetes', isDouble: false },
+  { src: '/images/tensorflow.png', label: 'TensorFlow', isDouble: false },
+  { src: '/images/pytorch.png', label: 'PyTorch', isDouble: false },
+  { src: '/images/n8n.png', label: 'n8n', isDouble: false },
+  { src: '/images/openai.png', label: 'OpenAI', isDouble: false },
+  { src: '/images/supabase.png', label: 'Supabase', isDouble: false },
+  { src: '/images/vercel.png', label: 'Vercel', isDouble: false },
   { src: '/images/cloudflare_new.png', label: 'Cloudflare', isDouble: false },
   { src: '/images/digitalocean.png', label: 'DigitalOcean', isDouble: false },
   { src: '/images/githubactions.png', label: 'GitHub Actions', isDouble: false },
-  { src: '/images/android.png',      label: 'Android',    isDouble: false },
-  { src: '/images/ios.png',          label: 'iOS',        isDouble: false },
-  { src: '/images/swift.png',        label: 'Swift',      isDouble: false },
-  { src: '/images/langchain.png',    label: 'LangChain',  isDouble: false },
-  { src: '/images/pinecone.png',     label: 'Pinecone',   isDouble: false },
-  { src: '/images/huggingface.png',  label: 'Hugging Face', isDouble: false },
-  { src: '/images/kotlin.png',       label: 'Kotlin',     isDouble: false },
-  { src: '/images/java.png',         label: 'Java',       isDouble: false },
-  { src: '/images/postgresql.png',   label: 'PostgreSQL', isDouble: false },
-  { src: '/images/reactnative.png',  label: 'React Native', isDouble: false },
+  { src: '/images/android.png', label: 'Android', isDouble: false },
+  { src: '/images/ios.png', label: 'iOS', isDouble: false },
+  { src: '/images/swift.png', label: 'Swift', isDouble: false },
+  { src: '/images/langchain.png', label: 'LangChain', isDouble: false },
+  { src: '/images/pinecone.png', label: 'Pinecone', isDouble: false },
+  { src: '/images/huggingface.png', label: 'Hugging Face', isDouble: false },
+  { src: '/images/kotlin.png', label: 'Kotlin', isDouble: false },
+  { src: '/images/java.png', label: 'Java', isDouble: false },
+  { src: '/images/postgresql.png', label: 'PostgreSQL', isDouble: false },
+  { src: '/images/reactnative.png', label: 'React Native', isDouble: false },
 ];
 
 /* ─── Ball Interface ─── */
@@ -79,16 +79,16 @@ function createBalls(
   const balls: Ball[] = [];
   const isMobile = cw < 768;
   const isSmallMobile = cw < 450;
-  
+
   const techCount = isMobile ? Math.min(30, images.length) : images.length;
 
   for (let i = 0; i < techCount; i++) {
     const rBase = isSmallMobile ? (22 + Math.random() * 4) : isMobile ? (26 + Math.random() * 5) : (30 + Math.random() * 8);
-    
+
     // Drop balls directly through the funnel top
     balls.push({
       x: cw * 0.35 + Math.random() * (cw * 0.3),
-      y: -rBase - Math.random() * ch * 2.5, 
+      y: -rBase - Math.random() * ch * 2.5,
       vx: (Math.random() - 0.5) * 3,
       vy: Math.random() * 2 + 3,
       r: rBase,
@@ -152,12 +152,20 @@ function checkLineCollision(b: Ball, p1x: number, p1y: number, p2x: number, p2y:
     // Reflect velocity
     const dot = b.vx * nx + b.vy * ny;
     if (dot < 0) {
-      b.vx -= 2 * dot * nx * BOUNCE;
-      b.vy -= 2 * dot * ny * BOUNCE;
+      // Zero bounce for slow collisions to prevent jitter/vibration
+      const bounceMult = Math.abs(dot) < 1.0 ? 0 : BOUNCE;
+      b.vx -= 2 * dot * nx * bounceMult;
+      b.vy -= 2 * dot * ny * bounceMult;
     }
-    // Friction skip
-    b.vx *= 0.98;
-    b.vy *= 0.98;
+    // High Ground friction
+    b.vx *= 0.94;
+    b.vy *= 0.94;
+    
+    // Rotation transfer (slight spin based on slide)
+    const tx = -ny;
+    const ty = nx;
+    const tangentSlip = b.vx * tx + b.vy * ty;
+    b.rotationSpeed += tangentSlip * 0.0005;
   }
 }
 
@@ -205,6 +213,18 @@ function stepPhysics(
         b.vy += (dy / dist) * force;
         b.rotationSpeed += (dx / dist) * 0.002;
       }
+    }
+
+    // Aggressive Dampening near bucket floor/corners
+    if (b.y > bucketBottom - b.r * 2) {
+      b.vx *= 0.95;
+      b.vy *= 0.95;
+      b.rotationSpeed *= 0.92;
+      
+      // Stop completely if very slow
+      if (Math.abs(b.vx) < 0.05) b.vx = 0;
+      if (Math.abs(b.vy) < 0.05) b.vy = 0;
+      if (Math.abs(b.rotationSpeed) < 0.005) b.rotationSpeed = 0;
     }
 
     b.x += b.vx;
@@ -260,10 +280,12 @@ function stepPhysics(
         const dvy = b.vy - o.vy;
         const dvDotN = dvx * nx + dvy * ny;
         if (dvDotN > 0) {
-          b.vx -= dvDotN * nx * BOUNCE;
-          b.vy -= dvDotN * ny * BOUNCE;
-          o.vx += dvDotN * nx * BOUNCE;
-          o.vy += dvDotN * ny * BOUNCE;
+          // Suppress bounce for slow collisions to stabilize the pile
+          const bounceMult = dvDotN < 1.0 ? 0 : BOUNCE;
+          b.vx -= dvDotN * nx * bounceMult;
+          b.vy -= dvDotN * ny * bounceMult;
+          o.vx += dvDotN * nx * bounceMult;
+          o.vy += dvDotN * ny * bounceMult;
         }
       }
     }
@@ -327,7 +349,7 @@ function drawScene(
 
   // 3. DRAW AGENTIC BUCKET (Behind Balls)
   ctx.globalCompositeOperation = 'source-over';
-  
+
   // High-Tech Funnel Shape
   ctx.beginPath();
   // Left Funnel
@@ -343,7 +365,7 @@ function drawScene(
   ctx.lineTo(bucketRight, bucketTop);
   // Right Funnel
   ctx.lineTo(bucketRight + funnelW, bucketTop - funnelH);
-  
+
   // Glass Body
   const glassGrad = ctx.createLinearGradient(0, bucketTop - funnelH, 0, bucketBottom);
   glassGrad.addColorStop(0, 'rgba(255, 255, 255, 0.01)');
@@ -394,7 +416,7 @@ function drawScene(
     ctx.shadowColor = 'rgba(212, 175, 55, 0.8)';
     ctx.strokeStyle = 'rgba(212, 175, 55, 1)';
     ctx.stroke();
-    
+
     // Double accent line
     ctx.beginPath();
     ctx.moveTo(x1 + (x1 < x2 ? -5 : 5), y1 - 2);
@@ -404,7 +426,7 @@ function drawScene(
     ctx.stroke();
     ctx.restore();
   };
-  
+
   drawEnergySlant(bucketLeft - funnelW, bucketTop - funnelH, bucketLeft, bucketTop);
   drawEnergySlant(bucketRight + funnelW, bucketTop - funnelH, bucketRight, bucketTop);
 
@@ -466,20 +488,20 @@ function drawScene(
       // Apply a subtle white glow behind the logo to make it pop
       ctx.shadowBlur = 20;
       ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
-      
+
       ctx.beginPath();
       ctx.arc(0, 0, b.r * 0.75, 0, Math.PI * 2);
       ctx.clip();
-      
+
       const imgWidth = b.img.naturalWidth;
       const imgHeight = b.img.naturalHeight;
-      const targetSize = b.r * 1.55; 
+      const targetSize = b.r * 1.55;
 
       if (b.isDouble) {
         // CROP: Source images have 2 logos side-by-side. 
         // We take only the left half (0 to width/2).
         ctx.drawImage(
-          b.img, 
+          b.img,
           0, 0, imgWidth / 2, imgHeight, // Source: left half only
           -targetSize / 2, -targetSize / 2, targetSize, targetSize // Destination
         );
@@ -638,16 +660,16 @@ export function TechStackSection() {
       style={{ background: '#060606' }}
     >
       {/* Background radial gradient for depth */}
-      <div 
+      <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background: 'radial-gradient(circle at 50% 50%, #1a1a1a 0%, #060606 100%)',
           opacity: 0.7
         }}
       />
-      
+
       {/* Top Overlay to protect Header Legibility */}
-      <div 
+      <div
         className="absolute inset-x-0 top-0 h-[50dvh] pointer-events-none z-10"
         style={{
           background: 'linear-gradient(to bottom, #060606 0%, rgba(6,6,6,0.8) 50%, rgba(6,6,6,0.4) 80%, transparent 100%)'
