@@ -125,7 +125,7 @@ export const translations = {
       benefits: [
         { title: 'Global Delivery', desc: 'Deploy your vision to users worldwide with sub-second latency and high availability.' },
         { title: 'Enterprise Security', desc: 'Bank-grade encryption and compliance come standard with every line of code we write.' },
-        { title: 'Elite Talent', desc: 'Access a dedicated team of world-class engineers, designers, and AI researchers.' }
+        { title: '24/7 Human Assistance', desc: 'Expert human support available around the clock to guide your vision and resolve complex challenges.' }
       ]
     },
     projects: {
@@ -328,7 +328,7 @@ export const translations = {
       benefits: [
         { title: 'গ্লোবাল ডেলিভারি', desc: 'বিশ্বজুড়ে ব্যবহারকারীদের কাছে অত্যন্ত দ্রুত গতিতে এবং উচ্চ নির্ভযোগ্যতায় আপনার ভিশন পৌঁছে দিন।' },
         { title: 'এন্টারপ্রাইজ সিকিউরিটি', desc: 'আমাদের লেখা প্রতিটি কোড লাইনের সাথে ব্যাংক-গ্রেড এনক্রিপশন এবং কমপ্লায়েন্স নিশ্চিত করা হয়।' },
-        { title: 'অভিজাত প্রতিভা', desc: 'বিশ্বমানের ইঞ্জিনিয়ার, ডিজাইনার এবং এআই গবেষকদের একটি নিবেদিত দলের অভিজ্ঞতা উপভোগ করুন।' }
+        { title: '২৪/৭ হিউম্যান অ্যাসিস্ট্যান্স', desc: 'আপনার ভিশনকে পরিচালিত করতে এবং জটিল চ্যালেঞ্জগুলো সমাধান করতে সার্বক্ষণিক বিশেষজ্ঞ মানবিক সহায়তা।' }
       ]
     },
     projects: {

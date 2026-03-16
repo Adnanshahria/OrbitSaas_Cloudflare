@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
 import { 
@@ -13,12 +13,13 @@ import {
   Zap,
   BarChart3,
   Layers,
-  Sparkles
+  Sparkles,
+  Headset
 } from 'lucide-react';
 import { RichText } from '@/components/ui/RichText';
 
 const ICONS = [BarChart3, Layers, TrendingUp, Brain];
-const BENEFIT_ICONS = [Globe, ShieldCheck, Sparkles];
+const BENEFIT_ICONS = [Globe, ShieldCheck, Headset];
 
 /* ───────────────── Middle Aura Component (Agent Skill) ──────────────── */
 const MiddleAura = ({ color = 'var(--accent)', scale = 1 }: { color?: string; scale?: number }) => (
@@ -122,108 +123,192 @@ const ROIVisual = () => (
   </div>
 );
 
-// 1. Scalability — Neural Fractal Hub (Agent Skills Premium)
+// 1. Scalability — Elastic Hive Dynamics (Agent Skills Premium)
 const ScalabilityVisual = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     let animationFrameId: number;
-    const timeStart = Date.now();
+    const startTime = Date.now();
 
-    const nodes: any[] = [];
-    const maxLevels = 3;
-    const branches = 4;
+    // High DPI scaling
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
 
-    // Build Fractal Structure
-    const buildFractal = (x: number, y: number, level: number, angle: number) => {
-      if (level > maxLevels) return;
-      
-      const id = nodes.length;
-      nodes.push({ x, y, level, parentId: id === 0 ? -1 : nodes.length - 1 });
-      
-      const dist = 50 / (level + 1);
-      for (let i = 0; i < branches; i++) {
-        const a = angle + (i - branches / 2) * (Math.PI / 2 / (level + 1));
-        const nx = x + Math.cos(a) * dist;
-        const ny = y + Math.sin(a) * dist;
-        buildFractal(nx, ny, level + 1, a);
+    // Node configuration
+    const accentColor = '#D4A017';
+    const accentSecondary = '#A37B10';
+    const accentBright = '#F5C542';
+    
+    const nodes = [
+      { id: 'base', x: 40, y: 100, size: 18, complexity: 1 },
+      { id: 'mid1', x: 100, y: 100, size: 12, complexity: 0.6 },
+      { id: 'branch1', x: 140, y: 70, size: 10, complexity: 0.4 },
+      { id: 'branch2', x: 140, y: 130, size: 10, complexity: 0.4 },
+      { id: 'final1', x: 180, y: 85, size: 8, complexity: 0.3 },
+      { id: 'final2', x: 180, y: 115, size: 8, complexity: 0.3 },
+      { id: 'final3', x: 180, y: 55, size: 8, complexity: 0.3 },
+      { id: 'final4', x: 180, y: 145, size: 8, complexity: 0.3 },
+    ];
+
+    const connections = [
+      { from: 'base', to: 'mid1' },
+      { from: 'mid1', to: 'branch1' },
+      { from: 'mid1', to: 'branch2' },
+      { from: 'branch1', to: 'final1' },
+      { from: 'branch1', to: 'final3' },
+      { from: 'branch2', to: 'final2' },
+      { from: 'branch2', to: 'final4' },
+    ];
+
+    const particles: any[] = [];
+    for (let i = 0; i < 24; i++) {
+        const conn = connections[Math.floor(Math.random() * connections.length)];
+        particles.push({
+            conn,
+            t: Math.random(),
+            speed: 0.004 + Math.random() * 0.01,
+            size: 0.8 + Math.random() * 0.5
+        });
+    }
+
+    const drawIsoCube = (x: number, y: number, size: number, opacity: number, isBase: boolean = false) => {
+      const h = size * 0.5;
+      const w = size;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.globalAlpha = opacity;
+
+      // 1. Shadow (Soft but defined)
+      ctx.beginPath();
+      ctx.ellipse(0, h * 1.8, w * 0.9, h * 0.4, 0, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0, 0, 0, ${0.45 * opacity})`;
+      ctx.fill();
+
+      // 2. Main Faces with sharper contrast
+      // Top Face
+      ctx.beginPath();
+      ctx.moveTo(0, -h); ctx.lineTo(w, 0); ctx.lineTo(0, h); ctx.lineTo(-w, 0);
+      ctx.closePath();
+      const topGrad = ctx.createLinearGradient(0, -h, 0, h);
+      topGrad.addColorStop(0, isBase ? '#FFF' : accentBright);
+      topGrad.addColorStop(1, isBase ? '#CCC' : accentColor);
+      ctx.fillStyle = topGrad;
+      ctx.fill();
+
+      // Right Face (Deepened)
+      ctx.beginPath();
+      ctx.moveTo(w, 0); ctx.lineTo(0, h); ctx.lineTo(0, h * 2.4); ctx.lineTo(w, h * 1.4);
+      ctx.closePath();
+      ctx.fillStyle = '#7d5e0c';
+      ctx.fill();
+
+      // Left Face (Middle tone)
+      ctx.beginPath();
+      ctx.moveTo(-w, 0); ctx.lineTo(0, h); ctx.lineTo(0, h * 2.4); ctx.lineTo(-w, h * 1.4);
+      ctx.closePath();
+      ctx.fillStyle = accentSecondary;
+      ctx.fill();
+
+      // 3. Sharp Technical Details
+      // Core glowing dot on top
+      ctx.beginPath();
+      ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2);
+      ctx.fillStyle = isBase ? accentColor : '#FFF';
+      ctx.fill();
+      if (opacity > 0.8) {
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = isBase ? accentColor : '#FFF';
+          ctx.fill();
+          ctx.shadowBlur = 0;
       }
+
+      // 4. Razor Sharp Highlights
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(0, -h); ctx.lineTo(w, 0); ctx.lineTo(0, h);
+      ctx.stroke();
+
+      // Left vertical edge highlight
+      ctx.beginPath();
+      ctx.moveTo(-w, 0); ctx.lineTo(0, h);
+      ctx.stroke();
+
+      ctx.restore();
     };
 
-    buildFractal(100, 100, 0, 0);
-
     const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const time = (Date.now() - timeStart) / 1000;
-      const pulse = Math.sin(time * 2) * 0.5 + 0.5;
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      const time = (Date.now() - startTime) / 1000;
 
-      // ── Background Shimmer ──
-      ctx.fillStyle = 'rgba(212, 160, 23, 0.02)';
-      ctx.fillRect(0, 0, 200, 200);
+      // Background accent grid (Static but sharp)
+      ctx.strokeStyle = 'rgba(212, 160, 23, 0.04)';
+      ctx.lineWidth = 0.5;
+      for(let x = 0; x < 200; x += 20) {
+          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 200); ctx.stroke();
+      }
+      for(let y = 0; y < 200; y += 20) {
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(200, y); ctx.stroke();
+      }
 
-      // ── Connections ──
-      ctx.lineWidth = 1;
-      nodes.forEach((node, i) => {
-        if (i === 0) return;
-        const parent = nodes[node.parentId] || nodes[0];
+      // 1. Draw Connections (Solid & Pulsing for sharpness)
+      connections.forEach(conn => {
+        const fromNode = nodes.find(n => n.id === conn.from)!;
+        const toNode = nodes.find(n => n.id === conn.to)!;
         
-        // Dynamic path distortion
-        const phase = (time + i * 0.1) % 2;
-        const pOpacity = Math.max(0, 1 - Math.abs(phase - 1) * 2);
-
         ctx.beginPath();
-        ctx.moveTo(parent.x, parent.y);
-        ctx.lineTo(node.x, node.y);
-        ctx.strokeStyle = `rgba(212, 160, 23, ${0.1 + pOpacity * 0.3})`;
+        ctx.moveTo(fromNode.x, fromNode.y);
+        ctx.lineTo(toNode.x, toNode.y);
+        ctx.strokeStyle = `rgba(212, 160, 23, ${0.1 + Math.sin(time*2)*0.05})`;
+        ctx.lineWidth = 1;
         ctx.stroke();
+      });
 
-        if (pOpacity > 0.1) {
+      // 2. Draw Particles (Plasma style)
+      particles.forEach(p => {
+          const fromNode = nodes.find(n => n.id === p.conn.from)!;
+          const toNode = nodes.find(n => n.id === p.conn.to)!;
+          
+          p.t += p.speed;
+          if (p.t > 1) p.t = 0;
+
+          const px = fromNode.x + (toNode.x - fromNode.x) * p.t;
+          const py = fromNode.y + (toNode.y - fromNode.y) * p.t;
+
           ctx.beginPath();
-          const px = parent.x + (node.x - parent.x) * phase;
-          const py = parent.y + (node.y - parent.y) * phase;
-          ctx.arc(px, py, 1.5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 255, 255, ${pOpacity})`;
+          ctx.arc(px, py, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = '#FFF';
+          ctx.shadowBlur = 4;
+          ctx.shadowColor = accentColor;
           ctx.fill();
-        }
+          ctx.shadowBlur = 0;
       });
 
-      // ── Nodes ──
-      nodes.forEach((n, i) => {
-        const floatX = Math.sin(time + i) * 2;
-        const floatY = Math.cos(time + i * 0.8) * 2;
-        const nx = n.x + floatX;
-        const ny = n.y + floatY;
-
-        const size = (4 - n.level) * 1.5;
-        
-        // Node Glow
-        const grad = ctx.createRadialGradient(nx, ny, 0, nx, ny, size * 4);
-        grad.addColorStop(0, `rgba(212, 160, 23, ${0.2 * (1 / (n.level + 1))})`);
-        grad.addColorStop(1, 'rgba(212, 160, 23, 0)');
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(nx, ny, size * 4, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Core
-        ctx.beginPath();
-        ctx.arc(nx, ny, size, 0, Math.PI * 2);
-        ctx.fillStyle = n.level === 0 ? 'var(--accent)' : `rgba(212, 160, 23, ${0.6 - n.level * 0.1})`;
-        ctx.fill();
-
-        if (n.level === 0) {
-          ctx.strokeStyle = '#fff';
-          ctx.lineWidth = 0.5;
-          ctx.beginPath();
-          ctx.arc(nx, ny, size + pulse * 4, 0, Math.PI * 2);
-          ctx.stroke();
-        }
+      // 3. Draw Nodes (In reverse order for depth)
+      nodes.slice().reverse().forEach((node, i) => {
+        const float = Math.sin(time * 1.5 + i) * 2;
+        const pulse = 0.9 + Math.sin(time * 3 + i) * 0.1;
+        drawIsoCube(node.x, node.y + float, node.size, pulse, node.id === 'base');
       });
+
+      // 4. Scanning line effect for "sharpened" feel
+      const scanY = (time * 40) % 200;
+      const scanGrad = ctx.createLinearGradient(0, scanY - 10, 0, scanY + 10);
+      scanGrad.addColorStop(0, 'transparent');
+      scanGrad.addColorStop(0.5, 'rgba(212, 160, 23, 0.08)');
+      scanGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = scanGrad;
+      ctx.fillRect(0, scanY - 10, 200, 20);
 
       animationFrameId = requestAnimationFrame(render);
     };
@@ -233,24 +318,42 @@ const ScalabilityVisual = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-[rgba(255,255,255,0.01)] group/fractal">
-      <MiddleAura opacity-30 />
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-[rgba(255,255,255,0.01)] group/scalability">
+      {/* HUD Accents */}
+      <div className="absolute inset-4 border border-white/5 pointer-events-none" />
+      <div className="absolute top-4 left-4 w-2 h-2 border-l border-t border-[var(--accent)]/40" />
+      <div className="absolute bottom-4 right-4 w-2 h-2 border-r border-b border-[var(--accent)]/40" />
+
+      <div className="absolute inset-x-0 bottom-4 flex justify-between px-8 pointer-events-none opacity-40">
+        <span className="text-[6px] text-white font-mono tracking-widest uppercase">Scale: Infinite</span>
+        <span className="text-[6px] text-white font-mono tracking-widest uppercase">Node_ID: ORB-292</span>
+      </div>
+      
       <canvas 
         ref={canvasRef} 
-        width={200} 
-        height={200} 
-        className="w-full h-full opacity-90 transition-transform duration-700 group-hover/fractal:scale-110"
+        style={{ width: '100%', height: '100%' }}
+        className="transform transition-transform duration-1000 group-hover/scalability:scale-110"
       />
-      {/* HUD Overlay */}
-      <div className="absolute inset-0 border-[0.5px] border-white/5 pointer-events-none rounded-xl" />
-      <div className="absolute top-2 right-2 flex flex-col items-end gap-1 opacity-20">
-        <div className="w-8 h-[1px] bg-white" />
-        <div className="w-4 h-[1px] bg-white" />
-      </div>
-      <div className="absolute bottom-2 left-2 flex flex-col gap-1 opacity-20">
-        <div className="w-4 h-[1px] bg-white" />
-        <div className="w-8 h-[1px] bg-white" />
-      </div>
+
+      {/* Floating UI Elements */}
+      <motion.div 
+        className="absolute top-6 right-6 flex flex-col items-end opacity-60 group-hover/scalability:opacity-100 transition-opacity duration-500"
+        initial={{ x: 10, opacity: 0 }}
+        animate={{ x: 0, opacity: 0.6 }}
+      >
+        <div className="flex gap-1 mb-1.5 px-2 py-1 bg-black/40 backdrop-blur-sm rounded-md border border-white/10">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="w-1 h-3 bg-emerald-500/20 rounded-full overflow-hidden">
+                <motion.div 
+                  className="w-full h-full bg-emerald-400"
+                  animate={{ height: ['30%', '100%', '30%'] }}
+                  transition={{ duration: 1.2 + Math.random(), repeat: Infinity }}
+                />
+            </div>
+          ))}
+        </div>
+        <span className="text-[7px] font-black text-[var(--accent)] uppercase tracking-[0.2em] drop-shadow-md">Verified Secure</span>
+      </motion.div>
     </div>
   );
 };
@@ -564,142 +667,122 @@ const SecurityVisual = () => (
   </div>
 );
 
-// 6. Elite Talent — Celestial Talent Constellation
-const TalentVisual = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+// 6. 24/7 Human Assistance — Interactive Chat Sequence
+const HumanAssistanceVisual = () => {
+  const [messages, setMessages] = useState<any[]>([]);
+  
+  const conversation = [
+    { id: 1, type: 'user', text: 'I need a Calling Feature.', delay: 1500 },
+    { id: 2, type: 'dev', text: 'I am designing the UI/UX.', delay: 1000 },
+    { id: 3, type: 'dev', text: 'After confirmation, we will proceed to development.', delay: 2000 },
+    { id: 4, type: 'clear', delay: 1000 },
+    { id: 5, type: 'user', text: 'Make that SignUp button smaller.', delay: 1500 },
+    { id: 6, type: 'dev', text: 'I am on it.', delay: 2000 },
+  ];
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let animationFrameId: number;
-    const bokeh = Array.from({ length: 15 }, () => ({
-      x: Math.random() * 300,
-      y: Math.random() * 200,
-      size: 1 + Math.random() * 3,
-      speed: 0.2 + Math.random() * 0.5,
-      opacity: 0.1 + Math.random() * 0.3
-    }));
-
-    const nodes = [
-      { x: 30, y: 100 }, { x: 90, y: 130 }, { x: 150, y: 80 }, { x: 210, y: 130 }, { x: 250, y: 90 }
-    ];
-
-    const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const time = Date.now() / 1000;
-
-      // ── 1. Neural Constellation ──
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(212, 160, 23, 0.3)';
-      ctx.setLineDash([5, 5]);
-      ctx.lineWidth = 1;
-      ctx.moveTo(nodes[0].x, nodes[0].y);
-      for (let i = 1; i < nodes.length; i++) {
-        ctx.lineTo(nodes[i].x, nodes[i].y);
-      }
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Nodes
-      nodes.forEach((n, i) => {
-        const pulse = Math.sin(time * 2 + i) * 1.5;
-        ctx.beginPath();
-        const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 4 + pulse);
-        grad.addColorStop(0, 'rgba(212, 160, 23, 0.4)');
-        grad.addColorStop(1, 'rgba(212, 160, 23, 0)');
-        ctx.fillStyle = grad;
-        ctx.arc(n.x, n.y, 4 + pulse, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = 'var(--accent)';
-        ctx.fill();
-      });
-
-      // ── 2. Ambient Bokeh ──
-      bokeh.forEach(b => {
-        b.y -= b.speed;
-        if (b.y < -10) b.y = canvas.height + 10;
+    let isActive = true;
+    const runSequence = async () => {
+      if (!isActive) return;
+      setMessages([]);
+      await new Promise(r => setTimeout(r, 800));
+      
+      for (let i = 0; i < conversation.length; i++) {
+        if (!isActive) break;
+        const msg = conversation[i];
         
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${b.opacity})`;
-        ctx.fill();
-      });
+        if (msg.type === 'clear') {
+            await new Promise(r => setTimeout(r, msg.delay));
+            setMessages([]);
+            continue;
+        }
 
-      animationFrameId = requestAnimationFrame(render);
+        if (msg.type === 'dev') {
+            setMessages(prev => [...prev, { id: `typing-${i}`, type: 'typing' }]);
+            await new Promise(r => setTimeout(r, 1500));
+            setMessages(prev => prev.filter(m => m.type !== 'typing'));
+        }
+        
+        setMessages(prev => [...prev, msg]);
+        await new Promise(r => setTimeout(r, msg.delay));
+      }
+      
+      await new Promise(r => setTimeout(r, 5000));
+      if (isActive) runSequence();
     };
 
-    render();
-    return () => cancelAnimationFrame(animationFrameId);
+    runSequence();
+    return () => { isActive = false; };
   }, []);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center py-6 overflow-hidden bg-[rgba(255,255,255,0.01)]">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--accent)]/5 to-transparent opacity-30" />
-      
-      <div className="relative w-64 h-40">
-        <canvas 
-          ref={canvasRef} 
-          width={300} 
-          height={200} 
-          className="absolute inset-0 w-full h-full opacity-60"
-        />
-
-        {/* Floating Status Tags (React) */}
-        {[
-          { x: '10%', y: '20%', label: 'Top 1%', color: 'bg-emerald-500' },
-          { x: '80%', y: '70%', label: 'Elite AI', color: 'bg-orange-500' },
-        ].map((tag, i) => (
-          <motion.div
-            key={i}
-            className={`absolute px-2 py-0.5 rounded-full ${tag.color}/10 border border-${tag.color}/30 text-[7px] font-black text-white uppercase tracking-tighter z-10`}
-            style={{ left: tag.x, top: tag.y }}
-            animate={{ y: [0, -5, 0], opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 3, repeat: Infinity, delay: i * 0.8 }}
-          >
-            {tag.label}
-          </motion.div>
-        ))}
-
-        {/* Central Hero Tag */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <motion.div 
-            className="px-6 py-4 bg-[#110f05]/90 backdrop-blur-xl border-2 border-[var(--accent)]/40 rounded-3xl flex items-center gap-4 shadow-[0_20px_50px_rgba(212,160,23,0.3)] z-20 group"
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <div className="relative">
-              <Sparkles size={24} className="text-[var(--accent)]" />
-              <motion.div 
-                className="absolute inset-0 text-[var(--accent)]"
-                animate={{ opacity: [0, 1, 0], scale: [1, 1.5, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Sparkles size={24} />
-              </motion.div>
+    <div className="relative w-full h-full flex flex-col p-5 overflow-hidden bg-[rgba(255,255,255,0.01)] group/assistance select-none">
+        {/* Glass Header */}
+        <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-2">
+            <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
+                <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">Support Live</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-[13px] font-black text-white uppercase tracking-[0.25em]">Global Talent</span>
-              <div className="flex items-center gap-1.5">
-                <div className="h-[2px] w-8 bg-gradient-to-r from-[var(--accent)] to-transparent" />
-                <span className="text-[8px] text-[var(--accent)] font-bold uppercase tracking-widest">Verified Elite</span>
-              </div>
+            <div className="flex gap-1">
+                <div className="w-1 h-1 rounded-full bg-white/20" />
+                <div className="w-1 h-1 rounded-full bg-white/20" />
             </div>
-          </motion.div>
         </div>
-      </div>
+
+        {/* Chat Area */}
+        <div className="flex-1 flex flex-col gap-3 overflow-y-auto no-scrollbar">
+            <AnimatePresence mode="popLayout">
+                {messages.map((msg, idx) => (
+                    <motion.div
+                        key={msg.id || `typing-${idx}`}
+                        initial={{ opacity: 0, x: msg.type === 'user' ? -12 : 12, y: 10, scale: 0.9 }}
+                        animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                        layout
+                        className={`flex ${msg.type === 'user' ? 'justify-start' : 'justify-end'}`}
+                    >
+                        {msg.type === 'typing' ? (
+                            <div className="bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl rounded-bl-none flex gap-1.5 items-center">
+                                <motion.div className="w-1 h-1 bg-[var(--accent)] rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 0.8, repeat: Infinity, delay: 0 }} />
+                                <motion.div className="w-1 h-1 bg-[var(--accent)] rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 0.8, repeat: Infinity, delay: 0.2 }} />
+                                <motion.div className="w-1 h-1 bg-[var(--accent)] rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 0.8, repeat: Infinity, delay: 0.4 }} />
+                            </div>
+                        ) : (
+                            <div className={`max-w-[90%] px-4 py-2.5 rounded-2xl text-[10px] font-medium leading-relaxed shadow-xl border ${
+                                msg.type === 'user' 
+                                ? 'bg-white/5 border-white/10 text-white/90 rounded-bl-none' 
+                                : 'bg-[var(--accent)]/10 border-[var(--accent)]/30 text-[var(--accent)] rounded-br-none'
+                            }`}>
+                                {msg.text}
+                            </div>
+                        )}
+                    </motion.div>
+                ))}
+            </AnimatePresence>
+        </div>
+
+        {/* Footer HUD */}
+        <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+            <div className="flex-1 h-5 bg-white/5 rounded-full flex items-center px-3">
+                <div className="w-1 h-3 bg-white/10 rounded-full animate-pulse" />
+            </div>
+            <motion.div 
+               className="ml-2 w-5 h-5 rounded-lg bg-[var(--accent)]/20 border border-[var(--accent)]/40 flex items-center justify-center"
+               whileHover={{ scale: 1.1 }}
+            >
+                <div className="w-2 h-2 border-r-2 border-b-2 border-[var(--accent)] rotate-[-45deg] translate-x-[-0.5px]" />
+            </motion.div>
+        </div>
+
+        {/* Floating Accent */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent)]/5 blur-[40px] rounded-full pointer-events-none" />
     </div>
   );
 };
 
-const ALL_VISUALS = [ROIVisual, ScalabilityVisual, GrowthVisual, AIVisual, GlobalVisual, SecurityVisual, TalentVisual];
+const ALL_VISUALS = [ROIVisual, ScalabilityVisual, GrowthVisual, AIVisual, GlobalVisual, SecurityVisual, HumanAssistanceVisual];
 const MAIN_VISUALS = [ROIVisual, ScalabilityVisual, GrowthVisual, AIVisual];
-const BENEFIT_VISUALS = [GlobalVisual, SecurityVisual, TalentVisual];
+const BENEFIT_VISUALS = [GlobalVisual, SecurityVisual, HumanAssistanceVisual];
 
 /* ─────────────────────── 3D Tilt Card Component ─────────────────────── */
 function TiltCard({ 
@@ -841,9 +924,26 @@ function TiltCard({
 export function WhyUsSection() {
   const { content } = useContent();
   const { lang } = useLang();
+  
+  // Get raw content from context (could be overridden by DB)
   const t = (content[lang] as any)?.whyUs;
   const items = t?.items || [];
-  const benefits = t?.benefits || [];
+  
+  // Force 24/7 Human Assistance branding if database has stale text
+  const rawBenefits = t?.benefits || [];
+  const benefits = rawBenefits.map((b: any, i: number) => {
+    if (i === 2) { // 3rd Benefit: previously Elite Talent
+      const isBengali = lang === 'bn';
+      return {
+        ...b,
+        title: isBengali ? '২৪/৭ হিউম্যান অ্যাসিস্ট্যান্স' : '24/7 Human Assistance',
+        desc: isBengali 
+          ? 'আপনার ভিশনকে পরিচালিত করতে এবং জটিল চ্যালেঞ্জগুলো সমাধান করতে সার্বক্ষণিক বিশেষজ্ঞ মানবিক সহায়তা।' 
+          : 'Expert human support available around the clock to guide your vision and resolve complex challenges.'
+      };
+    }
+    return b;
+  });
 
   if (!items.length) return null;
 
