@@ -88,18 +88,19 @@ function CinematicCard({ item, i }: { item: ProjectItem; i: number }) {
             >
                 {/* Cover Photo — Full 16:9 */}
                 <div className="relative aspect-video overflow-hidden group/img">
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence mode="popLayout">
                         <motion.div
                             key={currentImage + "_wrapper"}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.4 }}
+                            transition={{ duration: 0.5, ease: "easeInOut" }}
                             className="w-full h-full relative"
                         >
                             <ImageWithSkeleton
                                 src={currentImage}
                                 alt={item.title}
+                                showSkeleton={activeIndex === -1}
                                 className="w-full h-full object-cover no-browser-trigger"
                             />
                         </motion.div>

@@ -918,10 +918,16 @@ html.low-perf .gentle-animation {
   100% { transform: translateX(100%); }
 }
 
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
 .shimmer-skeleton {
   position: relative;
   overflow: hidden;
-  background-color: rgba(0, 0, 0, 0.03);
+  background-color: rgba(128, 128, 128, 0.08); /* More visible neutral base */
+  animation: skeletonPulse 2s ease-in-out infinite;
 }
 
 .shimmer-skeleton::after {
@@ -932,13 +938,24 @@ html.low-perf .gentle-animation {
   background-image: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0) 0,
-    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.3) 35%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0.3) 65%,
     rgba(255, 255, 255, 0) 100%
   );
-  animation: shimmer 2s infinite;
+  animation: shimmer 1.5s infinite; /* Slightly faster for more energy */
 }
 
-/* Light mode shimmer adjustment */
+/* Light mode shimmer adjustment — ensure it pops on beige */
 .snap-page-light .shimmer-skeleton {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(34, 197, 94, 0.05); /* Tinted with theme green */
+}
+
+.snap-page-light .shimmer-skeleton::after {
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
 }
