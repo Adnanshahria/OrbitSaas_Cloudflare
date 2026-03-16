@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { useLang } from '@/contexts/LanguageContext';
 import { useContent } from '@/contexts/ContentContext';
 import { Helmet } from 'react-helmet-async';
@@ -43,7 +43,6 @@ function CinematicCard({ item, i }: { item: ProjectItem; i: number }) {
     })();
 
     const [activeIndex, setActiveIndex] = useState(-1);
-    const [isTransitioning, setIsTransitioning] = useState(false);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const clearCycling = useCallback(() => {
@@ -55,33 +54,15 @@ function CinematicCard({ item, i }: { item: ProjectItem; i: number }) {
 
     useEffect(() => {
         if (isHovered && hoverImageUrls.length > 0) {
-            setIsTransitioning(true);
-            const t1 = setTimeout(() => {
-                setActiveIndex(0);
-                setIsTransitioning(false);
-            }, 50);
-
+            setActiveIndex(0);
             intervalRef.current = setInterval(() => {
-                setIsTransitioning(true);
-                const t2 = setTimeout(() => {
-                    setActiveIndex((prev: number) => (prev + 1) % hoverImageUrls.length);
-                    setIsTransitioning(false);
-                }, 300);
+                setActiveIndex((prev: number) => (prev + 1) % hoverImageUrls.length);
             }, 2000);
-
-            return () => {
-                clearCycling();
-                clearTimeout(t1);
-            };
+            return () => clearCycling();
         } else {
             clearCycling();
             if (!isHovered) {
-                setIsTransitioning(true);
-                const t3 = setTimeout(() => {
-                    setActiveIndex(-1);
-                    setIsTransitioning(false);
-                }, 150);
-                return () => clearTimeout(t3);
+                setActiveIndex(-1);
             }
         }
     }, [isHovered, hoverImageUrls.length, clearCycling]);
@@ -106,13 +87,18 @@ function CinematicCard({ item, i }: { item: ProjectItem; i: number }) {
             >
                 {/* Cover Photo — Full 16:9 */}
                 <div className="relative aspect-video overflow-hidden">
-                    <img
-                        src={currentImage}
-                        alt={item.title}
-                        loading="lazy"
-                        draggable="false"
-                        className={`w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-[1.04] no-browser-trigger ${isTransitioning ? 'opacity-0 scale-105' : 'opacity-100'}`}
-                    />
+                    <AnimatePresence mode="popLayout">
+                        <motion.img
+                            key={currentImage}
+                            src={currentImage}
+                            alt={item.title}
+                            initial={{ opacity: 0, scale: 1.05 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.6, ease: "easeInOut" }}
+                            className="w-full h-full object-cover no-browser-trigger"
+                        />
+                    </AnimatePresence>
 
                     {/* Shimmer Light Sweep */}
                     <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
@@ -207,7 +193,7 @@ export function ProjectsSection() {
     }).sort((a, b) => (a.order ?? a._originalIndex) - (b.order ?? b._originalIndex));
 
     return (
-        <section id="projects" className="py-24 sm:py-32 bg-[#FDFBF7] relative overflow-hidden">
+        <section id="projects" className="py-16 sm:py-20 bg-[#FDFBF7] relative overflow-hidden">
             <Helmet>
                 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
             </Helmet>
@@ -220,27 +206,27 @@ export function ProjectsSection() {
 
             <div className="max-w-7xl mx-auto px-5 sm:px-8 relative z-10">
                 {/* Section Header */}
-                <div className="mb-16 sm:mb-24">
+                <div className="mb-10 sm:mb-14">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 15 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
-                        className="flex items-center gap-3 mb-6"
+                        className="flex items-center gap-3 mb-4"
                     >
-                        <div className="w-10 h-[2px] bg-[#22C55E]" />
-                        <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#22C55E]">
+                        <div className="w-8 h-[2px] bg-[#22C55E]" />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#22C55E]">
                             Featured Portfolio
                         </span>
                     </motion.div>
 
-                    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+                    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
                         <motion.h2
-                            initial={{ opacity: 0, y: 40 }}
+                            initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8, delay: 0.1 }}
-                            className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-gray-900"
+                            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none text-gray-900"
                             style={{ fontFamily: "'Outfit', sans-serif" }}
                         >
                             Our <span className="text-gray-300">Creative</span><br />
@@ -248,11 +234,11 @@ export function ProjectsSection() {
                         </motion.h2>
 
                         <motion.p
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 15 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8, delay: 0.2 }}
-                            className="max-w-md text-gray-500 text-lg leading-relaxed mb-2"
+                            className="max-w-md text-gray-500 text-base leading-relaxed mb-1"
                         >
                             Crafting high-performance digital experiences that merge cutting-edge technology with cinematic design.
                         </motion.p>
@@ -268,22 +254,6 @@ export function ProjectsSection() {
                     <ManyMoreCard i={displayItems.length} />
                 </div>
 
-                {/* Explore Archive CTA */}
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8, delay: 0.4 }}
-                    className="mt-20 text-center"
-                >
-                    <Link
-                        to="/project"
-                        className="inline-flex items-center gap-3 group px-8 py-4 rounded-full bg-white border border-[#22C55E]/20 text-[#22C55E] font-bold transition-all duration-500 hover:border-[#FACC15]/60 hover:bg-[#FDFBF7] hover:shadow-[0_10px_30px_rgba(34,197,94,0.06)]"
-                    >
-                        <span>Explore Full Archive</span>
-                        <ArrowUpRight className="w-5 h-5 transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1" />
-                    </Link>
-                </motion.div>
             </div>
         </section>
     );

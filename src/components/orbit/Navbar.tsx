@@ -81,7 +81,7 @@ export function Navbar() {
       ? 'rgba(255, 255, 255, 0.12)'
       : isLightMode ? 'rgba(163, 123, 16, 0.12)' : 'rgba(255, 255, 255, 0.12)',
     text: isProjectDetail ? '#FFFFFF' : (isLightMode ? '#000000' : '#FFFFFF'),
-    textMuted: isProjectDetail ? 'rgba(255, 255, 255, 0.5)' : (isLightMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)'),
+    textMuted: isProjectDetail ? 'rgba(255, 255, 255, 0.6)' : (isLightMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.6)'),
     accent: '#10B981', // Emerald 500
     glass: isProjectDetail 
       ? 'backdrop-blur-[40px]' 

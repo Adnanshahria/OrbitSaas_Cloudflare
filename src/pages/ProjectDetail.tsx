@@ -455,12 +455,18 @@ function SuggestedProjectCard({ item, routeId }: { item: any, routeId: string })
             onMouseLeave={() => setIsHovered(false)}
         >
             <div className="relative w-28 sm:w-36 flex-shrink-0 aspect-video rounded-lg overflow-hidden bg-gray-100">
-                <img
-                    src={currentImage}
-                    alt={item.title}
-                    draggable="false"
-                    className={`w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110 no-browser-trigger ${isTransitioning ? 'opacity-0 scale-105' : 'opacity-100'}`}
-                />
+                <AnimatePresence mode="popLayout">
+                    <motion.img
+                        key={currentImage}
+                        src={currentImage}
+                        alt={item.title}
+                        initial={{ opacity: 0, scale: 1.05 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.5, ease: "easeInOut" }}
+                        className="w-full h-full object-cover no-browser-trigger"
+                    />
+                </AnimatePresence>
                 <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                     <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1.2s] ease-in-out bg-gradient-to-r from-transparent via-white/[0.2] to-transparent" />
                 </div>

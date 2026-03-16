@@ -47,7 +47,6 @@ function ArchiveCard({ item, i }: { item: ProjectItem; i: number }) {
     })();
 
     const [activeIndex, setActiveIndex] = useState(-1);
-    const [isTransitioning, setIsTransitioning] = useState(false);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const clearCycling = useCallback(() => {
@@ -59,33 +58,15 @@ function ArchiveCard({ item, i }: { item: ProjectItem; i: number }) {
 
     useEffect(() => {
         if (isHovered && hoverImageUrls.length > 0) {
-            setIsTransitioning(true);
-            const t1 = setTimeout(() => {
-                setActiveIndex(0);
-                setIsTransitioning(false);
-            }, 50);
-
+            setActiveIndex(0);
             intervalRef.current = setInterval(() => {
-                setIsTransitioning(true);
-                const t2 = setTimeout(() => {
-                    setActiveIndex((prev: number) => (prev + 1) % hoverImageUrls.length);
-                    setIsTransitioning(false);
-                }, 300);
+                setActiveIndex((prev: number) => (prev + 1) % hoverImageUrls.length);
             }, 2000);
-
-            return () => {
-                clearCycling();
-                clearTimeout(t1);
-            };
+            return () => clearCycling();
         } else {
             clearCycling();
             if (!isHovered) {
-                setIsTransitioning(true);
-                const t3 = setTimeout(() => {
-                    setActiveIndex(-1);
-                    setIsTransitioning(false);
-                }, 150);
-                return () => clearTimeout(t3);
+                setActiveIndex(-1);
             }
         }
     }, [isHovered, hoverImageUrls.length, clearCycling]);
@@ -113,13 +94,18 @@ function ArchiveCard({ item, i }: { item: ProjectItem; i: number }) {
                 
                 {/* Cover Photo */}
                 <div className="relative aspect-video overflow-hidden">
-                    <img
-                        src={currentImage}
-                        alt={item.title}
-                        loading="lazy"
-                        draggable="false"
-                        className={`w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-[1.04] no-browser-trigger ${isTransitioning ? 'opacity-0 scale-105' : 'opacity-100'}`}
-                    />
+                    <AnimatePresence mode="popLayout">
+                        <motion.img
+                            key={currentImage}
+                            src={currentImage}
+                            alt={item.title}
+                            initial={{ opacity: 0, scale: 1.05 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.6, ease: "easeInOut" }}
+                            className="w-full h-full object-cover no-browser-trigger"
+                        />
+                    </AnimatePresence>
 
                     {/* Shimmer */}
                     <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
