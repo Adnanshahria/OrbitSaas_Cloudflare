@@ -685,22 +685,9 @@ export function TechStackSection() {
 
       {/* Header Overlay */}
       <div className="relative z-20 pointer-events-none h-full flex flex-col items-center w-full">
-        <div className="section-container !pt-12 sm:!pt-16 w-full">
+        <div className="section-container !pt-20 sm:!pt-28 w-full">
           <div className="text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4 }}
-              className="flex justify-center mb-6"
-            >
-              <span className="pill-badge pill-badge-dark border-emerald-500/20 bg-emerald-500/5 px-4 py-1.5 backdrop-blur-md">
-                <Cpu size={14} className="text-emerald-500" />
-                <span className="text-emerald-500/90 text-[10px] font-bold tracking-widest uppercase">
-                  {t?.subtitle || 'Technologies We Power Your Vision With'}
-                </span>
-              </span>
-            </motion.div>
+
 
             <motion.h2
               initial={{ opacity: 0, y: 15 }}
