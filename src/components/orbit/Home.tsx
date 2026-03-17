@@ -4,6 +4,10 @@ import { useLang } from '@/contexts/LanguageContext';
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RichText } from '@/components/ui/RichText';
+import { Canvas } from '@react-three/fiber';
+import { Suspense, lazy } from 'react';
+
+const Hero3DVisual = lazy(() => import('@/components/orbit/Hero3DVisual').then(module => ({ default: module.Hero3DVisual })));
 import { 
   ArrowRight, Cpu, Zap, Activity, Globe, MessageSquare, Shield, Rocket,
   Bot, Smartphone, ShoppingCart, Code, Database, Cloud, Monitor, 
@@ -478,6 +482,15 @@ export function Home() {
               {/* Background Glows shifted for new layout */}
               <div className="absolute top-[45%] left-[-50%] w-96 h-96 bg-indigo-500/10 rounded-full blur-[160px] -z-10" />
               <div className="absolute top-[15%] right-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-[100px] -z-10" />
+              
+              {/* 3D Glass Objects Layer */}
+              <div className="absolute inset-[-10%] z-0 pointer-events-none md:pointer-events-auto">
+                <Canvas camera={{ position: [0, 0, 7], fov: 45 }} gl={{ antialias: true, alpha: true }}>
+                  <Suspense fallback={null}>
+                    <Hero3DVisual />
+                  </Suspense>
+                </Canvas>
+              </div>
             </div>
           </div>
         </div>

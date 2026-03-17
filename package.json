@@ -61,6 +61,7 @@
     "dotenv": "^17.3.1",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.19",
+    "framer-motion-3d": "^12.4.13",
     "input-otp": "^1.4.2",
     "jose": "^5.2.0",
     "jsonwebtoken": "^9.0.3",
