@@ -11,6 +11,7 @@ import {
   Award, BookOpen, Users, BarChart3, Sparkles, Layers, Settings2, 
   Eye, Palette, Brain, Wrench, LucideIcon
 } from 'lucide-react';
+import { WaveDivider } from '@/components/ui/WaveDivider';
 
 
 const BackgroundBlobs = () => (
@@ -482,7 +483,7 @@ export function Home() {
         </div>
       </div>
 
-
+      <WaveDivider fill="#FAFAFA" />
     </section>
   );
 }

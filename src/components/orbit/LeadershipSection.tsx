@@ -4,6 +4,7 @@ import { useLang } from '@/contexts/LanguageContext';
 import { Users, Linkedin, Twitter, Mail } from 'lucide-react';
 
 import { useState, useEffect, useRef } from 'react';
+import { WaveDivider } from '@/components/ui/WaveDivider';
 
 export function LeadershipSection() {
   const { content } = useContent();
@@ -212,6 +213,7 @@ export function LeadershipSection() {
 
 
       </div>
+      <WaveDivider fill="#050505" />
     </section>
   );
 }

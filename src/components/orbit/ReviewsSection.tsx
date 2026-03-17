@@ -3,6 +3,7 @@ import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
 import { Star, Quote, Twitter, Instagram, Facebook, Linkedin, Mail, ArrowUpRight, Github, MessageCircle, Briefcase, Globe, AtSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { WaveDivider } from '@/components/ui/WaveDivider';
 
 
 // ── WhatsApp Icon Component (Synced with Navbar) ──
@@ -299,6 +300,7 @@ export function ReviewsSection() {
                 </div>
 
             </div>
+            <WaveDivider fill="#FAFAFA" />
         </section>
     );
 }

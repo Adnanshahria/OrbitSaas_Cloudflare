@@ -40,6 +40,7 @@ import {
   Wrench
 } from 'lucide-react';
 import { RichText } from '@/components/ui/RichText';
+import { WaveDivider } from '@/components/ui/WaveDivider';
 
 
 const ICONS = [BarChart3, Layers, TrendingUp, Brain];
@@ -1052,6 +1053,7 @@ export function WhyUsSection() {
 
 
       </div>
+      <WaveDivider fill="#FDFBF7" />
     </section>
   );
 }

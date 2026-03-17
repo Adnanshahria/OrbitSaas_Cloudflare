@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { RichText } from '@/components/ui/RichText';
+import { WaveDivider } from '@/components/ui/WaveDivider';
 
 
 
@@ -1023,6 +1024,7 @@ export function ServicesSection({ embedded }: { embedded?: boolean }) {
         </motion.div>
         
       </div>
+      <WaveDivider fill="var(--bg-dark)" />
     </Wrapper>
   );
 }

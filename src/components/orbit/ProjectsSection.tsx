@@ -6,6 +6,7 @@ import { useContent } from '@/contexts/ContentContext';
 import { Helmet } from 'react-helmet-async';
 import { ArrowUpRight, FolderOpen } from 'lucide-react';
 import { ProjectDetailModal } from './ProjectDetailModal';
+import { WaveDivider } from '@/components/ui/WaveDivider';
 
 // --- Types ---
 interface ProjectItem {
@@ -314,6 +315,7 @@ export function ProjectsSection() {
                 projectId={selectedProjectId} 
                 onClose={closeModal} 
             />
+            <WaveDivider fill="#0A0A0A" />
         </section>
     );
 }
