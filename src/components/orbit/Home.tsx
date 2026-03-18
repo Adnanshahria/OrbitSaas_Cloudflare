@@ -1,11 +1,21 @@
 import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RichText } from '@/components/ui/RichText';
-import { Canvas } from '@react-three/fiber';
-import { Suspense, lazy } from 'react';
+
+// Mobile detection hook — prevents heavy components from mounting on touch devices
+function useIsMobile() {
+  const [isMobile] = useState(() =>
+    typeof window !== 'undefined' &&
+    (window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.innerWidth < 1024)
+  );
+  return isMobile;
+}
+
+// Lazy load Three.js only on desktop
+const Canvas = lazy(() => import('@react-three/fiber').then(m => ({ default: m.Canvas })));
 
 const Hero3DVisual = lazy(() => import('@/components/orbit/Hero3DVisual').then(module => ({ default: module.Hero3DVisual })));
 import { 
@@ -96,7 +106,11 @@ function useThunderboltCanvas(
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || prefersReducedMotion) return;
+
+    // Skip thunderbolt canvas entirely on mobile/touch devices
+    const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.innerWidth < 1024;
+    if (isMobile) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -193,17 +207,19 @@ function FlashyCard({ children, icon: Icon, title, delay, className = "" }: any)
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
   const [isHovered, setIsHovered] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  // Disable 3D tilt on touch devices — hover doesn't exist
+  const isTouch = typeof window !== 'undefined' && window.matchMedia('(hover: none)').matches;
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
+    if (!cardRef.current || isTouch) return;
     const rect = cardRef.current.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
     setMousePos({ x, y });
   };
 
-  const tiltX = isHovered ? (mousePos.y - 0.5) * 20 : 0;
-  const tiltY = isHovered ? (mousePos.x - 0.5) * -20 : 0;
+  const tiltX = !isTouch && isHovered ? (mousePos.y - 0.5) * 20 : 0;
+  const tiltY = !isTouch && isHovered ? (mousePos.x - 0.5) * -20 : 0;
 
   return (
     <motion.div
@@ -347,6 +363,7 @@ export function Home() {
   const navigate = useNavigate();
   const prefersReducedMotion = useReducedMotion();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isMobile = useIsMobile();
 
   const t = (content[lang] as any)?.hero;
   const stats = (content[lang] as any)?.stats?.items || [];
@@ -556,59 +573,63 @@ export function Home() {
             </motion.div>
           </div>
 
-          {/* Right Side: Flashy Cards */}
-          <div className="lg:col-span-5 xl:col-span-4 hidden lg:block">
-            <div className="relative h-[620px] w-full">
-              {/* Card 1: Agentic AI - Top Right */}
-              <div className="absolute top-[2%] right-0 z-10 transition-all duration-500">
-                <FlashyCard icon={ICON_MAP[t?.feature1Icon] || Activity} title={t?.feature1Title || "Agentic AI nodes"} delay={1.2} className="w-[280px]">
-                  <AIWorkflow steps={t?.feature1Steps} />
-                </FlashyCard>
-              </div>
+          {/* Right Side: Flashy Cards — SKIP entirely on mobile to save ~200KB JS + GPU memory */}
+          {!isMobile && (
+            <div className="lg:col-span-5 xl:col-span-4 hidden lg:block">
+              <div className="relative h-[620px] w-full">
+                {/* Card 1: Agentic AI - Top Right */}
+                <div className="absolute top-[2%] right-0 z-10 transition-all duration-500">
+                  <FlashyCard icon={ICON_MAP[t?.feature1Icon] || Activity} title={t?.feature1Title || "Agentic AI nodes"} delay={1.2} className="w-[280px]">
+                    <AIWorkflow steps={t?.feature1Steps} />
+                  </FlashyCard>
+                </div>
 
-              {/* Card 2: Conversational AI - Shifted slightly down */}
-              <div className="absolute top-[35%] left-[-15%] z-20 transition-all duration-500">
-                <FlashyCard icon={ICON_MAP[t?.feature2Icon] || Cpu} title={t?.feature2Title || "Conversational AI"} delay={1.4} className="w-[300px]">
-                  <ChatBotVisual query={t?.feature2Query} response={t?.feature2Response} />
-                  <div className="mt-4 flex justify-between items-center text-[10px] text-indigo-400 font-bold uppercase tracking-widest">
-                     <span>{t?.feature2FooterLeft || "Custom Trained LLM"}</span>
-                     <span className="opacity-50">{t?.feature2FooterRight || "Active"}</span>
-                  </div>
-                </FlashyCard>
-              </div>
+                {/* Card 2: Conversational AI - Shifted slightly down */}
+                <div className="absolute top-[35%] left-[-15%] z-20 transition-all duration-500">
+                  <FlashyCard icon={ICON_MAP[t?.feature2Icon] || Cpu} title={t?.feature2Title || "Conversational AI"} delay={1.4} className="w-[300px]">
+                    <ChatBotVisual query={t?.feature2Query} response={t?.feature2Response} />
+                    <div className="mt-4 flex justify-between items-center text-[10px] text-indigo-400 font-bold uppercase tracking-widest">
+                       <span>{t?.feature2FooterLeft || "Custom Trained LLM"}</span>
+                       <span className="opacity-50">{t?.feature2FooterRight || "Active"}</span>
+                    </div>
+                  </FlashyCard>
+                </div>
 
-              {/* Card 3: Enterprise Solutions - Pushed further down */}
-              <div className="absolute bottom-[-10%] right-[5%] z-10 transition-all duration-500">
-                <FlashyCard icon={ICON_MAP[t?.feature3Icon] || Zap} title={t?.feature3Title || "Enterprise Solutions"} delay={1.6} className="w-[260px]">
-                   <PerformanceMetric 
-                     label={t?.feature3UptimeLabel} 
-                     value={t?.feature3UptimeValue} 
-                     sub1={t?.feature3Latency} 
-                     sub2={t?.feature3Edge} 
-                   />
-                </FlashyCard>
-              </div>
+                {/* Card 3: Enterprise Solutions - Pushed further down */}
+                <div className="absolute bottom-[-10%] right-[5%] z-10 transition-all duration-500">
+                  <FlashyCard icon={ICON_MAP[t?.feature3Icon] || Zap} title={t?.feature3Title || "Enterprise Solutions"} delay={1.6} className="w-[260px]">
+                     <PerformanceMetric 
+                       label={t?.feature3UptimeLabel} 
+                       value={t?.feature3UptimeValue} 
+                       sub1={t?.feature3Latency} 
+                       sub2={t?.feature3Edge} 
+                     />
+                  </FlashyCard>
+                </div>
 
-              {/* Background Glows shifted for new layout */}
-              <div className="absolute top-[45%] left-[-50%] w-96 h-96 bg-indigo-500/10 rounded-full blur-[160px] -z-10" />
-              <div className="absolute top-[15%] right-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-[100px] -z-10" />
-              
-              {/* 3D Glass Objects Layer */}
-              <div className="absolute inset-[-10%] z-0 pointer-events-none md:pointer-events-auto">
-                <Canvas 
-                  camera={{ position: [0, 0, 7], fov: 45 }} 
-                  gl={{ antialias: true, alpha: true }}
-                  // @ts-ignore
-                  idm-ignore="true"
-                  data-idm-ignore="true"
-                >
+                {/* Background Glows shifted for new layout */}
+                <div className="absolute top-[45%] left-[-50%] w-96 h-96 bg-indigo-500/10 rounded-full blur-[160px] -z-10" />
+                <div className="absolute top-[15%] right-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-[100px] -z-10" />
+                
+                {/* 3D Glass Objects Layer */}
+                <div className="absolute inset-[-10%] z-0 pointer-events-none md:pointer-events-auto">
                   <Suspense fallback={null}>
-                    <Hero3DVisual />
+                    <Canvas 
+                      camera={{ position: [0, 0, 7], fov: 45 }} 
+                      gl={{ antialias: true, alpha: true }}
+                      // @ts-ignore
+                      idm-ignore="true"
+                      data-idm-ignore="true"
+                    >
+                      <Suspense fallback={null}>
+                        <Hero3DVisual />
+                      </Suspense>
+                    </Canvas>
                   </Suspense>
-                </Canvas>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

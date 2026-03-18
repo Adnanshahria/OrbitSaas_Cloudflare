@@ -112,19 +112,25 @@ function ProcessCard({ card, icon: Icon, isPeak, node, isDelivery }: any) {
 
 /* ─── Web Audio API Wind Swoosh ─── */
 let swooshAudioCtx: AudioContext | null = null;
-let swooshInit = false;
+let swooshUnlocked = false;
+
+function initSwooshAudio() {
+  if (swooshAudioCtx) return;
+  try {
+    swooshAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    swooshUnlocked = true;
+    if (swooshAudioCtx.state === 'suspended') swooshAudioCtx.resume();
+  } catch (e) {
+    // AudioContext not available
+  }
+}
 
 function playWindSwoosh() {
-  if (!window.AudioContext && !(window as any).webkitAudioContext) return;
-  if (!swooshAudioCtx) {
-    swooshAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  if (!swooshUnlocked || !swooshAudioCtx) return;
+  if (swooshAudioCtx.state === 'suspended') {
+    swooshAudioCtx.resume();
+    return;
   }
-  if (!swooshInit) {
-    if (swooshAudioCtx.state === 'suspended') swooshAudioCtx.resume();
-    swooshInit = true;
-  }
-  
-  if (swooshAudioCtx.state === 'suspended') return;
 
   const t = swooshAudioCtx.currentTime;
   const duration = 0.25; // Quick 0.25s woosh
@@ -181,6 +187,14 @@ export function ProcessSection() {
   const mountTime = useRef(Date.now());
   const lastStepTime = useRef(0);
 
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const checkSize = () => setIsDesktop(window.innerWidth >= 1024);
+    checkSize();
+    window.addEventListener('resize', checkSize);
+    return () => window.removeEventListener('resize', checkSize);
+  }, []);
+
   // IntersectionObserver: only activate scroll hijacking when section is ≥85% visible
   useEffect(() => {
     const el = sectionRef.current;
@@ -195,22 +209,18 @@ export function ProcessSection() {
     return () => observer.disconnect();
   }, []);
 
-  // Unlock AudioContext on user interaction
+  // Unlock AudioContext on user interaction — only create after gesture
   useEffect(() => {
     const unlockAudio = () => {
-      if (swooshAudioCtx && swooshAudioCtx.state === 'suspended') {
-        swooshAudioCtx.resume();
-      } else if (!swooshAudioCtx) {
-        swooshAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        if (swooshAudioCtx.state === 'suspended') swooshAudioCtx.resume();
-        swooshInit = true;
-      }
+      initSwooshAudio();
     };
     window.addEventListener('click', unlockAudio, { once: true });
     window.addEventListener('touchstart', unlockAudio, { once: true });
+    window.addEventListener('wheel', unlockAudio, { once: true });
     return () => {
       window.removeEventListener('click', unlockAudio);
       window.removeEventListener('touchstart', unlockAudio);
+      window.removeEventListener('wheel', unlockAudio);
     };
   }, []);
 
@@ -226,11 +236,11 @@ export function ProcessSection() {
     }
   }, [step, sortedSteps.length]);
 
-  // Reset state and start auto-scroll only when section is fully visible
+  // Reset state and start auto-scroll only when section is fully visible (DESKTOP ONLY)
   useEffect(() => {
-    if (!isFullyVisible) {
+    if (!isFullyVisible || !isDesktop) {
       // Reset when leaving full visibility
-      setStep(0);
+      if (!isFullyVisible) setStep(0);
       return;
     }
 
@@ -269,7 +279,7 @@ export function ProcessSection() {
       window.removeEventListener('touchstart', cancelAutoScroll);
       window.removeEventListener('keydown', cancelAutoScroll);
     };
-  }, [isFullyVisible, sortedSteps.length]);
+  }, [isFullyVisible, sortedSteps.length, isDesktop]);
 
   // Sync ref with state
   useEffect(() => {
@@ -277,15 +287,6 @@ export function ProcessSection() {
   }, [step]);
 
   const icons = [Search, PenTool, Code, CheckCircle2, Truck];
-
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
-    const checkSize = () => setIsDesktop(window.innerWidth >= 1024);
-    checkSize();
-    window.addEventListener('resize', checkSize);
-    return () => window.removeEventListener('resize', checkSize);
-  }, []);
 
   // Distinct & Even Desktop Node Positions (20% Interval Symmetry)
   const nodes = [
@@ -296,10 +297,10 @@ export function ProcessSection() {
     { x: '92%', y: '50%' }, // Position for Delivery card — offset right, clear of the arrow
   ];
 
-  // Handle scroll and touch to advance steps — only when section is fully visible
+  // Handle scroll and touch to advance steps — DESKTOP ONLY (mobile uses native scroll timeline)
   useEffect(() => {
     const container = sectionRef.current;
-    if (!container || !isFullyVisible) return;
+    if (!container || !isFullyVisible || !isDesktop) return;
 
     // Helper: release scroll control and scroll to an adjacent section
     const scrollToSection = (sectionId: string) => {
@@ -393,13 +394,13 @@ export function ProcessSection() {
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [isFullyVisible, sortedSteps.length]);
+  }, [isFullyVisible, sortedSteps.length, isDesktop]);
 
   return (
     <section
       ref={sectionRef}
       id="process"
-      className="section-dark relative overflow-hidden min-h-[100dvh] flex flex-col items-center justify-center pt-2 lg:pt-0"
+      className="section-dark relative overflow-hidden flex flex-col items-center justify-center pt-2 lg:pt-0 lg:min-h-[100dvh]"
     >
       <div className="absolute top-0 left-1/4 w-full h-1/2 bg-[#00ff80]/5 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-[#00ff80]/5 blur-[120px] rounded-full pointer-events-none" />
@@ -641,71 +642,94 @@ export function ProcessSection() {
           </AnimatePresence>
         </div>
 
-        {/* Mobile Sequential Stack (md-) */}
-        <div className="lg:hidden relative w-full h-[55vh] flex items-center justify-center pointer-events-none mt-4 overflow-visible">
-          <AnimatePresence mode="popLayout" initial={false}>
-            {t?.steps?.map((card: any, idx: number) => {
-              const currentCardIndex = step - 1;
-              const isCurrent = idx === currentCardIndex;
-              const isPrevious = idx === currentCardIndex - 1;
-              const isNext = (idx === currentCardIndex + 1) || (step === 0 && idx === 0) || (step === 4 && idx === 0);
+        {/* ═══ Mobile Vertical Timeline (lg-) ═══ */}
+        <div className="lg:hidden relative w-full px-4 mt-6 pb-8">
+          {/* Timeline progress line */}
+          <div className="absolute left-[34px] top-0 bottom-0 w-[2px]">
+            {/* Base line */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#00ff80]/20 via-[#00ff80]/10 to-transparent" />
+            {/* Animated glow pulse */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-b from-[#00ff80]/60 via-[#00ff80]/30 to-transparent"
+              animate={{ opacity: [0.3, 0.8, 0.3] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </div>
 
-              const isVisible = isCurrent || isPrevious || isNext;
-              if (!isVisible) return null;
+          {/* Timeline steps */}
+          {sortedSteps.map((card: any, idx: number) => {
+            const Icon = icons[idx] || icons[0];
+            const isLast = idx === sortedSteps.length - 1;
 
-              const Icon = icons[idx];
+            return (
+              <motion.div
+                key={card.id}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className={`relative flex items-start gap-4 ${isLast ? '' : 'mb-6'}`}
+              >
+                {/* Step node */}
+                <div className="relative z-10 flex-shrink-0">
+                  {/* Glow behind node */}
+                  <motion.div
+                    className="absolute inset-[-4px] rounded-full bg-[#00ff80]/20 blur-md"
+                    initial={{ scale: 0 }}
+                    whileInView={{ scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 }}
+                  />
+                  <div className="relative w-[44px] h-[44px] rounded-full bg-[#050f0a] border-2 border-[#00ff80]/50 flex items-center justify-center shadow-[0_0_20px_rgba(0,255,128,0.15)]">
+                    <span className="text-[#00ff80] font-black text-sm">{String(idx + 1).padStart(2, '0')}</span>
+                  </div>
+                </div>
 
-              let y = 0;
-              let scale = 1;
-              let opacity = 1;
-              let zIndex = 20;
-              let blur = "0px";
-
-              if (isCurrent) {
-                y = 0; scale = 1; opacity = 1; zIndex = 30;
-              } else if (isPrevious) {
-                y = -100; scale = 0.85; opacity = 0.4; zIndex = 10; blur = "2px";
-              } else if (isNext) {
-                y = 130; scale = 0.88; opacity = 0.2; zIndex = 5;
-              }
-
-              return (
+                {/* Card */}
                 <motion.div
-                  key={`${card.id}-${step}`}
-                  initial={{ opacity: 0, scale: 0.8, y: 150 }}
-                  animate={{ opacity, scale, y, zIndex }}
-                  exit={{ opacity: 0, scale: 0.8, y: -150 }}
-                  transition={{ type: "spring", stiffness: 140, damping: 25 }}
-                  className="absolute w-72 xs:w-80"
-                  style={{ filter: blur !== "0px" ? `blur(${blur})` : "none" }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-30px" }}
+                  transition={{ duration: 0.5, delay: 0.15 + idx * 0.05 }}
+                  className="flex-1 min-w-0"
                 >
-                  <div className="relative p-[1.5px] rounded-[1.8rem] bg-gradient-to-br from-[var(--accent)]/60 via-[var(--accent)]/20 to-transparent shadow-[0_0_30px_rgba(var(--accent-rgb),0.1)] backdrop-blur-3xl overflow-hidden">
-                    <div className="relative bg-[var(--bg-dark)]/95 rounded-[1.75rem] p-7 text-center flex flex-col items-center border border-white/5">
-                      <div className="absolute -top-10 -right-10 w-24 h-24 bg-[var(--accent)]/10 blur-3xl rounded-full" />
-                      <div className="relative mb-5">
-                        <div className="absolute inset-0 bg-[var(--accent)]/20 blur-xl rounded-full opacity-50" />
-                        <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--accent)]/20 to-transparent flex items-center justify-center text-[var(--accent)] border border-[var(--accent)]/30 shadow-[inset_0_0_15px_rgba(var(--accent-rgb),0.1)]">
-                          <Icon size={28} />
+                  <div className="relative p-[1px] rounded-2xl bg-gradient-to-br from-[#00ff80]/30 via-white/5 to-transparent overflow-hidden">
+                    <div className="relative bg-[#05100a]/90 rounded-[calc(1rem-1px)] p-5 border border-white/[0.03]">
+                      {/* Ambient corner glow */}
+                      <div className="absolute -top-6 -right-6 w-16 h-16 bg-[#00ff80]/8 blur-2xl rounded-full pointer-events-none" />
+
+                      {/* Icon + Title row */}
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 shrink-0 rounded-xl bg-[#00ff80]/10 flex items-center justify-center text-[#00ff80] border border-[#00ff80]/20">
+                          <Icon size={20} />
+                        </div>
+                        <div>
+                          <span className="text-[#00ff80] font-display font-bold text-[9px] tracking-[0.25em] uppercase opacity-60 block leading-none mb-1">
+                            Step {card.id}
+                          </span>
+                          <h3 className="text-base font-black text-white tracking-tight leading-none uppercase">
+                            {card.title}
+                          </h3>
                         </div>
                       </div>
-                      <div className="space-y-1 mb-2">
-                        <span className="text-[var(--accent)] font-display font-black text-[10px] tracking-[0.3em] uppercase opacity-70 block">
-                          Step {card.id}
-                        </span>
-                        <h3 className="text-2xl font-black text-white tracking-tight leading-none uppercase">
-                          {card.title}
-                        </h3>
-                      </div>
-                      <p className="text-xs leading-relaxed opacity-70 px-1 font-medium" style={{ color: 'var(--text-secondary)' }}>
+
+                      {/* Description */}
+                      <p className="text-[13px] leading-relaxed opacity-60 font-medium" style={{ color: 'var(--text-secondary)' }}>
                         {card.desc}
                       </p>
-                      <div className="mt-6 w-8 h-[2px] bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent" />
                     </div>
                   </div>
                 </motion.div>
-              );
-            })}
-          </AnimatePresence>
+              </motion.div>
+            );
+          })}
+
+          {/* Final delivery pulse at bottom of timeline */}
+          <motion.div
+            className="absolute left-[30px] bottom-2 w-[10px] h-[10px] rounded-full bg-[#FFD700]"
+            animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
         </div>
       </div>
     </section>

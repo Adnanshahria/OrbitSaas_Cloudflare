@@ -354,6 +354,7 @@ const ScalabilityVisual = () => {
     };
   }, []);
 
+
   return (
     <div ref={containerRef} className="relative w-full h-full flex items-center justify-center overflow-hidden bg-[rgba(255,255,255,0.01)] group/scalability">
       {/* HUD Accents */}
@@ -652,6 +653,7 @@ const GlobalVisual = () => {
       observer.disconnect();
     };
   }, []);
+
 
   return (
     <div ref={containerRef} className="relative w-full h-full flex items-center justify-center py-8 overflow-hidden bg-[rgba(255,255,255,0.01)]">
@@ -1010,9 +1012,10 @@ export function WhyUsSection() {
         <div className="max-w-4xl mx-auto text-center mb-20">
           {t?.badge && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
+              whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
               viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
               className="mb-8"
             >
               <span className="pill-badge pill-badge-accent uppercase tracking-[0.2em] text-[10px] px-6 py-2">
@@ -1021,50 +1024,91 @@ export function WhyUsSection() {
             </motion.div>
           )}
           <motion.h2
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 40, filter: 'blur(8px)' }}
+            whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="section-heading text-white text-4xl md:text-6xl mb-6 tracking-tighter"
           >
             <span className="text-shimmer-accent">{t?.heading || t?.title}</span>
           </motion.h2>
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20, filter: 'blur(6px)' }}
+            whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="section-subheading section-subheading-dark text-lg md:text-2xl mx-auto opacity-70"
           >
             {t?.subtitle}
           </motion.p>
         </div>
 
-        {/* ────── 2-2-3 Grid Structure ────── */}
+        {/* ────── 2-2-3 Grid Structure with Staggered Entrance ────── */}
         <div className="flex flex-col gap-6 max-w-[1240px] mx-auto">
           
-          {/* Row 1 & 2: Main Items (2x2) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Row 1 & 2: Main Items (2x2) — Staggered cascade */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={{
+              hidden: {},
+              visible: { transition: { staggerChildren: 0.15 } }
+            }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
             {items.map((item: any, i: number) => (
-              <TiltCard key={`item-${i}`} item={item} index={i} layout="horizontal" />
+              <motion.div
+                key={`item-${i}`}
+                variants={{
+                  hidden: { opacity: 0, y: 60, scale: 0.92, filter: 'blur(12px)' },
+                  visible: { 
+                    opacity: 1, y: 0, scale: 1, filter: 'blur(0px)',
+                    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
+                  }
+                }}
+              >
+                <TiltCard item={item} index={i} layout="horizontal" />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
-          {/* Row 3: Benefits (1x3) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Row 3: Benefits (1x3) — Staggered cascade */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={{
+              hidden: {},
+              visible: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } }
+            }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          >
             {benefits.map((benefit: any, i: number) => {
               // Benefits indices are 4, 5, 6
               const absoluteIndex = 4 + i;
               const layout = i === 1 ? 'vertical-top' : 'vertical-bottom';
               return (
-                <TiltCard 
-                  key={`benefit-${i}`} 
-                  item={benefit} 
-                  index={absoluteIndex} 
-                  layout={layout} 
-                  icon={benefit.icon ? ALL_ICONS_MAP[benefit.icon] : BENEFIT_ICONS[i % BENEFIT_ICONS.length]} 
-                />
+                <motion.div
+                  key={`benefit-${i}`}
+                  variants={{
+                    hidden: { opacity: 0, y: 50, scale: 0.9, filter: 'blur(10px)' },
+                    visible: { 
+                      opacity: 1, y: 0, scale: 1, filter: 'blur(0px)',
+                      transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] }
+                    }
+                  }}
+                >
+                  <TiltCard 
+                    item={benefit} 
+                    index={absoluteIndex} 
+                    layout={layout} 
+                    icon={benefit.icon ? ALL_ICONS_MAP[benefit.icon] : BENEFIT_ICONS[i % BENEFIT_ICONS.length]} 
+                  />
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
 
 

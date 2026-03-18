@@ -354,40 +354,6 @@ export function Navbar() {
                   }}
                   className="group relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border backdrop-blur-md transition-all duration-500 hover:text-white"
                 >
-                  <style>{`
-                    @keyframes whatsappThemePulse {
-                      0%, 100% {
-                        color: #10B981;
-                        border-color: rgba(16, 185, 129, 0.4);
-                        background-color: rgba(16, 185, 129, 0.1);
-                        box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
-                      }
-                      50% {
-                        color: #d4a017;
-                        border-color: rgba(212, 160, 23, 0.4);
-                        background-color: rgba(212, 160, 23, 0.1);
-                        box-shadow: 0 0 15px rgba(212, 160, 23, 0.2);
-                      }
-                    }
-                    @keyframes whatsappPingTheme {
-                      0%, 100% { border-color: rgba(16, 185, 129, 0.6); }
-                      50% { border-color: rgba(212, 160, 23, 0.6); }
-                    }
-                    .whatsapp-theme-anim {
-                      animation: whatsappThemePulse 4s ease-in-out infinite;
-                    }
-                    .group:hover .whatsapp-theme-anim {
-                      animation: none !important;
-                      color: white !important;
-                      background-color: #10B981 !important;
-                      border-color: #10B981 !important;
-                      box-shadow: 0 0 25px rgba(16,185,129,0.5) !important;
-                    }
-                    .whatsapp-ping-anim {
-                      animation: whatsappPingTheme 4s ease-in-out infinite;
-                    }
-                  `}</style>
-
                   {/* Outer pulsating ring */}
                   <div className="absolute inset-0 rounded-full border animate-ping opacity-20 whatsapp-ping-anim" style={{ animationDuration: '3s' }} />
 

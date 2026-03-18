@@ -12,16 +12,32 @@ const RichText = ({ text }: { text: string }) => (
 const ContactBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Skip entirely on mobile — hover-only particle network effect
+  const [isMobile] = React.useState(() =>
+    typeof window !== 'undefined' &&
+    (window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.innerWidth < 768)
+  );
+
   useEffect(() => {
+    if (isMobile) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     let animationFrameId: number;
+    let isVisible = true;
     const particles: {x: number, y: number, vx: number, vy: number, size: number}[] = [];
     const numParticles = 40;
     const connectionDistance = 150;
+
+    // Pause when off-screen
+    const observer = new IntersectionObserver(
+      ([entry]) => { isVisible = entry.isIntersecting; },
+      { threshold: 0.1 }
+    );
+    observer.observe(canvas);
 
     const resize = () => {
       canvas.width = canvas.offsetWidth;
@@ -58,6 +74,11 @@ const ContactBackground = () => {
     canvas.addEventListener('mouseleave', handleMouseLeave);
 
     const render = () => {
+      if (!isVisible) {
+        animationFrameId = requestAnimationFrame(render);
+        return;
+      }
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach(p => {
@@ -112,8 +133,11 @@ const ContactBackground = () => {
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
       cancelAnimationFrame(animationFrameId);
+      observer.disconnect();
     };
-  }, []);
+  }, [isMobile]);
+
+  if (isMobile) return null;
 
   return (
     <canvas 

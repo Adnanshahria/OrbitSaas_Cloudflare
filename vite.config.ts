@@ -138,6 +138,7 @@ export default defineConfig(({ mode }) => ({
           vendor: ['react', 'react-dom', 'react-router-dom'],
           'framer-motion': ['framer-motion'],
           ui: ['@radix-ui/react-accordion', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', 'lucide-react', 'clsx', 'tailwind-merge'],
+          three: ['three', '@react-three/fiber', '@react-three/drei'],
           charts: ['recharts'],
           lottie: ['@lottiefiles/dotlottie-react', 'lottie-react'],
         },

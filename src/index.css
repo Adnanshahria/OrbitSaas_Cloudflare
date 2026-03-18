@@ -3,6 +3,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Marquee animation for TechStack mobile ── */
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marquee-scroll-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll var(--marquee-speed, 25s) linear infinite;
+}
+.marquee-track-reverse {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll-reverse var(--marquee-speed, 25s) linear infinite;
+}
+
 /* ══════════════════════════════════════════════════════════
    ORBIT SaaS — Premium Dark Design System
    Luxury obsidian base, liquid gold accents, cinematic depth
@@ -701,7 +721,8 @@
    ══════════════════════════════════════════════════════════ */
 
 @media (max-width: 1024px), (hover: none) and (pointer: coarse) {
-  .will-change-transform {
+  .will-change-transform,
+  [style*="will-change"] {
     will-change: auto !important;
   }
 
@@ -716,6 +737,12 @@
 
   html {
     -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   /* ── Mobile Scroll Fix: Let curl-page scroll natively ── */
@@ -725,26 +752,153 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* ── Reduce GPU-expensive effects on mobile ── */
+  /* ── Disable ALL backdrop-filter on mobile (GPU drain) ── */
   .backdrop-blur-3xl,
   .backdrop-blur-2xl,
-  .backdrop-blur-xl {
+  .backdrop-blur-xl,
+  .backdrop-blur-lg,
+  .backdrop-blur-md,
+  .backdrop-blur-sm,
+  .backdrop-blur,
+  [class*="backdrop-blur"],
+  [style*="backdrop-filter"] {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
 
   /* ── Contain heavy section containers for compositor optimization ── */
+  /* NOTE: #process excluded — scroll hijacking requires full repaint on re-entry */
   section[id="services"],
-  section[id="process"],
   section[id="why-us"],
   section[id="contact"] {
     contain: layout style paint;
+  }
+
+  /* ── Off-screen rendering skip for lazy-loaded sections ── */
+  /* NOTE: #process excluded — it uses 85% IntersectionObserver for scroll hijacking */
+  #services,
+  #techstack,
+  #why-us,
+  #projects,
+  #reviews,
+  #leadership,
+  #contact {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 100vh;
   }
 
   /* ── Disable expensive CSS animations on mobile ── */
   .aura-rise {
     animation: none !important;
   }
+
+  /* ── Halve all CSS animation durations on mobile for snappier feel ── */
+  .hero-blob { animation-duration: 8s !important; }
+  .floating-particle { animation-duration: 8s !important; }
+  .aura-ring { animation-duration: 2s !important; }
+  .orbit-ring { animation-duration: 8s !important; }
+  .stardust-particle { animation-duration: 1.5s !important; }
+  .ambient-glow { animation-duration: 3s !important; }
+  .text-shimmer-accent { animation-duration: 2s !important; }
+  .animate-spin-slow { animation-duration: 4s !important; }
+
+  /* ── Touch target enforcement (mobile-design skill: min 44px) ── */
+  .btn-primary,
+  .btn-secondary,
+  .btn-secondary-dark,
+  .btn-secondary-light {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .pill-badge,
+  .pill-badge-dark,
+  .pill-badge-accent {
+    min-height: 36px;
+    padding: 8px 16px;
+  }
+
+  /* ── Mobile typography fine-tuning ── */
+  .section-heading {
+    font-size: clamp(1.75rem, 7vw, 2.5rem);
+    letter-spacing: -0.03em;
+  }
+
+  .section-subheading {
+    font-size: clamp(0.9rem, 3.5vw, 1.05rem);
+    line-height: 1.6;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PREFERS-REDUCED-MOTION (A11Y + Battery Saving)
+   ══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .hero-blob,
+  .floating-particle,
+  .aura-ring,
+  .orbit-ring,
+  .pulse-scale,
+  .stardust-particle,
+  .ambient-glow,
+  .text-shimmer-accent,
+  .aura-rise,
+  .nav-projects-gradient,
+  .animate-spin-slow,
+  .animate-pulse-slow,
+  .newsletter-attract {
+    animation: none !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   WHATSAPP NAVBAR ANIMATION (Moved from inline <style>)
+   ══════════════════════════════════════════════════════════ */
+
+@keyframes whatsappThemePulse {
+  0%, 100% {
+    color: #10B981;
+    border-color: rgba(16, 185, 129, 0.4);
+    background-color: rgba(16, 185, 129, 0.1);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+  }
+  50% {
+    color: #d4a017;
+    border-color: rgba(212, 160, 23, 0.4);
+    background-color: rgba(212, 160, 23, 0.1);
+    box-shadow: 0 0 15px rgba(212, 160, 23, 0.2);
+  }
+}
+
+@keyframes whatsappPingTheme {
+  0%, 100% { border-color: rgba(16, 185, 129, 0.6); }
+  50% { border-color: rgba(212, 160, 23, 0.6); }
+}
+
+.whatsapp-theme-anim {
+  animation: whatsappThemePulse 4s ease-in-out infinite;
+}
+
+.group:hover .whatsapp-theme-anim {
+  animation: none !important;
+  color: white !important;
+  background-color: #10B981 !important;
+  border-color: #10B981 !important;
+  box-shadow: 0 0 25px rgba(16,185,129,0.5) !important;
+}
+
+.whatsapp-ping-anim {
+  animation: whatsappPingTheme 4s ease-in-out infinite;
 }
 
 /* ══════════════════════════════════════════════════════════

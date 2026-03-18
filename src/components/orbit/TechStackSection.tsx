@@ -42,6 +42,8 @@ const TECH_LOGOS = [
   { src: '/images/java.png', label: 'Java', isDouble: false },
   { src: '/images/postgresql.png', label: 'PostgreSQL', isDouble: false },
   { src: '/images/reactnative.png', label: 'React Native', isDouble: false },
+  { src: 'https://brandlogos.net/wp-content/uploads/2023/06/openclaw-logo-vector.png', label: 'OpenClaw', isDouble: false },
+  { src: 'https://upload.wikimedia.org/wikipedia/commons/2/21/Nvidia_logo.svg', label: 'NemoClaw', isDouble: false },
 ];
 
 /* ─── Ball Interface ─── */
@@ -618,7 +620,8 @@ function drawScene(
     ctx.fill();
   }
 
-  // 3. DRAW AGENTIC BUCKET (Behind Balls)
+  // 3. DRAW AGENTIC BUCKET (Behind Balls) — desktop only
+  if (!isMobile) {
   const pulse = Math.sin(Date.now() * 0.003) * 0.2 + 0.8;
   
   // Draw the pre-rendered bucket
@@ -742,6 +745,7 @@ function drawScene(
     ctx.stroke();
   }
   ctx.restore();
+  } // end !isMobile bucket/hoop block
 
   // 5. DRAW BALLS (Using Sprite Cache)
   for (const b of balls) {
@@ -770,7 +774,8 @@ function drawScene(
     }
   }
 
-  // 6. DRAW POPUPS (+10 Animations)
+  // 6. DRAW POPUPS (+10 Animations) — desktop only
+  if (!isMobile) {
   const now = Date.now();
   for (let i = popups.length - 1; i >= 0; i--) {
     const pu = popups[i];
@@ -791,6 +796,7 @@ function drawScene(
     ctx.shadowBlur = 4;
     ctx.fillText(pu.text, pu.x, py);
     ctx.restore();
+  }
   }
 
   ctx.restore();
@@ -979,11 +985,21 @@ export function TechStackSection() {
     };
   }, [imagesLoaded]);
 
+  // Categorized tech logos for mobile marquee rows (expanded)
+  const techCategories = [
+    { name: 'Frontend', color: '#61DAFB', logos: ['React', 'Next.js', 'TypeScript', 'Tailwind', 'React Native'] },
+    { name: 'Backend & Database', color: '#68A063', logos: ['Node.js', 'Express', 'Firebase', 'Supabase', 'MongoDB', 'Redis', 'Prisma', 'PostgreSQL'] },
+    { name: 'Cloud & DevOps', color: '#FF9900', logos: ['Docker', 'GitHub Actions', 'Cloudflare', 'Kubernetes', 'DigitalOcean', 'AWS', 'Vercel'] },
+    { name: 'AI / ML Stack', color: '#A855F7', logos: ['n8n', 'Hugging Face', 'TensorFlow', 'PyTorch', 'Pinecone', 'LangChain', 'OpenAI'] },
+    { name: 'Agentic Stacks', color: '#FCD34D', logos: ['OpenClaw', 'NemoClaw', 'LangChain', 'n8n'] },
+    { name: 'App Development', color: '#3DDC84', logos: ['React Native', 'Java', 'Kotlin', 'Swift', 'Android', 'iOS', 'Flutter'] },
+  ];
+
   return (
     <section
       ref={sectionElRef}
       id="tech"
-      className="section-dark relative overflow-hidden h-[100dvh] w-full"
+      className="section-dark relative overflow-hidden w-full lg:h-[100dvh]"
       style={{ background: '#060606' }}
     >
       {/* Background radial gradient for depth */}
@@ -1003,58 +1019,130 @@ export function TechStackSection() {
         }}
       />
 
-      {/* Canvas - Full Screen Background */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing z-0"
-        style={{ touchAction: 'none' }}
-      />
+      {/* Canvas Area — (Desktop: Full Screen / Mobile: Header Only) */}
+      <div className="relative h-auto lg:h-full pt-10 pb-4 lg:pt-0 lg:pb-0">
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing z-0 hidden lg:block"
+          style={{ touchAction: 'none' }}
+        />
 
-      {/* Header Overlay */}
-      <div className="relative z-20 pointer-events-none h-full flex flex-col items-center w-full">
-        <div className="section-container !pt-20 sm:!pt-28 w-full">
-          <div className="text-center">
+        {/* Header Overlay */}
+        <div className="relative z-20 pointer-events-none h-auto lg:h-full flex flex-col items-center w-full">
+          <div className="section-container lg:!pt-28 w-full">
+            <div className="text-center">
 
-
-            <motion.h2
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl sm:text-7xl font-black text-white tracking-tighter"
-              style={{ fontFamily: "'Abril Fatface', serif" }}
-            >
-              {t?.title || 'Our Expertise'}
-            </motion.h2>
-
-            {/* Gamification Hud */}
-            <div className="flex flex-col items-center">
-              <motion.div 
-                animate={{ 
-                  scale: Date.now() - lastScoreTime.current < 300 ? [1, 1.2, 1] : 1,
-                  color: Date.now() - lastScoreTime.current < 300 ? '#d4af37' : '#ffffff'
-                }}
-                className="mt-4 inline-flex items-center gap-2 px-6 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md shadow-2xl"
+              <motion.h2
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="text-4xl sm:text-7xl font-black text-white tracking-tighter"
+                style={{ fontFamily: "'Abril Fatface', serif" }}
               >
-                <span className="text-xs uppercase tracking-[0.2em] font-medium text-white/50">Score</span>
-                <span className="text-2xl font-black tabular-nums">{score}</span>
-              </motion.div>
+                {t?.title || 'Our Expertise'}
+              </motion.h2>
 
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: [0, 5, 0] }}
-                transition={{ 
-                  opacity: { delay: 1, duration: 1 },
-                  y: { repeat: Infinity, duration: 2, ease: "easeInOut" }
-                }}
-                className="mt-3 text-sm text-white/40 flex items-center gap-2"
+              {/* Subtitle - mobile only */}
+              <motion.p
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="lg:hidden mt-2 text-sm text-white/40 font-medium"
               >
-                <span>Drag logos into the hoop!</span>
-                <span className="text-lg">🏀</span>
-              </motion.div>
+                Technologies We Power Your Vision With
+              </motion.p>
+
+              {/* Gamification Hud — desktop only */}
+              <div className="hidden lg:flex flex-col items-center">
+                <motion.div 
+                  animate={{ 
+                    scale: Date.now() - lastScoreTime.current < 300 ? [1, 1.2, 1] : 1,
+                    color: Date.now() - lastScoreTime.current < 300 ? '#d4af37' : '#ffffff'
+                  }}
+                  className="mt-4 inline-flex items-center gap-2 px-6 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md shadow-2xl"
+                >
+                  <span className="text-xs uppercase tracking-[0.2em] font-medium text-white/50">Score</span>
+                  <span className="text-2xl font-black tabular-nums">{score}</span>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: [0, 5, 0] }}
+                  transition={{ 
+                    opacity: { delay: 1, duration: 1 },
+                    y: { repeat: Infinity, duration: 2, ease: "easeInOut" }
+                  }}
+                  className="mt-3 text-sm text-white/40 flex items-center gap-2"
+                >
+                  <span>Drag logos into the hoop!</span>
+                  <span className="text-lg">🏀</span>
+                </motion.div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ═══ Mobile Marquee Rows (lg-) ═══ */}
+      <div className="lg:hidden relative z-20 pb-10 pt-4 space-y-5">
+        {techCategories.map((category, catIdx) => {
+          const isReverse = catIdx % 2 !== 0;
+          const logoItems = category.logos
+            .map(label => TECH_LOGOS.find(l => l.label === label))
+            .filter(Boolean) as typeof TECH_LOGOS;
+
+          // Duplicate for infinite scroll
+          const doubled = [...logoItems, ...logoItems];
+
+          return (
+            <motion.div
+              key={category.name}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, margin: "-20px" }}
+              transition={{ duration: 0.5, delay: catIdx * 0.08 }}
+            >
+              {/* Category label */}
+              <div className="flex items-center justify-center gap-3 mb-2.5 px-4">
+                <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent" style={{ backgroundImage: `linear-gradient(to right, transparent, ${category.color}30)` }} />
+                <span className="text-[10px] font-bold tracking-[0.25em] uppercase" style={{ color: category.color }}>
+                  {category.name}
+                </span>
+                <div className="flex-1 h-[1px]" style={{ backgroundImage: `linear-gradient(to left, transparent, ${category.color}30)` }} />
+              </div>
+
+              {/* Marquee track with edge fade */}
+              <div className="relative overflow-hidden" style={{ maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)' }}>
+                <div
+                  className={isReverse ? 'marquee-track-reverse' : 'marquee-track'}
+                  style={{ '--marquee-speed': `${22 + catIdx * 3}s` } as React.CSSProperties}
+                >
+                  {doubled.map((logo, i) => (
+                    <div
+                      key={`${logo.label}-${i}`}
+                      className="flex items-center gap-2 px-4 py-2 mx-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] whitespace-nowrap flex-shrink-0"
+                    >
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: category.color }} />
+                      <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <img
+                          src={logo.src}
+                          alt={logo.label}
+                          className="w-full h-full object-cover rounded-full"
+                          loading="lazy"
+                        />
+                      </div>
+                      <span className="text-[11px] font-semibold text-white/70">
+                        {logo.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
     </section>
   );
