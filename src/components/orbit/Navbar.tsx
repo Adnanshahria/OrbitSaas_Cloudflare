@@ -3,7 +3,7 @@ import { Menu, X, ChevronDown, ArrowLeft } from 'lucide-react';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
 import { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import orbitLogo from '@/assets/orbit-logo.png';
 
 const NAV_SECTIONS = [
@@ -49,7 +49,20 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const location = useLocation();
-  const [activeSection, setActiveSection] = useState(PATH_TO_SECTION[location.pathname] || 'hero');
+  const navigate = useNavigate();
+  const isProjectPage = location.pathname.startsWith('/project/');
+  
+  // Find project title if on project page
+  const projectId = isProjectPage ? location.pathname.split('/').pop() : null;
+  const projectTitle = isProjectPage ? (() => {
+      const items = (content[lang] as any).projects?.items || [];
+      const item = items.find((p: any, i: number) => p.id === projectId || String(i) === projectId);
+      return item?.title || 'Project';
+  })() : null;
+
+  // Default to the correct matched section, fallback to hero
+  const matchedSection = isProjectPage ? 'project' : PATH_TO_SECTION[location.pathname] || 'hero';
+  const [activeSection, setActiveSection] = useState(matchedSection);
 
   // Handle scroll state for subtle elevation change & Scroll Spy
   useEffect(() => {
@@ -98,8 +111,8 @@ export function Navbar() {
     return () => window.removeEventListener('orbit-chatbot-state-change', handleChatbotState);
   }, []);
 
-  // Sections that use Light Mode
-  const isLightMode = ['services', 'project', 'leadership'].includes(activeSection);
+  // Sections that use Light Mode (Only on the main landing page flows)
+  const isLightMode = !isProjectPage && ['services', 'project', 'leadership'].includes(activeSection);
 
   // Theme Variables
   const theme = {
@@ -170,8 +183,24 @@ export function Navbar() {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-4 xl:gap-6 transition-all duration-300">
-                {NAV_SECTIONS.filter(s => s.path !== '/').map((item) => {
+            <div className="hidden lg:flex flex-1 items-center justify-center gap-4 xl:gap-6 transition-all duration-300">
+              {isProjectPage ? (
+                <AnimatePresence>
+                  {scrolled && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="flex items-center gap-3"
+                    >
+                      <span className="text-[11px] font-bold text-primary tracking-[0.3em] uppercase truncate max-w-[400px]" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                        {projectTitle}
+                      </span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              ) : (
+                NAV_SECTIONS.filter(s => s.path !== '/').map((item) => {
                   const sectionId = PATH_TO_SECTION[item.path];
                   const visibility = t?.nav?.visibility?.[sectionId] !== false;
                   if (!visibility) return null;
@@ -216,7 +245,11 @@ export function Navbar() {
                           window.history.pushState(null, '', customUrl || item.path);
                         } else {
                           // Fallback if somehow not on the homepage yet
-                          window.location.href = customUrl || item.path;
+                          if (customUrl && customUrl.startsWith('http')) {
+                            window.location.href = customUrl;
+                          } else {
+                            navigate(customUrl || item.path);
+                          }
                         }
                       }}
                       className="relative flex items-center justify-center z-10 px-3 py-2 transition-all duration-300"
@@ -260,11 +293,27 @@ export function Navbar() {
                       </motion.span>
                     </button>
                   );
-                })}
-              </div>
+                })
+              )}
+            </div>
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-2 sm:gap-4">
+              {/* Project Back Navigation (Desktop only, beside toggle) */}
+              {isProjectPage && (
+                <div className="hidden lg:flex items-center gap-3 mr-1">
+                  <button
+                    onClick={() => navigate('/proj')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all group"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
+                    <span className="text-[9px] font-bold tracking-widest uppercase" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                      Back
+                    </span>
+                  </button>
+                </div>
+              )}
+
               {/* Language Switcher - Premium Toggle */}
               <button
                 onClick={() => toggleLang()}
@@ -280,7 +329,7 @@ export function Navbar() {
               <div className="flex items-center gap-2">
                 {/* Active Page Indicator (Shown only on relevant subpages) */}
                 <AnimatePresence mode="wait">
-                  {activeSection !== 'hero' && !location.pathname.startsWith('/project/') && (
+                  {activeSection !== 'hero' && (
                     <motion.div
                       key={activeSection}
                       initial={{ opacity: 0, x: 10 }}
@@ -290,10 +339,10 @@ export function Navbar() {
                     >
                       <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
                       <span
-                        className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em]"
+                        className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] truncate max-w-[80px]"
                         style={{ color: theme.text, fontFamily: "'Outfit', sans-serif" }}
                       >
-                        {t?.nav?.[activeSection === 'tech' ? 'techStack' : activeSection === 'project' ? 'projects' : activeSection] || activeSection}
+                        {isProjectPage ? projectTitle : (t?.nav?.[activeSection === 'tech' ? 'techStack' : activeSection === 'project' ? 'projects' : activeSection] || activeSection)}
                       </span>
                     </motion.div>
                   )}
@@ -306,7 +355,7 @@ export function Navbar() {
                       el.scrollIntoView({ behavior: 'smooth' });
                       window.history.pushState(null, '', '/contact');
                     } else {
-                      window.location.href = '/contact';
+                      navigate('/contact');
                     }
                   }}
                   className="group relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border backdrop-blur-md transition-all duration-500 hover:text-white"
@@ -400,71 +449,102 @@ export function Navbar() {
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
             <div className="mt-20 flex flex-col gap-8 flex-grow">
-              {NAV_SECTIONS.map((item, i) => {
-                const sectionId = PATH_TO_SECTION[item.path];
-                const visibility = t?.nav?.visibility?.[sectionId] !== false;
-                if (!visibility) return null;
-
-                const isActive = activeSection === sectionId;
-                const customUrl = t?.nav?.urls?.[sectionId];
-                const isExternal = customUrl && (customUrl.startsWith('http') || customUrl.startsWith('mailto:'));
-                const label = t?.nav?.[sectionId === 'tech' ? 'techStack' : sectionId === 'project' ? 'projects' : sectionId] || item.label;
-
-                return (
-                  <motion.div
-                    key={item.path}
-                    initial={{ opacity: 0, x: -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 + i * 0.05, duration: 0.5 }}
+              {isProjectPage ? (
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1, duration: 0.5 }}
+                >
+                  <button
+                    onClick={() => {
+                      navigate('/proj');
+                      setMobileOpen(false);
+                    }}
+                    className="group flex items-center gap-4 w-full text-left"
                   >
-                    {isExternal ? (
-                      <a
-                        href={customUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group flex items-baseline gap-4"
-                      >
-                        <span className="text-xs font-black text-emerald-500/40 tabular-nums">0{i + 1}</span>
-                        <span
-                          className={`text-4xl sm:text-7xl transition-all duration-300 hover:translate-x-4`}
-                          style={{
-                            color: theme.text,
-                            fontFamily: "'Abril Fatface', serif"
-                          }}
+                    <ArrowLeft className="w-8 h-8 text-emerald-500 group-hover:-translate-x-2 transition-transform" />
+                    <span
+                      className="text-4xl sm:text-7xl transition-all duration-300 hover:translate-x-4"
+                      style={{
+                        color: isLightMode ? '#1a1a1a' : '#ffffff',
+                        fontFamily: "'Abril Fatface', serif"
+                      }}
+                    >
+                      Projects
+                    </span>
+                  </button>
+                </motion.div>
+              ) : (
+                NAV_SECTIONS.map((item, i) => {
+                  const sectionId = PATH_TO_SECTION[item.path];
+                  const visibility = t?.nav?.visibility?.[sectionId] !== false;
+                  if (!visibility) return null;
+
+                  const isActive = activeSection === sectionId;
+                  const customUrl = t?.nav?.urls?.[sectionId];
+                  const isExternal = customUrl && (customUrl.startsWith('http') || customUrl.startsWith('mailto:'));
+                  const label = t?.nav?.[sectionId === 'tech' ? 'techStack' : sectionId === 'project' ? 'projects' : sectionId] || item.label;
+
+                  return (
+                    <motion.div
+                      key={item.path}
+                      initial={{ opacity: 0, x: -30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 + i * 0.05, duration: 0.5 }}
+                    >
+                      {isExternal ? (
+                        <a
+                          href={customUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group flex items-baseline gap-4"
                         >
-                          {label}
-                        </span>
-                      </a>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          const targetId = sectionId === 'hero' ? 'hero' : sectionId === 'project' ? 'projects' : sectionId;
-                          const el = document.getElementById(targetId);
-                          if (el) {
-                            el.scrollIntoView({ behavior: 'smooth' });
-                            window.history.pushState(null, '', customUrl || item.path);
-                          } else {
-                            window.location.href = customUrl || item.path;
-                          }
-                          setMobileOpen(false);
-                        }}
-                        className="group flex items-baseline gap-4 w-full text-left"
-                      >
-                        <span className="text-xs font-black text-emerald-500/40 tabular-nums">0{i + 1}</span>
-                        <span
-                          className={`text-4xl sm:text-7xl transition-all duration-300 ${isActive ? 'text-emerald-500' : 'hover:translate-x-4'}`}
-                          style={{
-                            color: !isActive ? (isLightMode ? '#1a1a1a' : '#ffffff') : undefined,
-                            fontFamily: "'Abril Fatface', serif"
+                          <span className="text-xs font-black text-emerald-500/40 tabular-nums">0{i + 1}</span>
+                          <span
+                            className={`text-4xl sm:text-7xl transition-all duration-300 hover:translate-x-4`}
+                            style={{
+                              color: theme.text,
+                              fontFamily: "'Abril Fatface', serif"
+                            }}
+                          >
+                            {label}
+                          </span>
+                        </a>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            const targetId = sectionId === 'hero' ? 'hero' : sectionId === 'project' ? 'projects' : sectionId;
+                            const el = document.getElementById(targetId);
+                            if (el) {
+                              el.scrollIntoView({ behavior: 'smooth' });
+                              window.history.pushState(null, '', customUrl || item.path);
+                            } else {
+                              if (customUrl && customUrl.startsWith('http')) {
+                                window.location.href = customUrl;
+                              } else {
+                                navigate(customUrl || item.path);
+                              }
+                            }
+                            setMobileOpen(false);
                           }}
+                          className="group flex items-baseline gap-4 w-full text-left"
                         >
-                          {label}
-                        </span>
-                      </button>
-                    )}
-                  </motion.div>
-                );
-              })}
+                          <span className="text-xs font-black text-emerald-500/40 tabular-nums">0{i + 1}</span>
+                          <span
+                            className={`text-4xl sm:text-7xl transition-all duration-300 ${isActive ? 'text-emerald-500' : 'hover:translate-x-4'}`}
+                            style={{
+                              color: !isActive ? (isLightMode ? '#1a1a1a' : '#ffffff') : undefined,
+                              fontFamily: "'Abril Fatface', serif"
+                            }}
+                          >
+                            {label}
+                          </span>
+                        </button>
+                      )}
+                    </motion.div>
+                  );
+                })
+              )}
             </div>
 
             {/* Bottom Actions for Mobile */}

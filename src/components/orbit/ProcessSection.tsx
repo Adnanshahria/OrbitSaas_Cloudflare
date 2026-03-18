@@ -2,7 +2,6 @@ import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Sparkles, Search, PenTool, Code, CheckCircle2, Truck } from 'lucide-react';
 
 
@@ -110,10 +109,61 @@ function ProcessCard({ card, icon: Icon, isPeak, node, isDelivery }: any) {
   );
 }
 
+/* ─── Web Audio API Wind Swoosh ─── */
+let swooshAudioCtx: AudioContext | null = null;
+let swooshInit = false;
+
+function playWindSwoosh() {
+  if (!window.AudioContext && !(window as any).webkitAudioContext) return;
+  if (!swooshAudioCtx) {
+    swooshAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  }
+  if (!swooshInit) {
+    if (swooshAudioCtx.state === 'suspended') swooshAudioCtx.resume();
+    swooshInit = true;
+  }
+  
+  if (swooshAudioCtx.state === 'suspended') return;
+
+  const t = swooshAudioCtx.currentTime;
+  const duration = 0.25; // Quick 0.25s woosh
+
+  const bufferSize = swooshAudioCtx.sampleRate * duration;
+  const buffer = swooshAudioCtx.createBuffer(1, bufferSize, swooshAudioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1; // White noise
+  }
+  
+  const noiseSource = swooshAudioCtx.createBufferSource();
+  noiseSource.buffer = buffer;
+  
+  // Bandpass filter to shape the noise into wind
+  const filter = swooshAudioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.Q.value = 1.2;
+  filter.frequency.setValueAtTime(200, t);
+  // frequency sweep creates the "movement" feeling
+  filter.frequency.exponentialRampToValueAtTime(1200, t + duration * 0.4);
+  filter.frequency.exponentialRampToValueAtTime(200, t + duration);
+  
+  // Volume amplitude envelope
+  const gainNode = swooshAudioCtx.createGain();
+  gainNode.gain.setValueAtTime(0, t);
+  gainNode.gain.linearRampToValueAtTime(0.3, t + duration * 0.2); // Peak volume
+  gainNode.gain.linearRampToValueAtTime(0, t + duration);
+  
+  noiseSource.connect(filter);
+  filter.connect(gainNode);
+  gainNode.connect(swooshAudioCtx.destination);
+  
+  noiseSource.start(t);
+  noiseSource.stop(t + duration);
+}
+
 export function ProcessSection() {
   const { content } = useContent();
   const { lang } = useLang();
-  const navigate = useNavigate();
   const t = (content[lang] as any)?.process;
 
   const sortedSteps = useMemo(() => {
@@ -126,11 +176,63 @@ export function ProcessSection() {
   const stepRef = useRef(0);
   const [step, setStep] = useState(0);
   const [hasMounted, setHasMounted] = useState(false);
+  const [isFullyVisible, setIsFullyVisible] = useState(false);
   const mountTime = useRef(Date.now());
   const lastStepTime = useRef(0);
 
-  // Reset state when entering the section
+  // IntersectionObserver: only activate scroll hijacking when section is ≥85% visible
   useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsFullyVisible(entry.isIntersecting);
+      },
+      { threshold: 0.85 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Unlock AudioContext on user interaction
+  useEffect(() => {
+    const unlockAudio = () => {
+      if (swooshAudioCtx && swooshAudioCtx.state === 'suspended') {
+        swooshAudioCtx.resume();
+      } else if (!swooshAudioCtx) {
+        swooshAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (swooshAudioCtx.state === 'suspended') swooshAudioCtx.resume();
+        swooshInit = true;
+      }
+    };
+    window.addEventListener('click', unlockAudio, { once: true });
+    window.addEventListener('touchstart', unlockAudio, { once: true });
+    return () => {
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
+  }, []);
+
+  // Trigger sound effect on step changes (arriving or disappearing)
+  const isFirstMount = useRef(true);
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    if (step >= 0 && step <= sortedSteps.length) {
+      playWindSwoosh();
+    }
+  }, [step, sortedSteps.length]);
+
+  // Reset state and start auto-scroll only when section is fully visible
+  useEffect(() => {
+    if (!isFullyVisible) {
+      // Reset when leaving full visibility
+      setStep(0);
+      return;
+    }
+
     setHasMounted(true);
     setStep(0);
     mountTime.current = Date.now();
@@ -166,7 +268,7 @@ export function ProcessSection() {
       window.removeEventListener('touchstart', cancelAutoScroll);
       window.removeEventListener('keydown', cancelAutoScroll);
     };
-  }, [sortedSteps.length]);
+  }, [isFullyVisible, sortedSteps.length]);
 
   // Sync ref with state
   useEffect(() => {
@@ -193,30 +295,34 @@ export function ProcessSection() {
     { x: '92%', y: '50%' }, // Position for Delivery card — offset right, clear of the arrow
   ];
 
-  // Handle scroll and touch to advance steps
+  // Handle scroll and touch to advance steps — only when section is fully visible
   useEffect(() => {
     const container = sectionRef.current;
-    if (!container) return;
+    if (!container || !isFullyVisible) return;
 
-    const stepsCount = t?.steps?.length || 4;
+    // Helper: release scroll control and scroll to an adjacent section
+    const scrollToSection = (sectionId: string) => {
+      setIsFullyVisible(false); // Release scroll lock immediately
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
 
     const handleWheel = (e: WheelEvent) => {
-      e.stopPropagation(); // Prevent PageCurlTransition from seeing this event
+      e.stopPropagation();
 
       const now = Date.now();
-      // Safety: Ignore scroll momentum from previous pages for 800ms after mount
       if (now - mountTime.current < 800) return;
 
-      // Ignore rapid firing and inertia jitter
       if (now - lastStepTime.current < 1000) {
         if (Math.abs(e.deltaY) > 2) e.preventDefault();
         return;
       }
 
-      // Filter out small jitters/accidental small movements
       if (Math.abs(e.deltaY) < 20) return;
 
-      e.preventDefault(); // Stop native scrolling
+      e.preventDefault();
       const isScrollingDown = e.deltaY > 0;
       const isScrollingUp = e.deltaY < 0;
 
@@ -226,15 +332,14 @@ export function ProcessSection() {
           setStep(prev => prev + 1);
           lastStepTime.current = now;
         } else {
-          // Navigation happens only after viewing the last step (step 4)
-          navigate('/techstack');
+          scrollToSection('techstack');
         }
       } else if (isScrollingUp) {
         if (stepRef.current > 0) {
           setStep(prev => prev - 1);
           lastStepTime.current = now;
         } else {
-          navigate('/services');
+          scrollToSection('services');
         }
       }
     };
@@ -247,7 +352,7 @@ export function ProcessSection() {
 
     const handleTouchMove = (e: TouchEvent) => {
       e.stopPropagation();
-      if (e.cancelable) e.preventDefault(); // Disable native scroll on mobile inside this section
+      if (e.cancelable) e.preventDefault();
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
@@ -257,21 +362,20 @@ export function ProcessSection() {
       if (now - lastStepTime.current < 1000) return;
 
       const deltaY = touchStartY - e.changedTouches[0].clientY;
-      // Higher threshold for deliberate swipe
       if (Math.abs(deltaY) > 60) {
         if (deltaY > 0) {
           if (stepRef.current < sortedSteps.length) {
             setStep(prev => prev + 1);
             lastStepTime.current = now;
           } else {
-            navigate('/techstack');
+            scrollToSection('techstack');
           }
         } else if (deltaY < 0) {
           if (stepRef.current > 0) {
             setStep(prev => prev - 1);
             lastStepTime.current = now;
           } else {
-            navigate('/services');
+            scrollToSection('services');
           }
         }
       }
@@ -288,7 +392,7 @@ export function ProcessSection() {
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [navigate, t?.steps?.length]);
+  }, [isFullyVisible, sortedSteps.length]);
 
   return (
     <section

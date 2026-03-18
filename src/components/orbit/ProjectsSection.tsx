@@ -1,11 +1,11 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { ImageWithSkeleton } from './ImageWithSkeleton';
 import { useLang } from '@/contexts/LanguageContext';
 import { useContent } from '@/contexts/ContentContext';
 import { Helmet } from 'react-helmet-async';
-import { ArrowUpRight, FolderOpen } from 'lucide-react';
-import { ProjectDetailModal } from './ProjectDetailModal';
+import { ArrowUpRight } from 'lucide-react';
 import { WaveDivider } from '@/components/ui/WaveDivider';
 
 // --- Types ---
@@ -25,7 +25,7 @@ interface ProjectItem {
 }
 
 // --- Cinematic Project Card ---
-function CinematicCard({ item, i, onClick }: { item: ProjectItem; i: number; onClick: () => void }) {
+function CinematicCard({ item, i, routeId }: { item: ProjectItem; i: number; routeId: string }) {
     const coverImage = item.images?.[0] || item.image || '/placeholder.png';
     const cats: string[] = item.categories || (item.category ? [item.category] : []);
     const ref = useRef<HTMLDivElement>(null);
@@ -82,8 +82,8 @@ function CinematicCard({ item, i, onClick }: { item: ProjectItem; i: number; onC
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <button 
-                onClick={onClick}
+            <Link 
+                to={`/project/${routeId}`}
                 className="w-full block relative h-full flex flex-col overflow-hidden text-left rounded-2xl bg-white border border-[#22C55E]/30 transition-all duration-700 hover:border-[#FACC15]/60 hover:shadow-[0_10px_40px_rgba(34,197,94,0.06)] cursor-pointer"
             >
                 {/* Cover Photo */}
@@ -152,7 +152,7 @@ function CinematicCard({ item, i, onClick }: { item: ProjectItem; i: number; onC
 
                 {/* Hover Border Glow (Golden) */}
                 <div className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 shadow-[inset_0_0_0_1.5px_#FACC15]" />
-            </button>
+            </Link>
         </motion.div>
     );
 }
@@ -164,40 +164,11 @@ export function ProjectsSection() {
     const { content } = useContent();
 
     const [activeCategory, setActiveCategory] = useState('All');
-    const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
     const enData = (content.en as any).projects || {};
     const bnData = (content.bn as any).projects || {};
     const enItems: any[] = Array.isArray(enData.items) ? enData.items : [];
     const bnItems: any[] = Array.isArray(bnData.items) ? bnData.items : [];
-
-    // URL Hash logic for modal (listen to hash changes)
-    useEffect(() => {
-        const handleHashChange = () => {
-            const hash = window.location.hash;
-            if (hash.startsWith('#project-')) {
-                setSelectedProjectId(hash.replace('#project-', ''));
-            } else {
-                setSelectedProjectId(null);
-            }
-        };
-
-        // Check on mount
-        handleHashChange();
-
-        window.addEventListener('hashchange', handleHashChange);
-        return () => window.removeEventListener('hashchange', handleHashChange);
-    }, []);
-
-    const openModal = (id: string) => {
-        window.location.hash = `#project-${id}`;
-    };
-
-    const closeModal = () => {
-        // Remove hash without scrolling to top
-        history.pushState('', document.title, window.location.pathname + window.location.search);
-        setSelectedProjectId(null);
-    };
 
     const displayItems = enItems.map((enItem, i) => {
         const bnItem = bnItems[i];
@@ -293,7 +264,7 @@ export function ProjectsSection() {
                                 <CinematicCard 
                                     item={item} 
                                     i={i} 
-                                    onClick={() => openModal(item._id || String(item._originalIndex))} 
+                                    routeId={item._id || String(item._originalIndex)} 
                                 />
                             </motion.div>
                         ))}
@@ -310,11 +281,6 @@ export function ProjectsSection() {
                 )}
             </div>
 
-            {/* Modal Portal */}
-            <ProjectDetailModal 
-                projectId={selectedProjectId} 
-                onClose={closeModal} 
-            />
             <WaveDivider fill="#0A0A0A" />
         </section>
     );

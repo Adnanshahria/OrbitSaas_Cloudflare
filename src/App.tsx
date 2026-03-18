@@ -30,6 +30,7 @@ const LeadMagnetPopup = lazy(() => import('./components/orbit/LeadMagnetPopup').
 // Lazy load public pages
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
 
 // Lazy load admin pages
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
@@ -270,6 +271,12 @@ export default function App() {
                     <VisitorGateway>
                       <StructuredData />
                       <TermsOfService />
+                    </VisitorGateway>
+                  } />
+                  <Route path="/project/:id" element={
+                    <VisitorGateway>
+                      <StructuredData />
+                      <ProjectDetail />
                     </VisitorGateway>
                   } />
 

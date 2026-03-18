@@ -58,6 +58,103 @@ interface Ball {
   glowHue: number;
   rotation: number;
   rotationSpeed: number;
+  hasScored?: boolean; // Track if this ball has already passed through the hoop this fall
+}
+
+interface Hoop {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  rimY: number;
+}
+
+interface ScorePopup {
+  x: number;
+  y: number;
+  text: string;
+  birthTime: number;
+}
+
+/* ─── Web Audio API Sound ─── */
+let audioCtx: AudioContext | null = null;
+let audioInit = false;
+
+function playScoreSound() {
+  if (!window.AudioContext && !(window as any).webkitAudioContext) return;
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  }
+  if (!audioInit) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    audioInit = true;
+  }
+  
+  const t = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(800, t);
+  osc.frequency.exponentialRampToValueAtTime(1600, t + 0.1);
+  
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(0.3, t + 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+  
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  
+  osc.start(t);
+  osc.stop(t + 0.3);
+}
+
+interface Layout {
+  isMobile: boolean;
+  bucketW: number;
+  bucketBottom: number;
+  bucketTop: number;
+  bucketLeft: number;
+  bucketRight: number;
+  funnelH: number;
+  funnelW: number;
+  hoop: Hoop;
+}
+
+function getLayout(cw: number, ch: number): Layout {
+  const isMobile = cw < 768;
+  const bucketW = isMobile ? cw * 0.85 : cw * 0.45;
+  const bucketBottom = ch - 60;
+  const bucketTop = bucketBottom - (isMobile ? ch * 0.45 : ch * 0.4);
+  const bucketLeft = isMobile ? (cw - bucketW) / 2 : cw * 0.05; // 5% from left
+  const bucketRight = bucketLeft + bucketW;
+
+  const funnelH = isMobile ? 60 : 100;
+  const funnelW = isMobile ? 40 : 80;
+
+  // Move hoop to top right, make larger on mobile for playability
+  const hoopW = isMobile ? 120 : 120;
+  const hoopH = isMobile ? 80 : 100;
+  const hoopX = isMobile ? cw - hoopW - 10 : cw - hoopW - 60;
+  const hoopY = isMobile ? ch * 0.25 : ch * 0.35;
+  
+  return {
+    isMobile,
+    bucketW,
+    bucketBottom,
+    bucketTop,
+    bucketLeft,
+    bucketRight,
+    funnelH,
+    funnelW,
+    hoop: {
+      x: hoopX,
+      y: hoopY,
+      w: hoopW,
+      h: hoopH,
+      rimY: hoopY + (isMobile ? 20 : 30)
+    }
+  };
 }
 
 /* ─── Particle Interface ─── */
@@ -77,20 +174,24 @@ function createBalls(
   images: (HTMLImageElement | null)[],
 ): Ball[] {
   const balls: Ball[] = [];
-  const isMobile = cw < 768;
+  const layout = getLayout(cw, ch);
   const isSmallMobile = cw < 450;
 
-  const techCount = isMobile ? Math.min(30, images.length) : images.length;
+  const techCount = layout.isMobile ? Math.min(30, images.length) : images.length;
 
   for (let i = 0; i < techCount; i++) {
-    const rBase = isSmallMobile ? (22 + Math.random() * 4) : isMobile ? (26 + Math.random() * 5) : (30 + Math.random() * 8);
+    const rBase = isSmallMobile ? (22 + Math.random() * 4) : layout.isMobile ? (26 + Math.random() * 5) : (30 + Math.random() * 8);
 
-    // Drop balls directly through the funnel top
+    // Drop balls directly inside the left-aligned bucket funnel
+    const dropRange = layout.bucketW * 0.6;
+    const dropCenter = layout.bucketLeft + layout.bucketW / 2;
+    const dropX = dropCenter - dropRange/2 + Math.random() * dropRange;
+
     balls.push({
-      x: cw * 0.35 + Math.random() * (cw * 0.3),
+      x: dropX,
       y: -rBase - Math.random() * ch * 2.5,
-      vx: (Math.random() - 0.5) * 3,
-      vy: Math.random() * 2 + 3,
+      vx: (Math.random() - 0.5) * 4,
+      vy: Math.random() * 4 + 6,
       r: rBase,
       img: images[i],
       label: TECH_LOGOS[i].label,
@@ -177,22 +278,16 @@ function stepPhysics(
   mouseX: number,
   mouseY: number,
   mouseActive: boolean,
+  layout: Layout,
+  onScore: (x: number, y: number) => void,
 ) {
-  const GRAVITY = 0.25;
+  const GRAVITY = 0.45; // Increased gravity for faster dropping
   const FRICTION = 0.99;
   const BOUNCE = 0.5;
   const MOUSE_RADIUS = 150;
   const MOUSE_FORCE = 4.0;
 
-  const isMobile = cw < 768;
-  const bucketW = isMobile ? cw * 0.85 : cw * 0.6;
-  const bucketBottom = ch - 60;
-  const bucketTop = bucketBottom - (isMobile ? ch * 0.45 : ch * 0.4);
-  const bucketLeft = (cw - bucketW) / 2;
-  const bucketRight = bucketLeft + bucketW;
-
-  const funnelH = isMobile ? 60 : 100;
-  const funnelW = isMobile ? 40 : 80;
+  const { bucketBottom, bucketTop, bucketLeft, bucketRight, funnelH, funnelW, hoop } = layout;
 
   // Balls
   for (let i = 0; i < balls.length; i++) {
@@ -230,35 +325,45 @@ function stepPhysics(
     b.x += b.vx;
     b.y += b.vy;
 
+    // Basketball Hoop Scoring Detection
+    if (!b.hasScored && b.vy > 0) {
+      // Check if ball center passes through the 3D rim area
+      if (b.y > hoop.rimY - 10 && b.y < hoop.rimY + 20 && b.x > hoop.x && b.x < hoop.x + hoop.w) {
+        b.hasScored = true;
+        onScore(b.x, b.y);
+      }
+    }
+    
+    // Reset hasScored if ball goes significantly above the hoop again
+    if (b.hasScored && b.y < hoop.rimY - 100) {
+      b.hasScored = false;
+    }
+
     if (b.opacity < 1) b.opacity = Math.min(1, b.opacity + 0.015);
 
-    // Dynamic Bucket Constraints (Line Segments)
     // 1. Funnel Slants
-    if (b.y < bucketTop) {
-      checkLineCollision(b, bucketLeft - funnelW, bucketTop - funnelH, bucketLeft, bucketTop, BOUNCE);
-      checkLineCollision(b, bucketRight + funnelW, bucketTop - funnelH, bucketRight, bucketTop, BOUNCE);
-    }
+    checkLineCollision(b, bucketLeft - funnelW, bucketTop - funnelH, bucketLeft, bucketTop, BOUNCE);
+    checkLineCollision(b, bucketRight + funnelW, bucketTop - funnelH, bucketRight, bucketTop, BOUNCE);
 
     // 2. Vertical Walls
-    if (b.y >= bucketTop - b.r && b.y <= bucketBottom + b.r) {
-      checkLineCollision(b, bucketLeft, bucketTop, bucketLeft, bucketBottom - 30, BOUNCE);
-      checkLineCollision(b, bucketRight, bucketTop, bucketRight, bucketBottom - 30, BOUNCE);
-    }
+    checkLineCollision(b, bucketLeft, bucketTop, bucketLeft, bucketBottom - 30, BOUNCE);
+    checkLineCollision(b, bucketRight, bucketTop, bucketRight, bucketBottom - 30, BOUNCE);
 
     // 3. Bottom & Corners
-    if (b.y >= bucketBottom - b.r) {
-      // Main floor
-      checkLineCollision(b, bucketLeft + 30, bucketBottom, bucketRight - 30, bucketBottom, BOUNCE);
-      // Curved corners (approximated with small segments for better physics than just hitting a wall)
-      checkLineCollision(b, bucketLeft, bucketBottom - 30, bucketLeft + 30, bucketBottom, BOUNCE);
-      checkLineCollision(b, bucketRight, bucketBottom - 30, bucketRight - 30, bucketBottom, BOUNCE);
-    }
+    // Main floor
+    checkLineCollision(b, bucketLeft + 30, bucketBottom, bucketRight - 30, bucketBottom, BOUNCE);
+    // Curved corners (approximated)
+    checkLineCollision(b, bucketLeft, bucketBottom - 30, bucketLeft + 30, bucketBottom, BOUNCE);
+    checkLineCollision(b, bucketRight, bucketBottom - 30, bucketRight - 30, bucketBottom, BOUNCE);
 
     // Screen edge bounce (only horizontal)
     if (b.x - b.r < 0) { b.x = b.r; b.vx = Math.abs(b.vx) * BOUNCE; }
     if (b.x + b.r > cw) { b.x = cw - b.r; b.vx = -Math.abs(b.vx) * BOUNCE; }
-    // Bottom floor fallback (prevent sinking)
-    if (b.y + b.r > ch) { b.y = ch - b.r; b.vy = -Math.abs(b.vy) * BOUNCE; }
+    // Bottom floor fallback (prevent sinking - now clamped to the bucket floor line)
+    if (b.y + b.r > bucketBottom) { 
+      b.y = bucketBottom - b.r; 
+      b.vy = -Math.abs(b.vy) * BOUNCE; 
+    }
 
     // Multi-ball collision
     for (let j = i + 1; j < balls.length; j++) {
@@ -269,13 +374,16 @@ function stepPhysics(
       const minDist = b.r + o.r;
       if (distSq < minDist * minDist) {
         const dist = Math.sqrt(distSq);
-        const overlap = (minDist - dist) / 2;
         const nx = dx / dist;
         const ny = dy / dist;
+        
+        // Positional overlap resolution - CRITICAL to prevent sinking through floor
+        const overlap = (minDist - dist) / 2;
         b.x -= nx * overlap;
         b.y -= ny * overlap;
         o.x += nx * overlap;
         o.y += ny * overlap;
+
         const dvx = b.vx - o.vx;
         const dvy = b.vy - o.vy;
         const dvDotN = dvx * nx + dvy * ny;
@@ -302,27 +410,190 @@ function stepPhysics(
   }
 }
 
+// Global cache for the static bucket canvas to prevent recreation on every frame
+let bucketCacheCanvas: HTMLCanvasElement | null = null;
+let lastBucketKey: string = '';
+const spriteCache = new Map<string, HTMLCanvasElement>();
+
+function preRenderBallSprites(balls: Ball[], dpr: number) {
+  balls.forEach((b, i) => {
+    const key = `${b.label}_${b.r}`;
+    if (spriteCache.has(key)) return;
+
+    const canvas = document.createElement('canvas');
+    const size = b.r * 2.5; // Padding for glows
+    canvas.width = size * 2 * dpr;
+    canvas.height = size * 2 * dpr;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.scale(dpr, dpr);
+    ctx.translate(size, size);
+
+    // DRAW LOGIC (copied from original loop but static)
+    // Ambient Glow
+    const outerGlow = ctx.createRadialGradient(0, 0, b.r * 0.8, 0, 0, b.r * 2.2);
+    outerGlow.addColorStop(0, `hsla(${b.glowHue}, 70%, 50%, 0.15)`);
+    outerGlow.addColorStop(1, 'transparent');
+    ctx.fillStyle = outerGlow;
+    ctx.beginPath();
+    ctx.arc(0, 0, b.r * 2.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Sphere Body
+    const bodyGrad = ctx.createRadialGradient(-b.r * 0.3, -b.r * 0.3, b.r * 0.1, 0, 0, b.r);
+    bodyGrad.addColorStop(0, 'rgba(45, 47, 60, 1)');
+    bodyGrad.addColorStop(0.8, 'rgba(15, 16, 22, 1)');
+    bodyGrad.addColorStop(1, 'rgba(5, 5, 8, 1)');
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, b.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Internal Refraction
+    const innerGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, b.r);
+    innerGlow.addColorStop(0, `hsla(${b.glowHue}, 60%, 45%, 0.25)`);
+    innerGlow.addColorStop(1, 'transparent');
+    ctx.fillStyle = innerGlow;
+    ctx.fill();
+
+    // Gold Rim
+    ctx.strokeStyle = `hsla(${b.glowHue}, 70%, 60%, 0.35)`;
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    // Logo
+    if (b.img && b.img.complete && b.img.naturalWidth > 0) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(0, 0, b.r * 0.75, 0, Math.PI * 2);
+      ctx.clip();
+
+      const imgWidth = b.img.naturalWidth;
+      const imgHeight = b.img.naturalHeight;
+      const targetSize = b.r * 1.55;
+
+      if (b.isDouble) {
+        ctx.drawImage(b.img, 0, 0, imgWidth / 2, imgHeight, -targetSize / 2, -targetSize / 2, targetSize, targetSize);
+      } else {
+        ctx.drawImage(b.img, -targetSize / 2, -targetSize / 2, targetSize, targetSize);
+      }
+      ctx.restore();
+    }
+
+    // Specular Highlights
+    const spec1 = ctx.createRadialGradient(-b.r * 0.3, -b.r * 0.4, 0, -b.r * 0.3, -b.r * 0.4, b.r * 0.6);
+    spec1.addColorStop(0, 'rgba(255, 255, 255, 0.25)');
+    spec1.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = spec1;
+    ctx.fill();
+
+    spriteCache.set(key, canvas);
+  });
+}
+
+function getCachedBucket(cw: number, ch: number, dpr: number, pulse: number, layout: Layout): HTMLCanvasElement {
+  const { isMobile, bucketW, bucketBottom, bucketTop, bucketLeft, bucketRight, funnelH, funnelW } = layout;
+  const key = `${cw}x${ch}x${dpr}_${bucketLeft}`;
+  
+  if (bucketCacheCanvas && lastBucketKey === key) {
+    return bucketCacheCanvas;
+  }
+
+  bucketCacheCanvas = document.createElement('canvas');
+  bucketCacheCanvas.width = cw * dpr;
+  bucketCacheCanvas.height = ch * dpr;
+  const ctx = bucketCacheCanvas.getContext('2d');
+  if (!ctx) return bucketCacheCanvas;
+  
+  ctx.scale(dpr, dpr);
+  lastBucketKey = key;
+
+  ctx.globalCompositeOperation = 'source-over';
+
+  // High-Tech Funnel Shape
+  ctx.beginPath();
+  ctx.moveTo(bucketLeft - funnelW, bucketTop - funnelH);
+  ctx.lineTo(bucketLeft, bucketTop);
+  ctx.lineTo(bucketLeft, bucketBottom - 30);
+  ctx.quadraticCurveTo(bucketLeft, bucketBottom, bucketLeft + 30, bucketBottom);
+  ctx.lineTo(bucketRight - 30, bucketBottom);
+  ctx.quadraticCurveTo(bucketRight, bucketBottom, bucketRight, bucketBottom - 30);
+  ctx.lineTo(bucketRight, bucketTop);
+  ctx.lineTo(bucketRight + funnelW, bucketTop - funnelH);
+
+  const glassGrad = ctx.createLinearGradient(0, bucketTop - funnelH, 0, bucketBottom);
+  glassGrad.addColorStop(0, 'rgba(255, 255, 255, 0.01)');
+  glassGrad.addColorStop(0.6, 'rgba(255, 255, 255, 0.03)');
+  glassGrad.addColorStop(1, 'rgba(255, 255, 255, 0.08)');
+  ctx.fillStyle = glassGrad;
+  ctx.fill();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(bucketLeft - funnelW, bucketTop - funnelH);
+  ctx.lineTo(bucketLeft, bucketTop);
+  ctx.lineTo(bucketLeft, bucketBottom - 30);
+  ctx.quadraticCurveTo(bucketLeft, bucketBottom, bucketLeft + 30, bucketBottom);
+  ctx.lineTo(bucketRight - 30, bucketBottom);
+  ctx.quadraticCurveTo(bucketRight, bucketBottom, bucketRight, bucketBottom - 30);
+  ctx.lineTo(bucketRight, bucketTop);
+  ctx.lineTo(bucketRight + funnelW, bucketTop - funnelH);
+  ctx.clip();
+
+  const reflectGrad = ctx.createLinearGradient(bucketLeft, bucketTop, bucketRight, bucketBottom);
+  reflectGrad.addColorStop(0, 'transparent');
+  reflectGrad.addColorStop(0.48, 'transparent');
+  reflectGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.04)');
+  reflectGrad.addColorStop(0.52, 'transparent');
+  reflectGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = reflectGrad;
+  ctx.fillRect(bucketLeft - funnelW, bucketTop - funnelH, bucketRight - bucketLeft + funnelW * 2, bucketBottom - bucketTop + funnelH);
+  ctx.restore();
+
+  const drawEnergySlant = (x1: number, y1: number, x2: number, y2: number) => {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineWidth = 3;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = 'rgba(212, 175, 55, 0.8)';
+    ctx.strokeStyle = 'rgba(212, 175, 55, 1)';
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x1 + (x1 < x2 ? -5 : 5), y1 - 2);
+    ctx.lineTo(x2 + (x1 < x2 ? -5 : 5), y2 - 2);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.3)';
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  drawEnergySlant(bucketLeft - funnelW, bucketTop - funnelH, bucketLeft, bucketTop);
+  drawEnergySlant(bucketRight + funnelW, bucketTop - funnelH, bucketRight, bucketTop);
+
+  return bucketCacheCanvas;
+}
+
 /* ─── Draw ─── */
 function drawScene(
   ctx: CanvasRenderingContext2D,
   balls: Ball[],
   particles: Particle[],
+  popups: ScorePopup[],
   cw: number,
   ch: number,
   dpr: number,
+  layout: Layout,
+  score: number
 ) {
   ctx.clearRect(0, 0, cw * dpr, ch * dpr);
   ctx.save();
   ctx.scale(dpr, dpr);
 
   const isMobile = cw < 768;
-  const bucketW = isMobile ? cw * 0.85 : cw * 0.6;
-  const bucketBottom = ch - 60;
-  const bucketTop = bucketBottom - (isMobile ? ch * 0.45 : ch * 0.4);
-  const bucketLeft = (cw - bucketW) / 2;
-  const bucketRight = bucketLeft + bucketW;
-  const funnelH = isMobile ? 60 : 100;
-  const funnelW = isMobile ? 40 : 80;
 
   // 1. Background Nebula Auras
   ctx.globalCompositeOperation = 'screen';
@@ -348,87 +619,36 @@ function drawScene(
   }
 
   // 3. DRAW AGENTIC BUCKET (Behind Balls)
-  ctx.globalCompositeOperation = 'source-over';
-
-  // High-Tech Funnel Shape
-  ctx.beginPath();
-  // Left Funnel
-  ctx.moveTo(bucketLeft - funnelW, bucketTop - funnelH);
-  ctx.lineTo(bucketLeft, bucketTop);
-  // Left Body
-  ctx.lineTo(bucketLeft, bucketBottom - 30);
-  ctx.quadraticCurveTo(bucketLeft, bucketBottom, bucketLeft + 30, bucketBottom);
-  // Bottom
-  ctx.lineTo(bucketRight - 30, bucketBottom);
-  ctx.quadraticCurveTo(bucketRight, bucketBottom, bucketRight, bucketBottom - 30);
-  // Right Body
-  ctx.lineTo(bucketRight, bucketTop);
-  // Right Funnel
-  ctx.lineTo(bucketRight + funnelW, bucketTop - funnelH);
-
-  // Glass Body
-  const glassGrad = ctx.createLinearGradient(0, bucketTop - funnelH, 0, bucketBottom);
-  glassGrad.addColorStop(0, 'rgba(255, 255, 255, 0.01)');
-  glassGrad.addColorStop(0.6, 'rgba(255, 255, 255, 0.03)');
-  glassGrad.addColorStop(1, 'rgba(255, 255, 255, 0.08)');
-  ctx.fillStyle = glassGrad;
-  ctx.fill();
-
-  // Premium Glass Reflection layer
-  ctx.save();
-  ctx.beginPath();
-  // Reuse the path by duplicating logic or just clip
-  ctx.moveTo(bucketLeft - funnelW, bucketTop - funnelH);
-  ctx.lineTo(bucketLeft, bucketTop);
-  ctx.lineTo(bucketLeft, bucketBottom - 30);
-  ctx.quadraticCurveTo(bucketLeft, bucketBottom, bucketLeft + 30, bucketBottom);
-  ctx.lineTo(bucketRight - 30, bucketBottom);
-  ctx.quadraticCurveTo(bucketRight, bucketBottom, bucketRight, bucketBottom - 30);
-  ctx.lineTo(bucketRight, bucketTop);
-  ctx.lineTo(bucketRight + funnelW, bucketTop - funnelH);
-  ctx.clip();
-
-  const reflectGrad = ctx.createLinearGradient(bucketLeft, bucketTop, bucketRight, bucketBottom);
-  reflectGrad.addColorStop(0, 'transparent');
-  reflectGrad.addColorStop(0.48, 'transparent');
-  reflectGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.04)');
-  reflectGrad.addColorStop(0.52, 'transparent');
-  reflectGrad.addColorStop(1, 'transparent');
-  ctx.fillStyle = reflectGrad;
-  ctx.fillRect(bucketLeft - funnelW, bucketTop - funnelH, bucketRight - bucketLeft + funnelW * 2, bucketBottom - bucketTop + funnelH);
-  ctx.restore();
-
-  // Glowing Agentic Rims (Yellow/Gold)
   const pulse = Math.sin(Date.now() * 0.003) * 0.2 + 0.8;
+  
+  // Draw the pre-rendered bucket
+  ctx.globalCompositeOperation = 'source-over';
+  const cachedBucket = getCachedBucket(cw, ch, dpr, pulse, layout);
+  // Important: when drawing the offscreen canvas, we need to temporarily
+  // save and reset the transform because the offscreen canvas is already scaled by dpr
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform matrix to identity
+  ctx.drawImage(cachedBucket, 0, 0);
+  ctx.restore(); // Restore the standard scale(dpr, dpr) transform
+
+  const { bucketBottom, bucketTop, bucketLeft, bucketRight, bucketW, funnelH, funnelW, hoop } = layout;
+
+  // Add the dynamic pulsing rim and glows that need recalculation per frame
+  ctx.save();
   const rimColor = `rgba(212, 175, 55, ${0.4 * pulse})`;
   ctx.strokeStyle = rimColor;
   ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(bucketLeft - funnelW, bucketTop - funnelH);
+  ctx.lineTo(bucketLeft, bucketTop);
+  ctx.lineTo(bucketLeft, bucketBottom - 30);
+  ctx.quadraticCurveTo(bucketLeft, bucketBottom, bucketLeft + 30, bucketBottom);
+  ctx.lineTo(bucketRight - 30, bucketBottom);
+  ctx.quadraticCurveTo(bucketRight, bucketBottom, bucketRight, bucketBottom - 30);
+  ctx.lineTo(bucketRight, bucketTop);
+  ctx.lineTo(bucketRight + funnelW, bucketTop - funnelH);
   ctx.stroke();
-
-  // High-Energy Slants (Matching Screenshot)
-  const drawEnergySlant = (x1: number, y1: number, x2: number, y2: number) => {
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.lineWidth = 3;
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = 'rgba(212, 175, 55, 0.8)';
-    ctx.strokeStyle = 'rgba(212, 175, 55, 1)';
-    ctx.stroke();
-
-    // Double accent line
-    ctx.beginPath();
-    ctx.moveTo(x1 + (x1 < x2 ? -5 : 5), y1 - 2);
-    ctx.lineTo(x2 + (x1 < x2 ? -5 : 5), y2 - 2);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(212, 175, 55, 0.3)';
-    ctx.stroke();
-    ctx.restore();
-  };
-
-  drawEnergySlant(bucketLeft - funnelW, bucketTop - funnelH, bucketLeft, bucketTop);
-  drawEnergySlant(bucketRight + funnelW, bucketTop - funnelH, bucketRight, bucketTop);
+  ctx.restore();
 
   // Bottom corner glows
   const drawCornerGlow = (x: number, y: number) => {
@@ -441,95 +661,135 @@ function drawScene(
   drawCornerGlow(bucketLeft, bucketBottom);
   drawCornerGlow(bucketRight, bucketBottom);
 
-  // Balls
-  for (const b of balls) {
+  // 3.5 DRAW TUTORIAL TRAJECTORY ARC
+  // If the user hasn't scored yet, draw a moving dashed line to show them what to do
+  if (score === 0) {
     ctx.save();
-    ctx.translate(b.x, b.y);
-    ctx.rotate(b.rotation);
-    ctx.globalAlpha = b.opacity;
-
-    // Ambient Glow (Outer)
-    ctx.save();
-    ctx.rotate(-b.rotation);
-    const outerGlow = ctx.createRadialGradient(0, 0, b.r * 0.8, 0, 0, b.r * 2.2);
-    outerGlow.addColorStop(0, `hsla(${b.glowHue}, 70%, 50%, 0.15)`);
-    outerGlow.addColorStop(1, 'transparent');
-    ctx.fillStyle = outerGlow;
+    const timeSpeed = Date.now() * 0.003;
+    ctx.setLineDash([15, 20]);
+    ctx.lineDashOffset = -timeSpeed * 20; // Animate dashes moving towards hoop
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = `rgba(212, 175, 55, ${0.2 + Math.sin(timeSpeed) * 0.3})`;
+    
+    // Draw an arc from the center of the bucket to the top of the hoop
     ctx.beginPath();
-    ctx.arc(0, 0, b.r * 2.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    // Sphere Body (Deep Glass) - Slightly thinner border appearance
-    const bodyGrad = ctx.createRadialGradient(-b.r * 0.3, -b.r * 0.3, b.r * 0.1, 0, 0, b.r);
-    bodyGrad.addColorStop(0, 'rgba(45, 47, 60, 1)');
-    bodyGrad.addColorStop(0.8, 'rgba(15, 16, 22, 1)');
-    bodyGrad.addColorStop(1, 'rgba(5, 5, 8, 1)');
-    ctx.fillStyle = bodyGrad;
-    ctx.beginPath();
-    ctx.arc(0, 0, b.r, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Internal Refraction / Glow
-    const innerGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, b.r);
-    innerGlow.addColorStop(0, `hsla(${b.glowHue}, 60%, 45%, 0.25)`);
-    innerGlow.addColorStop(1, 'transparent');
-    ctx.fillStyle = innerGlow;
-    ctx.fill();
-
-    // Gold Rim (Crisp & Thin)
-    ctx.strokeStyle = `hsla(${b.glowHue}, 70%, 60%, 0.35)`;
-    ctx.lineWidth = 0.8; // Reduced from 1.2
+    ctx.moveTo(bucketLeft + (bucketW / 2), bucketTop + 50);
+    // Control point high up in the middle to create an arc
+    const cpX = bucketLeft + (bucketW / 2) + 100;
+    const cpY = hoop.y - 150;
+    ctx.quadraticCurveTo(cpX, cpY, hoop.x + hoop.w / 2, hoop.rimY);
     ctx.stroke();
+    
+    // Draw an arrow head at the hoop
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(hoop.x + hoop.w / 2 - 10, hoop.rimY - 20);
+    ctx.lineTo(hoop.x + hoop.w / 2, hoop.rimY);
+    ctx.lineTo(hoop.x + hoop.w / 2 + 10, hoop.rimY - 20);
+    ctx.stroke();
+    ctx.restore();
+  }
 
-    // Logo Masked - Enhanced Clarity & Single Logo Fix
-    if (b.img && b.img.complete && b.img.naturalWidth > 0) {
+  // 4. DRAW BASKETBALL HOOP (3D Perspective)
+  ctx.save();
+  // Backboard (Volumetric)
+  const bbX = hoop.x + hoop.w * 0.1;
+  const bbY = hoop.y - 20;
+  const bbW = hoop.w * 0.8;
+  const bbH = hoop.h * 0.7;
+  
+  ctx.fillStyle = 'rgba(20, 20, 25, 0.9)';
+  ctx.strokeStyle = 'rgba(212, 175, 55, 0.8)';
+  ctx.lineWidth = 2;
+  
+  ctx.beginPath();
+  ctx.roundRect(bbX, bbY, bbW, bbH, 8);
+  ctx.fill();
+  ctx.stroke();
+  
+  // Inner square target
+  ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
+  ctx.strokeRect(bbX + bbW/2 - 20, bbY + bbH - 40, 40, 30);
+
+  // 3D Rim (Ellipse)
+  const rimCY = hoop.rimY;
+  const rimCX = hoop.x + hoop.w / 2;
+  const rimRX = hoop.w / 2;
+  const rimRY = 18; 
+  
+  ctx.beginPath();
+  if (ctx.ellipse) {
+    ctx.ellipse(rimCX, rimCY, rimRX, rimRY, 0, 0, Math.PI * 2);
+  } else {
+    // Fallback for very old browsers
+    ctx.arc(rimCX, rimCY, rimRX, 0, Math.PI * 2);
+  }
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+  
+  // Net (hanging from the ellipse)
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.lineWidth = 1;
+  const netDrops = 7;
+  for (let i = 0; i <= netDrops; i++) {
+    const angle = Math.PI + (i / netDrops) * Math.PI; // Front half of ellipse
+    const nx = rimCX + Math.cos(angle) * rimRX;
+    const ny = rimCY + Math.sin(angle) * rimRY;
+    ctx.beginPath();
+    ctx.moveTo(nx, ny);
+    ctx.lineTo(rimCX + (i - netDrops/2) * 8, rimCY + 50);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // 5. DRAW BALLS (Using Sprite Cache)
+  for (const b of balls) {
+    const key = `${b.label}_${b.r}`;
+    const sprite = spriteCache.get(key);
+    
+    if (sprite) {
       ctx.save();
-      // Apply a subtle white glow behind the logo to make it pop
-      ctx.shadowBlur = 20;
-      ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
-
-      ctx.beginPath();
-      ctx.arc(0, 0, b.r * 0.75, 0, Math.PI * 2);
-      ctx.clip();
-
-      const imgWidth = b.img.naturalWidth;
-      const imgHeight = b.img.naturalHeight;
-      const targetSize = b.r * 1.55;
-
-      if (b.isDouble) {
-        // CROP: Source images have 2 logos side-by-side. 
-        // We take only the left half (0 to width/2).
-        ctx.drawImage(
-          b.img,
-          0, 0, imgWidth / 2, imgHeight, // Source: left half only
-          -targetSize / 2, -targetSize / 2, targetSize, targetSize // Destination
-        );
-      } else {
-        // FULL: Single logo images
-        ctx.drawImage(
-          b.img,
-          -targetSize / 2, -targetSize / 2, targetSize, targetSize
-        );
-      }
+      ctx.translate(b.x, b.y);
+      ctx.rotate(b.rotation);
+      ctx.globalAlpha = b.opacity;
+      
+      const size = b.r * 2.5; 
+      // Important: reset transform to draw pixel-perfect sprite if needed, 
+      // but since we rotate, we just use the scaled dimensions.
+      // The sprite itself was drawn with DPR scale, so we draw it at 1/DPR its pixel size.
+      const drawSize = (size * 2); 
+      ctx.drawImage(sprite, -size, -size, drawSize, drawSize);
       ctx.restore();
+    } else {
+      // Fallback to minimal draw if sprite missing (shouldn't happen)
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(212, 175, 55, 0.5)';
+      ctx.fill();
     }
+  }
 
-    // Specular Highlights (Multiple)
-    // 1. Primary Highlight
-    const spec1 = ctx.createRadialGradient(-b.r * 0.3, -b.r * 0.4, 0, -b.r * 0.3, -b.r * 0.4, b.r * 0.6);
-    spec1.addColorStop(0, 'rgba(255, 255, 255, 0.25)');
-    spec1.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = spec1;
-    ctx.fill();
-
-    // 2. Bottom "Refracted" Light
-    const spec2 = ctx.createRadialGradient(b.r * 0.4, b.r * 0.4, 0, b.r * 0.4, b.r * 0.4, b.r * 0.5);
-    spec2.addColorStop(0, `hsla(${b.glowHue}, 50%, 60%, 0.15)`);
-    spec2.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = spec2;
-    ctx.fill();
-
+  // 6. DRAW POPUPS (+10 Animations)
+  const now = Date.now();
+  for (let i = popups.length - 1; i >= 0; i--) {
+    const pu = popups[i];
+    const age = now - pu.birthTime;
+    if (age > 1000) {
+      popups.splice(i, 1);
+      continue;
+    }
+    const progress = age / 1000;
+    const py = pu.y - progress * 40; // float up 40px
+    const alpha = 1 - progress;
+    
+    ctx.save();
+    ctx.fillStyle = `rgba(212, 175, 55, ${alpha})`;
+    ctx.font = 'bold 28px "Abril Fatface", serif';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 4;
+    ctx.fillText(pu.text, pu.x, py);
     ctx.restore();
   }
 
@@ -542,12 +802,45 @@ export function TechStackSection() {
   const t = (content[lang] as any)?.techStack;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const sectionElRef = useRef<HTMLElement>(null);
   const ballsRef = useRef<Ball[]>([]);
   const particlesRef = useRef<Particle[]>([]);
+  const popupsRef = useRef<ScorePopup[]>([]);
   const mouseRef = useRef({ x: 0, y: 0, active: false });
   const rafRef = useRef<number>(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const imagesRef = useRef<(HTMLImageElement | null)[]>([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [hasBeenVisible, setHasBeenVisible] = useState(false);
+  const [score, setScore] = useState(0);
+  const scoreRef = useRef(0);
+  const lastScoreTime = useRef(0);
+
+  const onScore = useCallback((x: number, y: number) => {
+    scoreRef.current += 10;
+    setScore(scoreRef.current);
+    lastScoreTime.current = Date.now();
+    popupsRef.current.push({ x, y, text: '+10', birthTime: Date.now() });
+    
+    // Play synthesis ping
+    playScoreSound();
+  }, []);
+
+  // IntersectionObserver: track when section is ≥50% visible
+  useEffect(() => {
+    const el = sectionElRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const visible = entry.isIntersecting;
+        setIsVisible(visible);
+        if (visible) setHasBeenVisible(true);
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Pre-load images
   useEffect(() => {
@@ -585,26 +878,35 @@ export function TechStackSection() {
     const ch = rect.height;
 
     ballsRef.current = createBalls(cw, ch, imagesRef.current);
-    particlesRef.current = createParticles(cw < 600 ? 80 : 150, cw, ch);
+    particlesRef.current = createParticles(cw < 600 ? 30 : 60, cw, ch);
 
     return { cw, ch, dpr };
   }, []);
 
   useEffect(() => {
-    if (!imagesLoaded) return;
+    if (!imagesLoaded || !hasBeenVisible) return;
     const dims = initCanvas();
     if (!dims) return;
     let { cw, ch, dpr } = dims;
+    // Sprite pre-rendering trigger
+    preRenderBallSprites(ballsRef.current, dpr);
+
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
 
     const handleResize = () => {
       const d = initCanvas();
       if (d) { cw = d.cw; ch = d.ch; dpr = d.dpr; }
+      preRenderBallSprites(ballsRef.current, dpr);
     };
     window.addEventListener('resize', handleResize);
 
+    let running = true;
     const tick = () => {
+      if (!running) return;
+
+      const layout = getLayout(cw, ch);
+
       stepPhysics(
         ballsRef.current,
         particlesRef.current,
@@ -613,17 +915,23 @@ export function TechStackSection() {
         mouseRef.current.x,
         mouseRef.current.y,
         mouseRef.current.active,
+        layout,
+        onScore
       );
-      drawScene(ctx, ballsRef.current, particlesRef.current, cw, ch, dpr);
+      drawScene(ctx, ballsRef.current, particlesRef.current, popupsRef.current, cw, ch, dpr, layout, scoreRef.current);
       rafRef.current = requestAnimationFrame(tick);
     };
-    rafRef.current = requestAnimationFrame(tick);
+
+    if (isVisible) {
+      rafRef.current = requestAnimationFrame(tick);
+    }
 
     return () => {
+      running = false;
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener('resize', handleResize);
     };
-  }, [imagesLoaded, initCanvas]);
+  }, [imagesLoaded, hasBeenVisible, isVisible, initCanvas]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -639,10 +947,28 @@ export function TechStackSection() {
     const onTouchMove = (e: TouchEvent) => {
       if (e.touches.length > 0) updateMouse(e.touches[0].clientX, e.touches[0].clientY);
     };
+    const handleDown = (e: MouseEvent | TouchEvent) => {
+      // Init Audio Context on first interaction
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      } else if (!audioCtx) {
+        audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        audioInit = true;
+      }
+
+      mouseRef.current.active = true;
+      updateMouse(
+        'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX,
+        'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY
+      );
+    };
     const onTouchEnd = () => { mouseRef.current.active = false; };
 
     canvas.addEventListener('mousemove', onMouseMove);
     canvas.addEventListener('mouseleave', onMouseLeave);
+    canvas.addEventListener('mousedown', handleDown);
+    canvas.addEventListener('touchstart', handleDown, { passive: true });
     canvas.addEventListener('touchmove', onTouchMove, { passive: true });
     canvas.addEventListener('touchend', onTouchEnd);
     return () => {
@@ -655,6 +981,7 @@ export function TechStackSection() {
 
   return (
     <section
+      ref={sectionElRef}
       id="tech"
       className="section-dark relative overflow-hidden h-[100dvh] w-full"
       style={{ background: '#060606' }}
@@ -699,6 +1026,33 @@ export function TechStackSection() {
             >
               {t?.title || 'Our Expertise'}
             </motion.h2>
+
+            {/* Gamification Hud */}
+            <div className="flex flex-col items-center">
+              <motion.div 
+                animate={{ 
+                  scale: Date.now() - lastScoreTime.current < 300 ? [1, 1.2, 1] : 1,
+                  color: Date.now() - lastScoreTime.current < 300 ? '#d4af37' : '#ffffff'
+                }}
+                className="mt-4 inline-flex items-center gap-2 px-6 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md shadow-2xl"
+              >
+                <span className="text-xs uppercase tracking-[0.2em] font-medium text-white/50">Score</span>
+                <span className="text-2xl font-black tabular-nums">{score}</span>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: [0, 5, 0] }}
+                transition={{ 
+                  opacity: { delay: 1, duration: 1 },
+                  y: { repeat: Infinity, duration: 2, ease: "easeInOut" }
+                }}
+                className="mt-3 text-sm text-white/40 flex items-center gap-2"
+              >
+                <span>Drag logos into the hoop!</span>
+                <span className="text-lg">🏀</span>
+              </motion.div>
+            </div>
           </div>
         </div>
       </div>
