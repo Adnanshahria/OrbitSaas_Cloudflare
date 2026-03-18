@@ -66,33 +66,40 @@ export function Navbar() {
 
   // Handle scroll state for subtle elevation change & Scroll Spy
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+    let rafPending = false;
 
-      // Scroll Spy Logic
-      const sections = ['hero', 'services', 'process', 'techstack', 'why-us', 'projects', 'reviews', 'leadership', 'contact'];
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const id = sections[i];
-        const element = document.getElementById(id);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          // Adjust offset as needed (150px from top)
-          if (rect.top <= 150) {
-            // Map the internal DOM ID back to our route-based activeSection identifier
-            const virtualSection = id === 'projects' ? 'project' : id === 'techstack' ? 'tech' : id;
-            if (activeSection !== virtualSection) {
-               setActiveSection(virtualSection);
-               
-               // Optionally update URL gracefully based on mapped path, avoiding reload
-               const pathRecord = Object.entries(PATH_TO_SECTION).find(([path, sec]) => sec === virtualSection && path !== '/project' && path !== '/proj');
-               if (pathRecord && window.location.pathname !== pathRecord[0]) {
-                 window.history.replaceState(null, '', pathRecord[0]);
-               }
+    const handleScroll = () => {
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(() => {
+        rafPending = false;
+        setScrolled(window.scrollY > 20);
+
+        // Scroll Spy Logic
+        const sections = ['hero', 'services', 'process', 'techstack', 'why-us', 'projects', 'reviews', 'leadership', 'contact'];
+        for (let i = sections.length - 1; i >= 0; i--) {
+          const id = sections[i];
+          const element = document.getElementById(id);
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            // Adjust offset as needed (150px from top)
+            if (rect.top <= 150) {
+              // Map the internal DOM ID back to our route-based activeSection identifier
+              const virtualSection = id === 'projects' ? 'project' : id === 'techstack' ? 'tech' : id;
+              if (activeSection !== virtualSection) {
+                 setActiveSection(virtualSection);
+                 
+                 // Optionally update URL gracefully based on mapped path, avoiding reload
+                 const pathRecord = Object.entries(PATH_TO_SECTION).find(([path, sec]) => sec === virtualSection && path !== '/project' && path !== '/proj');
+                 if (pathRecord && window.location.pathname !== pathRecord[0]) {
+                   window.history.replaceState(null, '', pathRecord[0]);
+                 }
+              }
+              break;
             }
-            break;
           }
         }
-      }
+      });
     };
     
     // Check eagerly on mount in case they loaded halfway down
@@ -271,22 +278,9 @@ export function Navbar() {
                         }}
                       >
                         {sectionId === 'project' && !isActive ? (
-                          label.split('').map((char: string, i: number) => (
-                            <motion.span
-                              key={i}
-                              animate={{ 
-                                color: ['#EF4444', '#A78BFA', '#EF4444'] 
-                              }}
-                              transition={{ 
-                                duration: 2.5, 
-                                repeat: Infinity, 
-                                delay: i * 0.1,
-                                ease: "easeInOut"
-                              }}
-                            >
-                              {char}
-                            </motion.span>
-                          ))
+                          <span className="nav-projects-gradient">
+                            {label}
+                          </span>
                         ) : (
                           label
                         )}

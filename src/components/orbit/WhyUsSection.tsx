@@ -51,24 +51,14 @@ const ALL_ICONS_MAP: Record<string, any> = {
   Bot, Smartphone, ShoppingCart, Code, Database, Shield, Cloud, Monitor, Wifi, Mail, Camera, Music, Heart, Star, Target, Briefcase, Award, BookOpen, Users, Settings2, Eye, Palette, Wrench
 };
 
-/* ───────────────── Middle Aura Component (Agent Skill) ──────────────── */
+/* ───────────────── Middle Aura Component (CSS-only for perf) ──────────────── */
 const MiddleAura = ({ color = 'var(--accent)', scale = 1 }: { color?: string; scale?: number }) => (
   <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0" style={{ transform: `scale(${scale})` }}>
     {[...Array(3)].map((_, i) => (
-      <motion.div
+      <div
         key={i}
-        className="absolute rounded-full border border-current"
-        style={{ color, width: '60px', height: '60px' }}
-        animate={{
-          scale: [1, 3],
-          opacity: [0.5, 0],
-        }}
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-          delay: i * 1.3,
-          ease: "easeOut"
-        }}
+        className="absolute rounded-full border border-current aura-ring"
+        style={{ color, width: '60px', height: '60px', animationDelay: `${i * 1.3}s` }}
       />
     ))}
   </div>
@@ -156,6 +146,7 @@ const ROIVisual = () => (
 // 1. Scalability — Elastic Hive Dynamics (Agent Skills Premium)
 const ScalabilityVisual = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -164,7 +155,16 @@ const ScalabilityVisual = () => {
     if (!ctx) return;
 
     let animationFrameId: number;
+    let isVisible = true;
     const startTime = Date.now();
+
+    // Pause when off-screen
+    const container = containerRef.current || canvas;
+    const observer = new IntersectionObserver(
+      ([entry]) => { isVisible = entry.isIntersecting; },
+      { threshold: 0.1 }
+    );
+    observer.observe(container);
 
     // High DPI scaling
     const dpr = window.devicePixelRatio || 1;
@@ -278,6 +278,10 @@ const ScalabilityVisual = () => {
     };
 
     const render = () => {
+      if (!isVisible) {
+        animationFrameId = requestAnimationFrame(render);
+        return;
+      }
       ctx.clearRect(0, 0, rect.width, rect.height);
       const time = (Date.now() - startTime) / 1000;
 
@@ -344,11 +348,14 @@ const ScalabilityVisual = () => {
     };
 
     render();
-    return () => cancelAnimationFrame(animationFrameId);
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      observer.disconnect();
+    };
   }, []);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-[rgba(255,255,255,0.01)] group/scalability">
+    <div ref={containerRef} className="relative w-full h-full flex items-center justify-center overflow-hidden bg-[rgba(255,255,255,0.01)] group/scalability">
       {/* HUD Accents */}
       <div className="absolute inset-4 border border-white/5 pointer-events-none" />
       <div className="absolute top-4 left-4 w-2 h-2 border-l border-t border-[var(--accent)]/40" />
@@ -406,45 +413,37 @@ const GrowthVisual = () => (
         />
       </motion.div>
 
-      {/* Orbiting Stardust Rings */}
-      {[0, 1, 2, 3].map((i) => (
-        <motion.div
+      {/* Orbiting Stardust Rings — reduced from 4 to 2 for performance */}
+      {[0, 1].map((i) => (
+        <div
           key={i}
-          className="absolute border border-[var(--accent)]/10 rounded-full"
-          style={{ width: `${90 + i * 45}px`, height: `${90 + i * 45}px` }}
-          animate={{ rotate: i % 2 === 0 ? 360 : -360, opacity: [0.1, 0.3, 0.1] }}
-          transition={{ duration: 15 + i * 5, repeat: Infinity, ease: "linear" }}
+          className="absolute rounded-full border border-[var(--accent)]/10 orbit-ring"
+          style={{ width: `${90 + i * 90}px`, height: `${90 + i * 90}px`, animationDirection: i % 2 === 0 ? 'normal' : 'reverse', animationDuration: `${15 + i * 10}s` }}
         >
           {/* Planetarium Nodes */}
-          <motion.div 
-            className="absolute w-2 h-2 rounded-full bg-[var(--accent)] shadow-[0_0_15px_var(--accent)]" 
+          <div 
+            className="absolute w-2 h-2 rounded-full bg-[var(--accent)] shadow-[0_0_15px_var(--accent)] pulse-scale" 
             style={{ 
               top: '-1px', 
               left: '50%',
-              backgroundImage: 'radial-gradient(circle at 30% 30%, white, transparent)'
+              backgroundImage: 'radial-gradient(circle at 30% 30%, white, transparent)',
+              animationDuration: `${1 + i * 0.4}s`
             }}
-            animate={{ scale: [1, 1.4, 1] }}
-            transition={{ duration: 1 + i * 0.2, repeat: Infinity }}
           />
-        </motion.div>
+        </div>
       ))}
 
-      {/* Floating Stardust Particles */}
-      {[...Array(12)].map((_, i) => (
-        <motion.div
+      {/* Floating Stardust Particles — reduced from 12 to 6 for performance */}
+      {[...Array(6)].map((_, i) => (
+        <div
           key={i}
-          className="absolute w-[2px] h-[2px] bg-white rounded-full"
+          className="absolute w-[2px] h-[2px] bg-white rounded-full stardust-particle"
           style={{ 
-            left: `${50 + Math.cos(i*30) * (40 + Math.random() * 40)}%`, 
-            top: `${50 + Math.sin(i*30) * (40 + Math.random() * 40)}%` 
+            left: `${50 + Math.cos(i*60) * 45}%`, 
+            top: `${50 + Math.sin(i*60) * 45}%`,
+            animationDuration: `${3 + i * 0.5}s`,
+            animationDelay: `${i * 0.4}s`
           }}
-          animate={{ 
-            opacity: [0, 1, 0],
-            scale: [0, 1.5, 0],
-            x: [0, Math.cos(i*30) * 30],
-            y: [0, Math.sin(i*30) * 30]
-          }}
-          transition={{ duration: 3 + Math.random() * 2, repeat: Infinity, delay: i * 0.2 }}
         />
       ))}
     </div>
@@ -497,6 +496,7 @@ const WORLD_MAP = [
 
 const GlobalVisual = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -506,6 +506,15 @@ const GlobalVisual = () => {
 
     let animationFrameId: number;
     let rotation = 0;
+    let isVisible = true;
+
+    // Pause when off-screen
+    const container = containerRef.current || canvas;
+    const observer = new IntersectionObserver(
+      ([entry]) => { isVisible = entry.isIntersecting; },
+      { threshold: 0.1 }
+    );
+    observer.observe(container);
 
     const rows = WORLD_MAP.length;
     const cols = WORLD_MAP[0].length;
@@ -513,6 +522,10 @@ const GlobalVisual = () => {
     const dotSize = 1.2;
 
     const render = () => {
+      if (!isVisible) {
+        animationFrameId = requestAnimationFrame(render);
+        return;
+      }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
@@ -634,11 +647,14 @@ const GlobalVisual = () => {
     };
 
     render();
-    return () => cancelAnimationFrame(animationFrameId);
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      observer.disconnect();
+    };
   }, []);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center py-8 overflow-hidden bg-[rgba(255,255,255,0.01)]">
+    <div ref={containerRef} className="relative w-full h-full flex items-center justify-center py-8 overflow-hidden bg-[rgba(255,255,255,0.01)]">
     <div className="relative w-52 h-52 flex items-center justify-center">
         <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(212,160,23,0.1)_0%,transparent_70%)] opacity-50 blur-3xl p-10" />
         <canvas 
@@ -647,16 +663,16 @@ const GlobalVisual = () => {
           height={200}
           className="relative z-20 drop-shadow-[0_0_50px_rgba(212,160,23,0.3)]"
         />
-        {[...Array(10)].map((_, i) => (
-          <motion.div
+        {[...Array(5)].map((_, i) => (
+          <div
             key={i}
-            className="absolute w-[1px] h-[1px] bg-white/20 rounded-full"
+            className="absolute w-[1px] h-[1px] bg-white/20 rounded-full stardust-particle"
             style={{ 
-              left: `${Math.random() * 100}%`, 
-              top: `${Math.random() * 100}%` 
+              left: `${20 + i * 15}%`, 
+              top: `${15 + i * 18}%`,
+              animationDuration: `${3 + i}s`,
+              animationDelay: `${i * 1.2}s`
             }}
-            animate={{ opacity: [0, 0.5, 0] }}
-            transition={{ duration: 3 + Math.random() * 3, repeat: Infinity, delay: Math.random() * 5 }}
           />
         ))}
       </div>

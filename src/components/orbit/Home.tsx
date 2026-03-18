@@ -20,38 +20,17 @@ import { WaveDivider } from '@/components/ui/WaveDivider';
 
 const BackgroundBlobs = () => (
   <div className="absolute inset-0 overflow-hidden -z-10 pointer-events-none">
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ 
-        opacity: [0.03, 0.05, 0.03],
-        x: [0, 40, 0], 
-        y: [0, -30, 0],
-        scale: [1, 1.1, 1]
-      }}
-      transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-      className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-indigo-500/20 blur-[120px] rounded-full"
+    <div 
+      className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-indigo-500/20 blur-[120px] rounded-full hero-blob"
+      style={{ animationDuration: '15s' }}
     />
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ 
-        opacity: [0.03, 0.06, 0.03],
-        x: [0, -30, 0], 
-        y: [0, 40, 0],
-        scale: [1, 1.2, 1]
-      }}
-      transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-      className="absolute top-[20%] -right-[5%] w-[45%] h-[45%] bg-indigo-500/20 blur-[100px] rounded-full"
+    <div 
+      className="absolute top-[20%] -right-[5%] w-[45%] h-[45%] bg-indigo-500/20 blur-[100px] rounded-full hero-blob"
+      style={{ animationDuration: '18s', animationDelay: '2s' }}
     />
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ 
-        opacity: [0.02, 0.04, 0.02],
-        x: [0, 30, 0], 
-        y: [0, 30, 0],
-        scale: [1, 1.15, 1]
-      }}
-      transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-      className="absolute -bottom-[5%] left-[15%] w-[40%] h-[40%] bg-violet-600/20 blur-[90px] rounded-full"
+    <div 
+      className="absolute -bottom-[5%] left-[15%] w-[40%] h-[40%] bg-violet-600/20 blur-[90px] rounded-full hero-blob"
+      style={{ animationDuration: '12s', animationDelay: '4s' }}
     />
   </div>
 );
@@ -59,25 +38,14 @@ const BackgroundBlobs = () => (
 const FloatingParticles = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none -z-5">
     {[...Array(6)].map((_, i) => (
-      <motion.div
+      <div
         key={i}
-        initial={{ 
-          opacity: 0,
-          x: (i * 20) + "%",
-          y: "0%"
+        className="absolute w-px h-24 bg-gradient-to-b from-transparent via-indigo-500/20 to-transparent floating-particle"
+        style={{
+          left: `${i * 20}%`,
+          animationDuration: `${15 + i * 2}s`,
+          animationDelay: `${i * 1.5}s`
         }}
-        animate={{ 
-          opacity: [0, 0.15, 0],
-          y: ["-20%", "120%"],
-          x: [(i * 20) + "%", (i * 20 + (i % 2 === 0 ? 5 : -5)) + "%"]
-        }}
-        transition={{ 
-          duration: 15 + i * 2, 
-          repeat: Infinity, 
-          delay: i * 1.5,
-          ease: "linear"
-        }}
-        className="absolute w-px h-24 bg-gradient-to-b from-transparent via-indigo-500/20 to-transparent"
       />
     ))}
   </div>
@@ -132,6 +100,15 @@ function useThunderboltCanvas(
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    let isVisible = true;
+
+    // Pause canvas when hero is scrolled out of view
+    const observer = new IntersectionObserver(
+      ([entry]) => { isVisible = entry.isIntersecting; },
+      { threshold: 0.05 }
+    );
+    observer.observe(canvas);
+
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -140,6 +117,11 @@ function useThunderboltCanvas(
     window.addEventListener('resize', resize);
 
     const loop = () => {
+      if (!isVisible) {
+        animRef.current = requestAnimationFrame(loop);
+        return;
+      }
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       // Background glow
@@ -191,6 +173,7 @@ function useThunderboltCanvas(
     return () => {
       cancelAnimationFrame(animRef.current);
       window.removeEventListener('resize', resize);
+      observer.disconnect();
     };
   }, [canvasRef, createBolt, prefersReducedMotion]);
 }

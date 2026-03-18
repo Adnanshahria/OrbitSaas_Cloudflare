@@ -959,3 +959,113 @@ html.low-perf .gentle-animation {
     rgba(255, 255, 255, 0) 100%
   );
 }
+
+/* ══════════════════════════════════════════════════════════
+   PERFORMANCE-OPTIMIZED CSS ANIMATIONS
+   Replacing Framer Motion JS-driven animations with
+   GPU-composited CSS keyframes (off main thread)
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Hero Blob Float (replaces 3 motion.div infinite transforms) ── */
+@keyframes heroBlobFloat {
+  0%, 100% {
+    opacity: 0.03;
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    opacity: 0.05;
+    transform: translate(40px, -30px) scale(1.1);
+  }
+}
+
+.hero-blob {
+  animation: heroBlobFloat 15s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* ── Floating Particles (replaces 6 motion.div infinite y-translate) ── */
+@keyframes floatingParticle {
+  0% {
+    opacity: 0;
+    transform: translateY(-20%);
+  }
+  50% {
+    opacity: 0.15;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(120%);
+  }
+}
+
+.floating-particle {
+  animation: floatingParticle 15s linear infinite;
+  will-change: transform, opacity;
+}
+
+/* ── Aura Ring Expand (replaces MiddleAura motion.div scale+fade) ── */
+@keyframes auraRingExpand {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+.aura-ring {
+  animation: auraRingExpand 4s ease-out infinite;
+  will-change: transform, opacity;
+}
+
+/* ── Orbit Ring Rotate (replaces GrowthVisual motion.div rotate) ── */
+@keyframes orbitRingRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.orbit-ring {
+  animation: orbitRingRotate 15s linear infinite;
+  will-change: transform;
+}
+
+/* ── Pulse Scale (replaces motion.div scale:[1,1.4,1]) ── */
+@keyframes pulseScale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+}
+
+.pulse-scale {
+  animation: pulseScale 1s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* ── Stardust Particle (replaces motion.div opacity+scale float) ── */
+@keyframes stardustFloat {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5) translate(15px, 15px);
+  }
+}
+
+.stardust-particle {
+  animation: stardustFloat 3s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* ── Nav Projects Gradient (replaces 8 per-char motion.span color cycling) ── */
+@keyframes navProjectsGradient {
+  0%, 100% { color: #EF4444; }
+  50% { color: #A78BFA; }
+}
+
+.nav-projects-gradient {
+  animation: navProjectsGradient 2.5s ease-in-out infinite;
+}
+

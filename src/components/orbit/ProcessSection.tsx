@@ -48,6 +48,7 @@ function ProcessCard({ card, icon: Icon, isPeak, node, isDelivery }: any) {
       exit={{ opacity: 0, scale: 0.8 }}
       transition={{ type: "spring", stiffness: 140, damping: 28 }}
       className="absolute z-30 w-64 perspective-[1000px]"
+      style={{ willChange: 'transform' }}
     >
       {/* Connection Beam (Pulser) - Perfectly hits the tip of the diamond node */}
       {!isDelivery && (
