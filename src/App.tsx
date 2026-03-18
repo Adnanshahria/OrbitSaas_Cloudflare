@@ -189,8 +189,8 @@ function PublicSite() {
 
   return (
     <div className="flex flex-col w-full min-h-screen">
-      <div id="hero" className="w-full"><Home /></div>
-      <div id="services" className="w-full"><Suspense fallback={null}><ServicesSection /></Suspense></div>
+      <div id="hero" className="w-full !border-none"><Home /></div>
+      <div id="services" className="w-full !border-none"><Suspense fallback={null}><ServicesSection /></Suspense></div>
       <div id="process" className="w-full"><Suspense fallback={null}><ProcessSection /></Suspense></div>
       <div id="techstack" className="w-full"><Suspense fallback={null}><TechStackSection /></Suspense></div>
       <div id="why-us" className="w-full"><Suspense fallback={null}><WhyUsSection /></Suspense></div>

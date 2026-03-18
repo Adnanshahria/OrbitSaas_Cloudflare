@@ -926,7 +926,7 @@ export function ServicesSection({ embedded }: { embedded?: boolean }) {
   const Wrapper = embedded ? 'div' : 'section';
 
   return (
-    <Wrapper id="services" className="relative w-full min-h-[100dvh] overflow-visible bg-[#FAFAFA] pb-4 pt-10 md:pt-14 md:pb-6 z-10 flex flex-col items-center">
+    <Wrapper id="services" className="relative w-full min-h-[100dvh] overflow-visible bg-[#FAFAFA] pb-4 pt-10 md:pt-14 md:pb-6 z-10 flex flex-col items-center !border-none">
       
       {/* Background Decorators - Luxury Beige organic glows */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
@@ -996,7 +996,7 @@ export function ServicesSection({ embedded }: { embedded?: boolean }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3, duration: 0.8 }}
-          className="w-full flex flex-col md:flex-row items-center justify-between gap-6 mt-8 md:mt-10 pt-6 border-t border-slate-200/40"
+          className="w-full flex flex-col md:flex-row items-center justify-between gap-6 mt-8 md:mt-10 pt-6"
         >
           {/* Left: Aesthetic Get Early Access CTA */}
           <button

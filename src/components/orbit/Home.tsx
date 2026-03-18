@@ -422,7 +422,7 @@ export function Home() {
   const titleText = "Turning Ideas into";
 
   return (
-    <section id="home" className="relative min-h-[100svh] flex flex-col items-center justify-center pt-24 pb-16 overflow-hidden noise-overlay">
+    <section id="home" className="relative min-h-[100svh] flex flex-col items-center justify-center pt-24 pb-16 overflow-hidden noise-overlay border-none">
       <BackgroundBlobs />
       <FloatingParticles />
       <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black pointer-events-none" />

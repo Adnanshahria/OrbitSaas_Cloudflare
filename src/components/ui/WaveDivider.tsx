@@ -59,7 +59,7 @@ export function WaveDivider({
     <div 
       ref={containerRef}
       // Height heavily reduced for lower amplitude aesthetic
-      className={`absolute bottom-0 left-0 w-full overflow-hidden leading-[0] z-20 pointer-events-none h-[20px] md:h-[35px] ${className}`}
+      className={`absolute bottom-[-1px] left-0 w-full overflow-hidden leading-[0] z-20 pointer-events-none h-[20px] md:h-[35px] !border-none !shadow-none ${className}`}
       style={{ transform: flip ? 'scaleY(-1)' : 'none' }}
     >
       <style>
