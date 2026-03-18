@@ -207,25 +207,74 @@ const ICON_MAP: Record<string, LucideIcon | any> = {
    ═══════════════════════════════════════════════════════════ */
 
 function FlashyCard({ children, icon: Icon, title, delay, className = "" }: any) {
+  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
+  const [isHovered, setIsHovered] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    setMousePos({ x, y });
+  };
+
+  const tiltX = isHovered ? (mousePos.y - 0.5) * 20 : 0;
+  const tiltY = isHovered ? (mousePos.x - 0.5) * -20 : 0;
+
   return (
     <motion.div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       initial={{ opacity: 0, x: 40, y: 20 }}
-      animate={{ opacity: 1, x: 0, y: 0 }}
-      transition={{ duration: 0.8, delay, ease: [0.25, 1, 0.5, 1] }}
-      whileHover={{ y: -5, scale: 1.02 }}
+      animate={{ 
+        opacity: 1, 
+        x: 0, 
+        y: 0,
+        rotateX: tiltX,
+        rotateY: tiltY,
+        transition: {
+          rotateX: { type: "spring", stiffness: 100, damping: 20 },
+          rotateY: { type: "spring", stiffness: 100, damping: 20 },
+          opacity: { duration: 0.8, delay },
+          x: { duration: 0.8, delay, ease: [0.25, 1, 0.5, 1] },
+          y: { duration: 0.8, delay, ease: [0.25, 1, 0.5, 1] }
+        }
+      }}
+      whileHover={{ scale: 1.05 }}
+      style={{ 
+        transformStyle: "preserve-3d",
+        boxShadow: isHovered 
+          ? '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 15px rgba(99, 102, 241, 0.2)' 
+          : '0 8px 32px 0 rgba(0, 0, 0, 0.37)' 
+      }}
       className={`relative group bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl rounded-3xl p-6 overflow-hidden ${className}`}
-      style={{ boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)' }}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="relative z-10">
-        <div className="flex items-center gap-3 mb-4">
+      {/* Noise Texture */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150" />
+      
+      {/* Dynamic Spotlight */}
+      <div 
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        style={{
+          background: `radial-gradient(600px circle at ${mousePos.x * 100}% ${mousePos.y * 100}%, rgba(99, 102, 241, 0.15), transparent 40%)`
+        }}
+      />
+
+      <div className="relative z-10" style={{ transform: "translateZ(30px)" }}>
+        <div className="flex items-center gap-3 mb-4" style={{ transform: "translateZ(20px)" }}>
           <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
             <Icon size={18} />
           </div>
           <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/40">{title}</h3>
         </div>
-        {children}
+        <div style={{ transform: "translateZ(10px)" }}>
+          {children}
+        </div>
       </div>
+      
       <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700" />
     </motion.div>
   );
@@ -325,7 +374,52 @@ export function Home() {
   const cta = t?.cta || 'Get Started';
   const learnMore = t?.learnMore || 'Our Services';
 
+  // Typewriter effect state
+  const [displayText, setDisplayText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [typingSpeed, setTypingSpeed] = useState(150);
+
+  const phrases = [
+    "SCALABLE REALITIES",
+    "REAL IMPACT",
+    "MEASURABLE GROWTH",
+    "POWERFUL SOLUTIONS",
+    "INTELLIGENT SYSTEMS"
+  ];
+
+  useEffect(() => {
+    const handleTyping = () => {
+      const currentPhrase = phrases[phraseIndex];
+      
+      if (!isDeleting) {
+        // Typing
+        setDisplayText(currentPhrase.substring(0, displayText.length + 1));
+        setTypingSpeed(100 + Math.random() * 50); // Natural typing variation
+        
+        if (displayText === currentPhrase) {
+          // Pause at the end
+          setTimeout(() => setIsDeleting(true), 2000);
+        }
+      } else {
+        // Deleting
+        setDisplayText(currentPhrase.substring(0, displayText.length - 1));
+        setTypingSpeed(50); // Deleting is usually faster
+        
+        if (displayText === "") {
+          setIsDeleting(false);
+          setPhraseIndex((prev) => (prev + 1) % phrases.length);
+        }
+      }
+    };
+
+    const timer = setTimeout(handleTyping, typingSpeed);
+    return () => clearTimeout(timer);
+  }, [displayText, isDeleting, phraseIndex, typingSpeed]);
+
   useThunderboltCanvas(canvasRef, prefersReducedMotion);
+
+  const titleText = "Turning Ideas into";
 
   return (
     <section id="home" className="relative min-h-[100svh] flex flex-col items-center justify-center pt-24 pb-16 overflow-hidden noise-overlay">
@@ -335,6 +429,9 @@ export function Home() {
       {/* ── Canvas Background ── */}
       <canvas
         ref={canvasRef}
+        data-idm-ignore="true"
+        // @ts-ignore
+        idm-ignore="true"
         className="absolute inset-0 z-0 pointer-events-none opacity-60"
       />
 
@@ -358,27 +455,50 @@ export function Home() {
               </span>
 
               <h1 
-                className="text-4xl md:text-7xl xl:text-8xl font-black leading-[0.95] tracking-tight mb-8"
-                style={{ fontFamily: 'var(--font-display)' }}
+                className="font-black leading-[1.05] tracking-tight mb-8"
+                style={{ 
+                  fontFamily: 'var(--font-display)',
+                  textWrap: 'balance'
+                }}
               >
-                {title.split(' ').map((word, i) => (
-                  <motion.span
-                    key={i}
-                    className="inline-block mr-[0.2em]"
-                    initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    transition={{ delay: 0.4 + (i * 0.1), duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                {/* Line 1: Static Title */}
+                <div className="text-4xl md:text-7xl xl:text-8xl flex flex-wrap items-center mb-2">
+                  {titleText.split(' ').map((word, i) => (
+                    <motion.span
+                      key={i}
+                      className="inline-block mr-[0.25em]"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 + (i * 0.1), duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                      style={{ color: 'white' }}
+                    >
+                      {word}
+                    </motion.span>
+                  ))}
+                </div>
+                
+                {/* Line 2: Dynamic Phrases (Reduced Size) */}
+                <div className="text-3xl md:text-6xl xl:text-7xl relative inline-flex items-center min-h-[1.1em]">
+                  <span
+                    className="leading-none"
                     style={{
-                      background: word.toLowerCase() === 'agentic' || word.toLowerCase() === 'intelligence' 
-                        ? 'linear-gradient(to right, #818cf8, #38bdf8)' 
-                        : 'white',
+                      background: 'linear-gradient(to right, #F59E0B, #A855F7, #EC4899)',
                       WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent'
+                      backgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      color: 'transparent',
+                      display: 'inline-block',
+                      paddingRight: '0.05em'
                     }}
                   >
-                    {word}
-                  </motion.span>
-                ))}
+                    {displayText}
+                  </span>
+                  <motion.span
+                    animate={{ opacity: [1, 0] }}
+                    transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                    className="inline-block w-[2px] md:w-[4px] h-[0.9em] bg-violet-400 ml-2"
+                  />
+                </div>
               </h1>
 
               <motion.div
@@ -390,35 +510,42 @@ export function Home() {
                   <RichText text={subtitle} />
                 </p>
 
-                <div className="mb-10 md:mb-12 relative max-w-3xl">
+                <div className="mb-10 md:mb-12 relative">
                   <div className="absolute -inset-4 bg-indigo-500/5 blur-3xl rounded-[3rem] -z-10" />
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 bg-white/[0.02] border border-white/[0.05] backdrop-blur-2xl rounded-3xl p-3 md:p-4 shadow-2xl relative overflow-hidden group/stats">
-                    {/* Iridescent shine sweep */}
+                  
+                  <div className="inline-flex flex-wrap items-center gap-x-8 gap-y-4 bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl rounded-2xl p-4 md:px-8 md:py-5 shadow-2xl relative overflow-hidden group/stats">
+                    {/* Premium iridescent scan line */}
                     <motion.div 
                       animate={{ x: ['-200%', '200%'] }}
-                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent -skew-x-12 -z-10"
+                      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -skew-x-12 -z-10 pointer-events-none"
                     />
+                    
                     {stats.map((stat: any, i: number) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.4 + (i * 0.1), duration: 0.5 }}
-                        className="relative group p-2 rounded-xl hover:bg-white/[0.02] transition-colors md:border-r md:border-white/5 last:border-none"
-                      >
+                      <div key={i} className="flex items-center gap-8 group/stat">
                         <div className="flex flex-col">
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-xl md:text-2xl font-black bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent leading-none">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-xl md:text-2xl font-black bg-gradient-to-br from-white to-white/70 bg-clip-text text-transparent tabular-nums tracking-tight">
                               {stat.value}{stat.suffix}
                             </span>
-                            <div className="w-1 h-1 rounded-full bg-indigo-400/50 animate-pulse" />
+                            <motion.div 
+                              animate={{ 
+                                scale: [1, 1.2, 1],
+                                opacity: [0.6, 1, 0.6]
+                              }}
+                              transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }}
+                              className="w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)]" 
+                            />
                           </div>
-                          <div className="text-[9px] md:text-[10px] text-white/30 uppercase tracking-[0.05em] font-bold leading-tight line-clamp-2 md:max-w-[100px]">
+                          <div className="text-[10px] text-white/40 uppercase tracking-[0.15em] font-bold mt-1">
                             {stat.label}
                           </div>
                         </div>
-                      </motion.div>
+                        
+                        {i < stats.length - 1 && (
+                          <div className="hidden md:block h-8 w-[1px] bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -485,7 +612,13 @@ export function Home() {
               
               {/* 3D Glass Objects Layer */}
               <div className="absolute inset-[-10%] z-0 pointer-events-none md:pointer-events-auto">
-                <Canvas camera={{ position: [0, 0, 7], fov: 45 }} gl={{ antialias: true, alpha: true }}>
+                <Canvas 
+                  camera={{ position: [0, 0, 7], fov: 45 }} 
+                  gl={{ antialias: true, alpha: true }}
+                  // @ts-ignore
+                  idm-ignore="true"
+                  data-idm-ignore="true"
+                >
                   <Suspense fallback={null}>
                     <Hero3DVisual />
                   </Suspense>
