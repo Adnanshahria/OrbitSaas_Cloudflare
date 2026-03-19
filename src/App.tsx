@@ -173,12 +173,20 @@ function PublicSite() {
     
     const targetId = routeToId[location.pathname];
     if (targetId) {
-      setTimeout(() => {
+      // Use polling to wait until the Suspense component actually renders its children
+      let attempts = 0;
+      const interval = setInterval(() => {
         const el = document.getElementById(targetId);
-        if (el) {
+        // Ensure the element has actually rendered the lazy-loaded content
+        if (el && el.children.length > 0 && el.offsetHeight > 50) {
           el.scrollIntoView({ behavior: 'smooth' });
+          clearInterval(interval);
         }
-      }, 300); // slight delay to ensure full render
+        attempts++;
+        if (attempts > 50) clearInterval(interval); // Give up after 5 seconds to prevent infinite loops
+      }, 100);
+
+      return () => clearInterval(interval);
     } else if (location.pathname === '/') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -263,6 +271,7 @@ export default function App() {
                     {['/', '/services', '/process', '/techstack', '/why-us', '/proj', '/reviews', '/leadership', '/contact'].map(path => (
                       <Route key={path} path={path} element={null} />
                     ))}
+                    <Route path="*" element={<Navigate to="/" replace />} />
                   </Route>
                   <Route path="/privacy" element={
                     <VisitorGateway>
