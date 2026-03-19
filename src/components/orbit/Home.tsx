@@ -513,7 +513,7 @@ export function Home() {
                 <div className="mb-10 md:mb-12 relative">
                   <div className="absolute -inset-4 bg-indigo-500/5 blur-3xl rounded-[3rem] -z-10" />
                   
-                  <div className="inline-flex flex-wrap items-center gap-x-8 gap-y-4 bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl rounded-2xl p-4 md:px-8 md:py-5 shadow-2xl relative overflow-hidden group/stats">
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-6 md:flex md:flex-wrap md:items-center md:gap-x-8 md:gap-y-4 bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl rounded-2xl p-4 md:px-8 md:py-5 shadow-2xl relative overflow-hidden group/stats">
                     {/* Premium iridescent scan line */}
                     <motion.div 
                       animate={{ x: ['-200%', '200%'] }}
