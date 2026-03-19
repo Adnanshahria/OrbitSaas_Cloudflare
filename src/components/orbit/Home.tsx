@@ -379,6 +379,7 @@ export function Home() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [typingSpeed, setTypingSpeed] = useState(150);
+  const [showCtaOptions, setShowCtaOptions] = useState(false);
 
   const phrases = [
     "SCALABLE REALITIES",
@@ -550,17 +551,62 @@ export function Home() {
                   </div>
                 </div>
 
-                <div className="flex flex-row items-center gap-3 md:gap-5">
-                  <button
-                    onClick={() => navigate('/contact')}
-                    className="relative overflow-hidden px-5 py-3 md:px-8 md:py-4 bg-white text-black text-sm md:text-base font-bold rounded-xl hover:bg-indigo-400 transition-all duration-500 flex items-center gap-2 group cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(129,140,248,0.4)]"
-                  >
-                    <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
-                    <span className="relative z-10 flex items-center gap-2">
-                      {cta}
-                      <Zap className="fill-current transition-transform group-hover:scale-125" size={16} />
-                    </span>
-                  </button>
+                <div className="flex flex-row items-center gap-3 md:gap-5 h-[52px] md:h-[60px]">
+                  <div className="relative h-full flex items-center">
+                    <AnimatePresence mode="wait">
+                      {!showCtaOptions ? (
+                        <motion.button
+                          key="mainCta"
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: 'auto' }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{ duration: 0.3 }}
+                          onClick={() => setShowCtaOptions(true)}
+                          className="relative overflow-hidden h-full px-5 md:px-8 bg-white text-black text-sm md:text-base font-bold rounded-xl hover:bg-indigo-400 transition-all duration-500 flex items-center justify-center gap-2 group cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(129,140,248,0.4)] whitespace-nowrap"
+                        >
+                          <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
+                          <span className="relative z-10 flex items-center gap-2">
+                            {cta}
+                            <Zap className="fill-current transition-transform group-hover:scale-125" size={16} />
+                          </span>
+                        </motion.button>
+                      ) : (
+                        <motion.div
+                          key="options"
+                          initial={{ opacity: 0, scale: 0.95, width: 0 }}
+                          animate={{ opacity: 1, scale: 1, width: 'auto' }}
+                          exit={{ opacity: 0, scale: 0.95, width: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="flex items-center gap-2 md:gap-3 h-full overflow-hidden"
+                        >
+                          <a
+                            href="https://wa.me/8801853452264"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="h-full px-5 md:px-6 bg-[#25D366] text-white text-sm md:text-base font-bold rounded-xl hover:brightness-110 transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap shadow-[0_0_20px_rgba(37,211,102,0.3)]"
+                          >
+                            WhatsApp
+                          </a>
+                          <a
+                            href="mailto:contact@orbitsaas.com"
+                            className="h-full px-5 md:px-6 bg-indigo-500 text-white text-sm md:text-base font-bold rounded-xl hover:bg-indigo-400 transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap shadow-[0_0_20px_rgba(99,102,241,0.3)]"
+                          >
+                            Email
+                          </a>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowCtaOptions(false);
+                            }}
+                            className="h-full px-3 md:px-4 bg-white/10 text-white/60 hover:text-white rounded-xl hover:bg-white/20 transition-all duration-300 flex items-center justify-center"
+                            aria-label="Close"
+                          >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                   <button
                     onClick={() => navigate('/services')}
                     className="px-5 py-3 md:px-8 md:py-4 bg-white/5 border border-white/10 text-white text-sm md:text-base font-bold rounded-xl hover:bg-white/10 transition-all duration-300 flex items-center gap-2 group cursor-pointer"

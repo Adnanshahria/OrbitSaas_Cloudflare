@@ -195,7 +195,7 @@ export function ProcessSection() {
     return () => window.removeEventListener('resize', checkSize);
   }, []);
 
-  // IntersectionObserver: only activate scroll hijacking when section is ≥85% visible
+  // IntersectionObserver: trigger animation when section is somewhat visible
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
@@ -203,7 +203,7 @@ export function ProcessSection() {
       ([entry]) => {
         setIsFullyVisible(entry.isIntersecting);
       },
-      { threshold: 0.85 }
+      { threshold: 0.4 }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -236,49 +236,17 @@ export function ProcessSection() {
     }
   }, [step, sortedSteps.length]);
 
-  // Reset state and start auto-scroll only when section is fully visible (DESKTOP ONLY)
+  // Trigger animation when the section becomes visible
   useEffect(() => {
-    if (!isFullyVisible || !isDesktop) {
-      // Reset when leaving full visibility
-      if (!isFullyVisible) setStep(0);
-      return;
+    if (!isDesktop) return;
+    
+    if (isFullyVisible) {
+      setHasMounted(true);
+      setStep(sortedSteps.length); // Load all instantly when scrolled into view
+      mountTime.current = Date.now();
+    } else {
+      setStep(0); // Disappear instantly when scrolled out of view
     }
-
-    setHasMounted(true);
-    setStep(0);
-    mountTime.current = Date.now();
-
-    // Auto-scroll logic: progress steps automatically after 1.5s delay
-    let autoScrollInterval: ReturnType<typeof setInterval>;
-    const delayTimeout = setTimeout(() => {
-      autoScrollInterval = setInterval(() => {
-        setStep(prev => {
-          if (prev < sortedSteps.length) {
-            return prev + 1;
-          }
-          clearInterval(autoScrollInterval);
-          return prev;
-        });
-      }, 1500); // 1.5s per step
-    }, 1500); // 1.5s initial delay
-
-    // Interaction handler to cancel auto-scroll
-    const cancelAutoScroll = () => {
-      clearTimeout(delayTimeout);
-      if (autoScrollInterval) clearInterval(autoScrollInterval);
-    };
-
-    window.addEventListener('wheel', cancelAutoScroll, { once: true });
-    window.addEventListener('touchstart', cancelAutoScroll, { once: true });
-    window.addEventListener('keydown', cancelAutoScroll, { once: true });
-
-    return () => {
-      clearTimeout(delayTimeout);
-      if (autoScrollInterval) clearInterval(autoScrollInterval);
-      window.removeEventListener('wheel', cancelAutoScroll);
-      window.removeEventListener('touchstart', cancelAutoScroll);
-      window.removeEventListener('keydown', cancelAutoScroll);
-    };
   }, [isFullyVisible, sortedSteps.length, isDesktop]);
 
   // Sync ref with state
@@ -297,104 +265,7 @@ export function ProcessSection() {
     { x: '92%', y: '50%' }, // Position for Delivery card — offset right, clear of the arrow
   ];
 
-  // Handle scroll and touch to advance steps — DESKTOP ONLY (mobile uses native scroll timeline)
-  useEffect(() => {
-    const container = sectionRef.current;
-    if (!container || !isFullyVisible || !isDesktop) return;
 
-    // Helper: release scroll control and scroll to an adjacent section
-    const scrollToSection = (sectionId: string) => {
-      setIsFullyVisible(false); // Release scroll lock immediately
-      const el = document.getElementById(sectionId);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
-    };
-
-    const handleWheel = (e: WheelEvent) => {
-      e.stopPropagation();
-
-      const now = Date.now();
-      if (now - mountTime.current < 800) return;
-
-      if (now - lastStepTime.current < 1000) {
-        if (Math.abs(e.deltaY) > 2) e.preventDefault();
-        return;
-      }
-
-      if (Math.abs(e.deltaY) < 20) return;
-
-      e.preventDefault();
-      const isScrollingDown = e.deltaY > 0;
-      const isScrollingUp = e.deltaY < 0;
-
-      const stepsCount = sortedSteps.length;
-      if (isScrollingDown) {
-        if (stepRef.current < stepsCount) {
-          setStep(prev => prev + 1);
-          lastStepTime.current = now;
-        } else {
-          scrollToSection('techstack');
-        }
-      } else if (isScrollingUp) {
-        if (stepRef.current > 0) {
-          setStep(prev => prev - 1);
-          lastStepTime.current = now;
-        } else {
-          scrollToSection('services');
-        }
-      }
-    };
-
-    let touchStartY = 0;
-    const handleTouchStart = (e: TouchEvent) => {
-      e.stopPropagation();
-      touchStartY = e.touches[0].clientY;
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      e.stopPropagation();
-      if (e.cancelable) e.preventDefault();
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      e.stopPropagation();
-      const now = Date.now();
-      if (now - mountTime.current < 800) return;
-      if (now - lastStepTime.current < 1000) return;
-
-      const deltaY = touchStartY - e.changedTouches[0].clientY;
-      if (Math.abs(deltaY) > 60) {
-        if (deltaY > 0) {
-          if (stepRef.current < sortedSteps.length) {
-            setStep(prev => prev + 1);
-            lastStepTime.current = now;
-          } else {
-            scrollToSection('techstack');
-          }
-        } else if (deltaY < 0) {
-          if (stepRef.current > 0) {
-            setStep(prev => prev - 1);
-            lastStepTime.current = now;
-          } else {
-            scrollToSection('services');
-          }
-        }
-      }
-    };
-
-    container.addEventListener('wheel', handleWheel, { passive: false });
-    container.addEventListener('touchstart', handleTouchStart, { passive: true });
-    container.addEventListener('touchmove', handleTouchMove, { passive: false });
-    container.addEventListener('touchend', handleTouchEnd, { passive: true });
-
-    return () => {
-      container.removeEventListener('wheel', handleWheel);
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchmove', handleTouchMove);
-      container.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [isFullyVisible, sortedSteps.length, isDesktop]);
 
   return (
     <section

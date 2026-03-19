@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { HelmetProvider } from 'react-helmet-async';
 import { SEOHead } from './components/seo/SEOHead';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { CustomCursor } from './components/orbit/CustomCursor';
 
 // Lazy load public sections
 const StatsSection = lazy(() => import('./components/orbit/StatsSection').then(m => ({ default: m.StatsSection })));
@@ -246,6 +247,7 @@ export default function App() {
           <LanguageProvider>
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <ScrollToTop />
+            <CustomCursor />
             <SEOHead />
             <NavbarVisibilityWrapper />
             <Suspense fallback={<AdminLoading />}>

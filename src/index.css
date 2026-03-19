@@ -145,6 +145,15 @@
     background: var(--accent);
     color: white;
   }
+
+  @media (hover: hover) and (pointer: fine) {
+    body, a, button, .cursor-pointer {
+      cursor: none;
+    }
+    input, textarea {
+      cursor: auto;
+    }
+  }
 }
 
 /* ══════════════════════════════════════════════════════════

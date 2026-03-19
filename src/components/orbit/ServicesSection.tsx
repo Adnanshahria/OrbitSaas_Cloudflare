@@ -905,7 +905,7 @@ function BentoCard({
             </p>
           </div>
 
-          <div className="shrink-0 w-[95px] h-[95px] sm:w-[130px] sm:h-[130px] md:w-full md:h-full" onMouseMove={(e) => e.stopPropagation()}>
+          <div className="shrink-0 w-[95px] h-[95px] sm:w-[130px] sm:h-[130px] md:w-full md:h-full">
             <ServiceVisual index={index} />
           </div>
         </div>

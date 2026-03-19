@@ -164,6 +164,11 @@ export function ProjectsSection() {
     const { content } = useContent();
 
     const [activeCategory, setActiveCategory] = useState('All');
+    const [visibleCount, setVisibleCount] = useState(6);
+
+    useEffect(() => {
+        setVisibleCount(6);
+    }, [activeCategory]);
 
     const enData = (content.en as any).projects || {};
     const bnData = (content.bn as any).projects || {};
@@ -179,6 +184,8 @@ export function ProjectsSection() {
     const items = [...displayItems]
         .sort((a, b) => (a.order ?? a._originalIndex) - (b.order ?? b._originalIndex))
         .filter(item => activeCategory === 'All' || (item.categories || [item.category]).includes(activeCategory));
+
+    const visibleItems = items.slice(0, visibleCount);
 
     const ALL_CATEGORIES = ['All', ...(enData.categories || DEFAULT_CATEGORIES)];
 
@@ -252,7 +259,7 @@ export function ProjectsSection() {
                 {/* Projects Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
                     <AnimatePresence mode="popLayout">
-                        {items.map((item, i) => (
+                        {visibleItems.map((item, i) => (
                             <motion.div
                                 key={item._id || item._originalIndex}
                                 layout
@@ -270,6 +277,24 @@ export function ProjectsSection() {
                         ))}
                     </AnimatePresence>
                 </div>
+
+                {visibleCount < items.length && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="mt-12 flex justify-center w-full"
+                    >
+                        <button
+                            onClick={() => setVisibleCount(prev => prev + 3)}
+                            className="group relative px-8 py-4 bg-white text-gray-900 border border-[#22C55E]/20 font-bold rounded-xl hover:border-[#22C55E]/60 transition-all duration-300 shadow-sm hover:shadow-[0_10px_40px_rgba(34,197,94,0.1)] overflow-hidden"
+                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                        >
+                            <span className="relative z-10">Explore More Projects</span>
+                            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-0 bg-[#22C55E]/5 transition-transform duration-500 ease-out" />
+                        </button>
+                    </motion.div>
+                )}
                 
                 {items.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-24 text-center">
