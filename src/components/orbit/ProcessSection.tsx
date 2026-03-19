@@ -213,14 +213,18 @@ export function ProcessSection() {
   useEffect(() => {
     const unlockAudio = () => {
       initSwooshAudio();
+      // Clean up after first valid interaction
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+      window.removeEventListener('keydown', unlockAudio);
     };
     window.addEventListener('click', unlockAudio, { once: true });
     window.addEventListener('touchstart', unlockAudio, { once: true });
-    window.addEventListener('wheel', unlockAudio, { once: true });
+    window.addEventListener('keydown', unlockAudio, { once: true });
     return () => {
       window.removeEventListener('click', unlockAudio);
       window.removeEventListener('touchstart', unlockAudio);
-      window.removeEventListener('wheel', unlockAudio);
+      window.removeEventListener('keydown', unlockAudio);
     };
   }, []);
 

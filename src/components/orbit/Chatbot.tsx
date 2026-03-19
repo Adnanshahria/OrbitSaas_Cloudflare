@@ -392,7 +392,17 @@ export function Chatbot() {
     // Notify other components about chatbot state
     window.dispatchEvent(new CustomEvent('orbit-chatbot-state-change', { detail: { isOpen: open } }));
 
-    if (open && window.innerWidth < 768) {
+    const isMobile = window.innerWidth < 768;
+
+    // Block touchmove on background when chatbot is open on mobile
+    const preventScroll = (e: TouchEvent) => {
+      // Allow scrolling inside the chatbot panel itself
+      const target = e.target as HTMLElement;
+      if (target.closest('.chatbot-messages-area') || target.closest('.chatbot-input-area')) return;
+      e.preventDefault();
+    };
+
+    if (open && isMobile) {
       // Save current scroll position
       scrollYRef.current = window.scrollY;
       // Fully lock the body to prevent any content shifting
@@ -402,9 +412,13 @@ export function Chatbot() {
       document.body.style.right = '0';
       document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
       // Also lock the html element
       document.documentElement.style.overflow = 'hidden';
       document.documentElement.style.height = '100%';
+      document.documentElement.style.touchAction = 'none';
+      // Block touchmove on document as a bulletproof fallback
+      document.addEventListener('touchmove', preventScroll, { passive: false });
     } else {
       // Restore body position and scroll
       const savedY = scrollYRef.current;
@@ -414,13 +428,16 @@ export function Chatbot() {
       document.body.style.right = '';
       document.body.style.width = '';
       document.body.style.overflow = 'unset';
+      document.body.style.touchAction = '';
       document.documentElement.style.overflow = '';
       document.documentElement.style.height = '';
+      document.documentElement.style.touchAction = '';
       if (savedY) {
         window.scrollTo(0, savedY);
       }
     }
     return () => {
+      document.removeEventListener('touchmove', preventScroll);
       const savedY = scrollYRef.current;
       document.body.style.position = '';
       document.body.style.top = '';
@@ -428,8 +445,10 @@ export function Chatbot() {
       document.body.style.right = '';
       document.body.style.width = '';
       document.body.style.overflow = 'unset';
+      document.body.style.touchAction = '';
       document.documentElement.style.overflow = '';
       document.documentElement.style.height = '';
+      document.documentElement.style.touchAction = '';
       if (savedY) {
         window.scrollTo(0, savedY);
       }
@@ -671,15 +690,8 @@ export function Chatbot() {
         // Fail silently so chat UX is not interrupted
       }
     }
-    // -------------------------
-
-    if (!hasProvidedEmail && !emailMatch) {
-      if (messages.filter(m => m.role === 'user').length >= 1) {
-        setShowEmailPrompt(true);
-        setIsLoading(false);
-        return;
-      }
-    }
+    // Strict cut-off gate removed: Allow executeAIResponse to run even on 2nd question.
+    // The email prompt is now gracefully triggered AFTER the bot answers.
 
     await executeAIResponse(newMessages);
   };
@@ -762,7 +774,7 @@ LEADS: If user asks pricing/consultation/project start AND hasn't given email (s
 LINKS: Provide a link ONLY if the user specifically asks to see a project, service, or contact info. Do NOT include links in every message. NEVER use generic labels like "PROJECT SHOWCASE" or "AI SERVICES". Instead, use the actual name of the project or service (e.g., [Project Name](URL)). The UI will convert these into compact buttons. NEVER fabricate URLs. If a specific URL isn't provided, just describe it without a link.
 LANG: English only. If user speaks Bangla, prepend "[SUGGEST_SWITCH]".
 STYLE: Casual+professional. HARD LIMIT: 80-120 words max. Count your words. Max 4 bullets or 1-2 short paragraphs. NEVER exceed 120 words. If listing items, use very short bullet points (5-10 words each).
-FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on its OWN SEPARATE NEW LINE starting with "💬". NEVER embed the follow-up inside your reply paragraph. NEVER use 🟢 or any other emoji for the follow-up — ONLY use 💬. The follow-up line MUST be separated from the main text by a newline. Phrase it AS IF THE USER IS SPEAKING TO YOU. Use "your" (referring to ORBIT), not "our". BAD: "💬 Learn more about our services" or "💬 Would you like to see our projects?" or ending a sentence with 🟢 Tell me about X. GOOD: "💬 Tell me about your pricing" or "💬 Show me your AI projects" or "💬 I want to start a project". NEVER phrase as a bot/company speaking. NEVER use "our". NEVER skip this.`
+FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on its OWN SEPARATE NEW LINE starting with "💬". NEVER embed the follow-up inside your reply paragraph. NEVER use 🟢 or any other emoji for the follow-up — ONLY use 💬. The follow-up line MUST be separated from the main text by a newline. CRITICAL: The follow-up is what the USER will say to YOU (ORBIT). Write it as a request FROM the user TO ORBIT. The word "your" must refer to ORBIT's things (your services, your pricing, your projects). NEVER write follow-ups where "your" refers to the user's things (like "your project idea" or "your requirements"). BAD examples: "💬 Tell me about your project idea" (sounds like bot asking user), "💬 What kind of software are you building?" (bot asking user), "💬 Share your requirements" (bot asking user). GOOD examples: "💬 Tell me about your pricing" (user asking ORBIT), "💬 Show me your AI projects" (user asking ORBIT), "💬 I want to start a project" (user stating intent), "💬 Help me plan my project" (user requesting help), "💬 What technologies do you use?" (user asking ORBIT). NEVER phrase as bot asking user questions. NEVER use "our". NEVER skip this.`
         : `আপনি ORBIT SaaS-এর বন্ধুসুলভ AI সহকারী। নিয়ম:
 শুভেচ্ছা: প্রথম মেসেজে "হ্যালো! Orbit SaaS-এ স্বাগতম 😊" পরে আর পরিচয় নয়।
 পরিচিতি: বাংলাদেশভিত্তিক সফটওয়্যার কোম্পানি। ওয়েব অ্যাপ, মোবাইল অ্যাপ, AI চ্যাটবট — সব বানাই।
@@ -774,7 +786,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
 লিংক: শুধু knowledge base-এর URL দিন। নতুন URL বানাবেন না।
 ভাষা: সহজ বাংলায় কথা বলুন। কঠিন/টেকনিক্যাল শব্দ এড়িয়ে চলুন। একজন সাধারণ মানুষও যেন বুঝতে পারে এমন করে লিখুন। বন্ধুর মতো কথা বলুন। ইংরেজি বললে "[SUGGEST_SWITCH]" দিন।
 শৈলী: উষ্ণ, বন্ধুসুলভ এবং সহজ। ৮০-১২০ শব্দের মধ্যে উত্তর দিন। সর্বোচ্চ ৪ বুলেট বা ১-২ ছোট প্যারা।
-ফলো-আপ: প্রতিটি উত্তরে অবশ্যই শেষে আলাদা নতুন লাইনে "💬" দিয়ে ১টি পরবর্তী পদক্ষেপ দিন ইউজারের দৃষ্টিকোণ থেকে। কখনো 🟢 বা অন্য ইমোজি ব্যবহার করবেন না — শুধু 💬। প্যারাগ্রাফের ভিতরে ফলো-আপ লিখবেন না, আলাদা লাইনে লিখুন। "তোমাদের" ব্যবহার করুন (ORBIT বোঝাতে), "আমাদের" নয়। ভালো: "💬 তোমাদের প্রাইসিং জানাও" বা "💬 তোমাদের AI প্রজেক্টগুলো দেখাও"।`);
+ফলো-আপ: প্রতিটি উত্তরে অবশ্যই শেষে আলাদা নতুন লাইনে "💬" দিয়ে ১টি পরবর্তী পদক্ষেপ দিন। গুরুত্বপূর্ণ: ফলো-আপটি ইউজার ORBIT-কে যা বলবে সেভাবে লিখুন। "তোমাদের" মানে ORBIT-এর জিনিস (তোমাদের সেবা, তোমাদের প্রাইসিং)। কখনো ইউজারকে প্রশ্ন করবেন না (যেমন "আপনার প্রজেক্ট কী?")। ভুল: "💬 আপনার প্রজেক্টের কথা বলুন" বা "💬 আপনি কী বানাতে চান?"। সঠিক: "💬 তোমাদের প্রাইসিং জানাও" বা "💬 আমার প্রজেক্ট প্ল্যান করতে সাহায্য করো" বা "💬 তোমাদের AI প্রজেক্টগুলো দেখাও"।`);
       const systemPrompt = (adminPrompt && adminPrompt.trim()) ? adminPrompt : defaultPrompt;
 
       // 3. Email status context
@@ -888,36 +900,75 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
       // Convert bot-perspective suggestions to user-perspective
       const newSuggestions = suggestionLines.map(l => {
         let s = l.replace(/^[\s💬🟢➡️👉✅🔹🔸💡🎯📌⭐🚀🔵🟡🟠🔴⚡]*/, '').trim();
-        // Convert "Would you like to know about X?" → "Tell me about X"
+
+        // ── Convert bot-asking-user questions into user-asking-bot statements ──
+        // "Tell me about your project idea/requirements/needs"
+        s = s.replace(/^tell me about your (project idea|requirements|needs|project|business|goals)/i, 'Help me plan my project');
+        // "What kind of software are you building?"
+        s = s.replace(/^what (kind|type) of (software|project|app|website).*\??$/i, 'I want to discuss my project');
+        // "Share your requirements"
+        s = s.replace(/^share your (requirements|needs|ideas|project details)/i, 'Help me define my requirements');
+        // "Tell me more about your X"
+        s = s.replace(/^tell me (more )?about your (project|idea|business|company|needs|goals|requirements|budget)/i, 'I want to discuss my $2');
+        // "What is your budget?"
+        s = s.replace(/^what is your (budget|timeline|deadline)/i, 'Tell me about your pricing and timeline');
+        // "Describe your project"
+        s = s.replace(/^describe your (project|idea|needs|requirements)/i, 'Help me plan my project');
+        // Generic "What do you need?" / "What are you looking for?"
+        s = s.replace(/^what (do you need|are you looking for).*\??$/i, 'I need help with my project');
+
+        // Mixed grammar corrections
+        s = s.replace(/^help me explain/i, 'Help me describe');
+
+        // Legacy cleanup conversions:
         s = s.replace(/^would you like to (know|learn|hear) (about|more about)\s*/i, 'Tell me about ');
-        // Convert "Would you like to see X?" → "Show me X"
         s = s.replace(/^would you like to (see|view|check out)\s*/i, 'Show me ');
-        // Convert "Would you like to X?" → "I'd like to X"
         s = s.replace(/^would you like to\s*/i, "I'd like to ");
-        // Convert "Do you want to X?" → "I want to X"
         s = s.replace(/^do you want to\s*/i, 'I want to ');
-        // Convert "Shall I X?" → "Please X"
         s = s.replace(/^shall I\s*/i, 'Please ');
-        // Convert "Can I help you with X?" → "Help me with X"
         s = s.replace(/^can I help you with\s*/i, 'Help me with ');
-        // Convert "Learn more about our/the X" → "Tell me about your X"
         s = s.replace(/^learn more about (our|the)\s*/i, 'Tell me about your ');
         s = s.replace(/^learn more about\s*/i, 'Tell me about ');
-        // Convert "Explore our X" → "Show me your X"
         s = s.replace(/^explore (our|the)\s*/i, 'Show me your ');
         s = s.replace(/^explore\s*/i, 'Show me ');
-        // Convert "Check out our X" → "Show me your X"
         s = s.replace(/^check out (our|the)\s*/i, 'Show me your ');
-        // Fix any remaining "our" → "your" (bot speaking as company)
-        s = s.replace(/\bour\b/gi, 'your');
-        // Remove trailing ? since these are now statements
-        s = s.replace(/\?$/, '');
-        // Capitalize first letter
+        
+        // Final cleanup
+        s = s.replace(/\bour\b/gi, 'your');  // Fix "our" to "your"
+        
+        // If the sentence starts with a user-focused action (Help me, I want, I need, Let me),
+        // any "your" followed by user-owned concepts securely becomes "my".
+        if (/^(help me|i want to|i need|let me|i'd like to|please)\b/i.test(s)) {
+            s = s.replace(/\byour (project|requirements|project requirements|idea|needs|business|company|goals|budget)\b/gi, 'my $1');
+        }
+
+        s = s.replace(/\?$/, '');            // Remove trailing '?'
         s = s.charAt(0).toUpperCase() + s.slice(1);
+        
+        // Failsafe for any missed bot perspectives: if it still has "your " and starts with "Tell me about ", 
+        // there's a strong chance the AI completely ignored instructions. Override to generic.
+        if (s.toLowerCase().startsWith('tell me about your ') && !s.toLowerCase().includes('pricing') && !s.toLowerCase().includes('process') && !s.toLowerCase().includes('services')) {
+            // E.g. "Tell me about your software idea" 
+            s = 'I want to start a project';
+        }
+
         return s;
       }).filter(Boolean);
 
-      setSuggestions(newSuggestions);
+      // Enhanced Email Gate: Show the email prompt if the AI explicitly asks for contact info, 
+      // OR if the user has asked at least 1 follow-up question (user message count >= 2).
+      // We do this here so the AI actually gets to answer their question before the prompt appears!
+      const userMsgCount = chatHistory.filter(m => m.role === 'user').length;
+      const askForEmailKeywords = ['email', 'e-mail', 'mail', 'contact detail', 'contact info', 'reach you', 'ইমেইল', 'ই-মেইল', 'যোগাযোগ'];
+      const aiAskedForContact = askForEmailKeywords.some(kw => cleanedContent.toLowerCase().includes(kw)) || newSuggestions.some(s => askForEmailKeywords.some(kw => s.toLowerCase().includes(kw)));
+      
+      if (!hasProvidedEmail && (aiAskedForContact || userMsgCount >= 2)) {
+        setShowEmailPrompt(true);
+        // Filter out any awkward "Share your email" suggestion chips
+        setSuggestions(newSuggestions.filter(s => !askForEmailKeywords.some(kw => s.toLowerCase().includes(kw))));
+      } else {
+        setSuggestions(newSuggestions);
+      }
       setMessages(prev => [...prev, { role: 'assistant', content: cleanedContent }]);
     } catch (error) {
       console.error('Failed to get response:', error);
@@ -968,7 +1019,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
         if (part.startsWith('"') && part.endsWith('"') && part.length > 2) {
           return <strong key={`${keyPrefix}-q${i}`} className="font-bold italic text-primary/90">{part.slice(1, -1)}</strong>;
         }
-        // Link placeholder → render as bold "Click Me" button
+        // Link placeholder → render as a sleek, modern inline card button
         const linkMatch = part.match(/^__LINK_(\d+)__$/);
         if (linkMatch) {
           const link = linkPlaceholders[parseInt(linkMatch[1], 10)];
@@ -978,12 +1029,15 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex mt-1.5 mb-1 items-center px-4 py-1.5 bg-primary text-primary-foreground font-bold rounded-full text-[11px] tracking-normal shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 border border-white/20 group animate-in zoom-in-50 duration-300"
+              title={link.url}
+              className="inline-flex mt-1.5 mb-1 mx-1 items-center gap-2 px-3 py-1.5 bg-background/60 hover:bg-background text-foreground text-xs md:text-[13px] font-semibold rounded-lg border border-border hover:border-primary/50 shadow-sm hover:shadow-primary/20 transition-all duration-300 group align-middle animate-in zoom-in-50 duration-300"
             >
-              <span className="mr-1">{link.text || 'CLICK HERE'}</span>
-              <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
+              <span className="truncate max-w-[180px] md:max-w-[220px]">{link.text || 'View Details'}</span>
+              <span className="w-5 h-5 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors shadow-sm">
+                <svg className="w-3 h-3 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </span>
             </a>
           );
         }
@@ -1008,7 +1062,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
 
       if (isBullet) {
         return (
-          <div key={`line-${lineIndex}`} className="flex gap-2 pl-1 my-0.5 text-xs">
+          <div key={`line-${lineIndex}`} className="flex gap-2 pl-1 my-0.5 text-[15px] md:text-sm">
             <span className="text-primary mt-1.5 w-1 h-1 rounded-full bg-primary shrink-0" />
             <span className="flex-1 leading-relaxed">{inlineContent}</span>
           </div>
@@ -1016,7 +1070,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
       }
 
       return (
-        <p key={`line-${lineIndex}`} className={`text-xs leading-relaxed ${line.trim() === '' ? 'h-2' : 'mb-1.5 last:mb-0'}`}>
+        <p key={`line-${lineIndex}`} className={`text-[15px] md:text-sm leading-relaxed ${line.trim() === '' ? 'h-2' : 'mb-1.5 last:mb-0'}`}>
           {inlineContent}
         </p>
       );
@@ -1046,7 +1100,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.5 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            className="fixed bottom-[18dvh] sm:bottom-24 right-4 sm:right-6 z-[195] flex flex-col items-end pointer-events-none origin-[calc(100%-24px)_calc(100%+24px)]"
+            className="fixed bottom-[14dvh] sm:bottom-[84px] right-4 sm:right-6 z-[195] flex flex-col items-end pointer-events-none origin-[calc(100%-24px)_calc(100%+24px)]"
           >
             <div className="relative pointer-events-auto cursor-pointer group" onClick={() => setOpen(true)}>
               {/* Main Speech Bubble */}
@@ -1082,7 +1136,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setOpen(!open)}
-        className={`fixed bottom-[10dvh] md:bottom-6 right-4 sm:right-6 z-[200] flex items-center justify-center cursor-pointer transition-all duration-300 ${open
+        className={`fixed bottom-[6dvh] md:bottom-4 right-4 sm:right-6 z-[200] flex items-center justify-center cursor-pointer transition-all duration-300 ${open
           ? 'w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary text-primary-foreground shadow-xl hidden md:flex'
           : 'w-14 h-14 sm:w-[72px] sm:h-[72px] bg-transparent'
           }`}
@@ -1118,7 +1172,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
               ...viewportStyle,
               transformOrigin: 'bottom',
             }}
-            className={`fixed md:bottom-24 left-0 right-0 md:left-auto md:right-6 z-[200] w-full md:w-[400px] max-w-full md:max-w-[400px] overflow-hidden bg-card border border-border shadow-2xl flex flex-col h-[100dvh] md:h-auto top-0 md:top-auto ${isKeyboardOpen && typeof window !== 'undefined' && window.innerWidth < 768 ? 'rounded-none border-t-0' : 'bottom-0 rounded-t-3xl md:rounded-2xl'}`}
+            className={`fixed md:bottom-[84px] left-0 right-0 md:left-auto md:right-6 z-[200] w-full md:w-[400px] max-w-full md:max-w-[400px] overflow-hidden bg-card border border-border shadow-2xl flex flex-col h-[100dvh] md:h-auto top-0 md:top-auto ${isKeyboardOpen && typeof window !== 'undefined' && window.innerWidth < 768 ? 'rounded-none border-t-0' : 'bottom-0 rounded-t-3xl md:rounded-2xl'}`}
           >
             {/* Header */}
             <div className="shrink-0 px-5 py-3.5 bg-primary/20 border-b border-border flex items-center justify-between relative">
@@ -1201,7 +1255,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
             </div>
 
             {/* Messages */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3 bg-background/40 md:bg-card/40 md:max-h-[500px] relative">
+            <div className="chatbot-messages-area flex-1 min-h-0 overflow-y-auto p-4 space-y-3 bg-background/40 md:bg-card/40 md:max-h-[500px] relative">
               <div className="space-y-3 transition-all duration-500">
                 {/* Initial Selection Flow */}
                 {messages.length === 0 && !isLoading && (
@@ -1249,8 +1303,8 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
                             <Bot className="w-4 h-4 text-foreground" />
                           </div>
                         )}
-                        <div className={`rounded-xl px-3 py-2 text-xs max-w-[85%] border ${msg.role === 'user'
-                          ? 'bg-primary text-primary-foreground border-primary rounded-tr-none'
+                        <div className={`rounded-xl px-3 py-2 text-[15px] md:text-sm max-w-[85%] border ${msg.role === 'user'
+                          ? 'bg-emerald-600 text-white border-emerald-600 rounded-tr-none'
                           : 'bg-muted border-border text-foreground rounded-tl-none'
                           }`}>
                           {isAssistant ? formatMessage(cleanContent) : msg.content}
@@ -1280,8 +1334,8 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
                       <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center shrink-0">
                         <Bot className="w-4 h-4 text-foreground" />
                       </div>
-                      <div className="bg-muted rounded-xl rounded-tl-none px-4 py-3 text-sm text-foreground max-w-[90%] border border-border">
-                        <p className="mb-3 text-xs leading-relaxed font-medium">
+                      <div className="bg-muted rounded-xl rounded-tl-none px-4 py-3 text-base md:text-[15px] text-foreground max-w-[90%] border border-border">
+                        <p className="mb-3 text-[15px] md:text-sm leading-relaxed font-medium">
                           {chatLang === 'bn'
                             ? 'অবশ্যই, আমি সাহায্য করতে পারি। তবে আমাদের সংযোগ বিচ্ছিন্ন হয়ে গেলে, আমি কোথায় উত্তর পাঠাবো? আপনার ইমেইলটি দিন:'
                             : 'Definitely I can help with that. In case we get disconnected, what is your email address?'}
@@ -1294,12 +1348,12 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
                             value={leadEmail}
                             onChange={(e) => setLeadEmail(e.target.value)}
                             disabled={leadStatus === 'loading'}
-                            className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all pointer-events-auto"
+                            className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-base md:text-[15px] focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all pointer-events-auto"
                           />
                           <button
                             type="submit"
                             disabled={leadStatus === 'loading' || !leadEmail}
-                            className="w-full bg-primary text-primary-foreground font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 text-xs transition-opacity cursor-pointer pointer-events-auto"
+                            className="w-full bg-emerald-600 text-white font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 text-xs transition-opacity cursor-pointer pointer-events-auto"
                           >
                             {leadStatus === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                             {chatLang === 'bn' ? 'উত্তর পান' : 'Send & Continue'}
@@ -1352,13 +1406,8 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
                             setInput('');
                             setIsLoading(true);
 
-                            // Email gate: same logic as handleSend
-                            if (!hasProvidedEmail && messages.filter(m => m.role === 'user').length >= 1) {
-                              setShowEmailPrompt(true);
-                              setIsLoading(false);
-                              return;
-                            }
-
+                            // The strict email gate was removed from here to allow the AI to answer.
+                            // executeAIResponse will gracefully trigger the native email prompt afterwards.
                             executeAIResponse(newMessages);
                           }, 50);
                         }}
@@ -1373,7 +1422,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
             })()}
 
             {/* Input & Mobile Close Button */}
-            <div className="shrink-0 relative">
+            <div className="chatbot-input-area shrink-0 relative">
               <div className={`px-4 py-3 pb-6 md:pb-3 ${suggestions.length > 0 && !isLoading ? 'pt-2' : ''} flex gap-2 bg-card/90 backdrop-blur-md transition-opacity ${showEmailPrompt ? 'opacity-40 pointer-events-none' : ''}`}>
                 <input
                   value={input}
@@ -1393,12 +1442,12 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
                   enterKeyHint="send"
                   // Prevent auto-focus on open to stop keyboard jumping
                   autoFocus={false}
-                  className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-[13px] md:text-xs text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 transition-all"
+                  className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-base md:text-[15px] text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 transition-all"
                 />
                 <button
                   onClick={handleSend}
                   disabled={isLoading || !input.trim()}
-                  className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                  className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center hover:bg-emerald-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                 >
                   <Send className="w-4 h-4" strokeWidth={2.5} />
                 </button>

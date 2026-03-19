@@ -437,8 +437,8 @@ export function Home() {
       />
 
       {/* ── Grid Layout ── */}
-      <div className="container mx-auto px-6 relative z-10 pt-8 md:pt-0 pb-12">
-        <div className="grid lg:grid-cols-12 gap-12 items-center">
+      <div className="w-full max-w-none mx-auto px-4 sm:px-6 relative z-10 pt-8 md:pt-0 pb-12 overflow-x-hidden">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-16 xl:gap-24 2xl:gap-32 items-center relative">
           
           {/* Left Side: Content */}
           <div className="lg:col-span-7 xl:col-span-8 space-y-8">
@@ -458,12 +458,11 @@ export function Home() {
               <h1 
                 className="font-black leading-[1.05] tracking-tight mb-8"
                 style={{ 
-                  fontFamily: 'var(--font-display)',
-                  textWrap: 'balance'
+                  fontFamily: 'var(--font-display)'
                 }}
               >
                 {/* Line 1: Static Title */}
-                <div className="text-4xl md:text-7xl xl:text-8xl flex flex-wrap items-center mb-2">
+                <div className="text-[2.8rem] leading-[1.1] md:text-[5rem] lg:text-[4rem] xl:text-[5.2rem] flex flex-wrap lg:flex-nowrap lg:whitespace-nowrap items-center mb-1">
                   {titleText.split(' ').map((word, i) => (
                     <motion.span
                       key={i}
@@ -479,7 +478,7 @@ export function Home() {
                 </div>
                 
                 {/* Line 2: Dynamic Phrases (Reduced Size) */}
-                <div className="text-3xl md:text-6xl xl:text-7xl relative inline-flex items-center min-h-[1.1em]">
+                <div className="text-[2.2rem] md:text-[4rem] lg:text-[3.5rem] xl:text-[4.5rem] relative inline-flex items-center min-h-[1.1em] mt-1 lg:mt-2">
                   <span
                     className="leading-none"
                     style={{
