@@ -63,6 +63,9 @@ export function Navbar() {
   // Default to the correct matched section, fallback to hero
   const matchedSection = isProjectPage ? 'project' : PATH_TO_SECTION[location.pathname] || 'hero';
   const [activeSection, setActiveSection] = useState(matchedSection);
+  
+  const whatsappNumber = t?.contact?.whatsapp || '+8801853452264';
+  const whatsappLink = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`;
 
   // Handle scroll state for subtle elevation change & Scroll Spy
   useEffect(() => {
@@ -329,7 +332,11 @@ export function Navbar() {
                       initial={{ opacity: 0, x: 10 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 10 }}
-                      className="flex lg:hidden items-center gap-3 px-3 sm:px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/5 backdrop-blur-md"
+                      className="flex lg:hidden items-center gap-3 px-3 sm:px-4 py-1.5 rounded-full border backdrop-blur-md"
+                      style={{ 
+                        backgroundColor: isLightMode ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)',
+                        borderColor: isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'
+                      }}
                     >
                       <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
                       <span
@@ -343,15 +350,9 @@ export function Navbar() {
                 </AnimatePresence>
 
                 <button
-                  onClick={() => {
-                    const el = document.getElementById('contact');
-                    if (el) {
-                      el.scrollIntoView({ behavior: 'smooth' });
-                      window.history.pushState(null, '', '/contact');
-                    } else {
-                      navigate('/contact');
-                    }
-                  }}
+                   onClick={() => {
+                     window.open(whatsappLink, '_blank');
+                   }}
                   className="group relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border backdrop-blur-md transition-all duration-500 hover:text-white"
                 >
                   {/* Outer pulsating ring */}

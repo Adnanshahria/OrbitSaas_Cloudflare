@@ -117,20 +117,17 @@ let swooshUnlocked = false;
 function initSwooshAudio() {
   if (swooshAudioCtx) return;
   try {
-    swooshAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    swooshAudioCtx = new AudioContextClass();
     swooshUnlocked = true;
-    if (swooshAudioCtx.state === 'suspended') swooshAudioCtx.resume();
   } catch (e) {
     // AudioContext not available
   }
 }
 
 function playWindSwoosh() {
-  if (!swooshUnlocked || !swooshAudioCtx) return;
-  if (swooshAudioCtx.state === 'suspended') {
-    swooshAudioCtx.resume();
-    return;
-  }
+  if (!swooshUnlocked || !swooshAudioCtx || swooshAudioCtx.state !== 'running') return;
 
   const t = swooshAudioCtx.currentTime;
   const duration = 0.25; // Quick 0.25s woosh
@@ -211,8 +208,11 @@ export function ProcessSection() {
 
   // Unlock AudioContext on user interaction — only create after gesture
   useEffect(() => {
-    const unlockAudio = () => {
+    const unlockAudio = async () => {
       initSwooshAudio();
+      if (swooshAudioCtx && swooshAudioCtx.state === 'suspended') {
+        await swooshAudioCtx.resume();
+      }
       // Clean up after first valid interaction
       window.removeEventListener('click', unlockAudio);
       window.removeEventListener('touchstart', unlockAudio);

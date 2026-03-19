@@ -892,21 +892,21 @@
 @keyframes whatsappThemePulse {
   0%, 100% {
     color: #10B981;
-    border-color: rgba(16, 185, 129, 0.4);
-    background-color: rgba(16, 185, 129, 0.1);
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.6);
+    background-color: transparent;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
   }
   50% {
     color: #d4a017;
-    border-color: rgba(212, 160, 23, 0.4);
-    background-color: rgba(212, 160, 23, 0.1);
-    box-shadow: 0 0 15px rgba(212, 160, 23, 0.2);
+    border-color: rgba(212, 160, 23, 0.6);
+    background-color: transparent;
+    box-shadow: 0 0 15px rgba(212, 160, 23, 0.4);
   }
 }
 
 @keyframes whatsappPingTheme {
-  0%, 100% { border-color: rgba(16, 185, 129, 0.6); }
-  50% { border-color: rgba(212, 160, 23, 0.6); }
+  0%, 100% { border-color: rgba(16, 185, 129, 0.8); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+  50% { border-color: rgba(212, 160, 23, 0.8); box-shadow: 0 0 20px rgba(212, 160, 23, 0.4); }
 }
 
 .whatsapp-theme-anim {
@@ -915,10 +915,10 @@
 
 .group:hover .whatsapp-theme-anim {
   animation: none !important;
-  color: white !important;
-  background-color: #10B981 !important;
+  color: #10B981 !important;
+  background-color: transparent !important;
   border-color: #10B981 !important;
-  box-shadow: 0 0 25px rgba(16,185,129,0.5) !important;
+  box-shadow: 0 0 30px rgba(16,185,129,0.6) !important;
 }
 
 .whatsapp-ping-anim {

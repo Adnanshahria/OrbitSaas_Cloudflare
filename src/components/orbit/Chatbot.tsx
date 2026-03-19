@@ -1070,9 +1070,9 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
       }
 
       return (
-        <p key={`line-${lineIndex}`} className={`text-[15px] md:text-sm leading-relaxed ${line.trim() === '' ? 'h-2' : 'mb-1.5 last:mb-0'}`}>
+        <div key={`line-${lineIndex}`} className={`text-[15px] md:text-sm leading-relaxed ${line.trim() === '' ? 'h-2' : 'mb-1.5 last:mb-0'}`}>
           {inlineContent}
-        </p>
+        </div>
       );
     });
   }, []);
