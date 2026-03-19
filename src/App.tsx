@@ -25,6 +25,7 @@ const LeadershipSection = lazy(() => import('./components/orbit/LeadershipSectio
 const ReviewsSection = lazy(() => import('./components/orbit/ReviewsSection').then(m => ({ default: m.ReviewsSection })));
 const ContactSection = lazy(() => import('./components/orbit/ContactSection').then(m => ({ default: m.ContactSection })));
 const OrbitFooter = lazy(() => import('./components/orbit/OrbitFooter').then(m => ({ default: m.OrbitFooter })));
+const MobileFooter = lazy(() => import('./components/orbit/MobileFooter').then(m => ({ default: m.MobileFooter })));
 const Chatbot = lazy(() => import('./components/orbit/Chatbot').then(m => ({ default: m.Chatbot })));
 const LeadMagnetPopup = lazy(() => import('./components/orbit/LeadMagnetPopup').then(m => ({ default: m.LeadMagnetPopup })));
 
@@ -199,7 +200,7 @@ function PublicSite() {
       <div id="projects" className="w-full"><Suspense fallback={null}><ProjectsSection /></Suspense></div>
       <div id="reviews" className="w-full"><Suspense fallback={null}><ReviewsSection /></Suspense></div>
       <div id="leadership" className="w-full"><Suspense fallback={null}><LeadershipSection /></Suspense></div>
-      <div id="contact" className="w-full"><Suspense fallback={null}><ContactSection /><div className="hidden md:block"><OrbitFooter /></div></Suspense></div>
+      <div id="contact" className="w-full"><Suspense fallback={null}><ContactSection /><div className="block md:hidden"><MobileFooter /></div><div className="hidden md:block"><OrbitFooter /></div></Suspense></div>
 
       {isLoaded && (
         <Suspense fallback={null}>

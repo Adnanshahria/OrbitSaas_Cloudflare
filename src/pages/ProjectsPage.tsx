@@ -79,7 +79,6 @@ function ArchiveCard({ item, i }: { item: ProjectItem; i: number }) {
     return (
         <motion.div
             ref={ref}
-            layout
             initial={{ opacity: 0, scale: 0.95, y: 40 }}
             animate={isInView ? { opacity: 1, scale: 1, y: 0 } : {}}
             exit={{ opacity: 0, scale: 0.9 }}
@@ -273,7 +272,7 @@ export default function ProjectsPage() {
 
                     {/* Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
-                        <AnimatePresence mode="popLayout">
+                        <AnimatePresence>
                             {items.map((item, i) => (
                                 <ArchiveCard key={item._id || item._originalIndex} item={item} i={i} />
                             ))}

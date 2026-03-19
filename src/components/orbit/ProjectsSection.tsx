@@ -190,7 +190,7 @@ export function ProjectsSection() {
     const ALL_CATEGORIES = ['All', ...(enData.categories || DEFAULT_CATEGORIES)];
 
     return (
-        <section id="projects" className="py-16 sm:py-20 bg-[#FDFBF7] relative overflow-hidden">
+        <section id="projects" className="py-16 sm:py-20 bg-[#FDFBF7] relative overflow-hidden" style={{ overflowAnchor: 'none' }}>
             <Helmet>
                 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
             </Helmet>
@@ -256,17 +256,15 @@ export function ProjectsSection() {
                     </div>
                 </div>
 
-                {/* Projects Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
-                    <AnimatePresence mode="popLayout">
+                    <AnimatePresence>
                         {visibleItems.map((item, i) => (
                             <motion.div
                                 key={item._id || item._originalIndex}
-                                layout
                                 initial={{ opacity: 0, scale: 0.95, y: 40 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
-                                transition={{ duration: 0.5 }}
+                                transition={{ duration: 0.5, delay: i >= visibleCount - 3 ? (i % 3) * 0.1 : 0 }}
                             >
                                 <CinematicCard 
                                     item={item} 
@@ -279,12 +277,7 @@ export function ProjectsSection() {
                 </div>
 
                 {visibleCount < items.length && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="mt-12 flex justify-center w-full"
-                    >
+                    <div className="mt-12 flex justify-center w-full">
                         <button
                             onClick={() => setVisibleCount(prev => prev + 3)}
                             className="group relative px-8 py-4 bg-white text-gray-900 border border-[#22C55E]/20 font-bold rounded-xl hover:border-[#22C55E]/60 transition-all duration-300 shadow-sm hover:shadow-[0_10px_40px_rgba(34,197,94,0.1)] overflow-hidden"
@@ -293,7 +286,7 @@ export function ProjectsSection() {
                             <span className="relative z-10">Explore More Projects</span>
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-0 bg-[#22C55E]/5 transition-transform duration-500 ease-out" />
                         </button>
-                    </motion.div>
+                    </div>
                 )}
                 
                 {items.length === 0 && (

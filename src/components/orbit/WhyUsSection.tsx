@@ -874,7 +874,6 @@ function TiltCard({
       ref={cardRef}
       onMouseMove={(e) => {
         handleMouseMove(e);
-        // Custom shine logic to match Services section
         const card = cardRef.current;
         if (!card) return;
         const rect = card.getBoundingClientRect();
@@ -897,6 +896,10 @@ function TiltCard({
         rotateX,
         rotateY,
         transformStyle: 'preserve-3d',
+        isolation: 'isolate',
+        willChange: 'transform',
+        WebkitBackfaceVisibility: 'hidden',
+        backfaceVisibility: 'hidden',
       }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -905,13 +908,13 @@ function TiltCard({
         layout === 'horizontal' ? 'min-h-[240px]' : 'min-h-[200px]'
       }`}
     >
-      {/* Shine overlay — follows cursor (Services style) */}
+      {/* Shine overlay */}
       <div className="card-shine-overlay absolute inset-0 pointer-events-none z-20 rounded-[2rem]" style={{ transition: 'background 0.1s ease-out' }} />
 
       {/* Decorative Glow */}
       <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-[2rem]" />
 
-      {/* Bottom border accent glow (Services style) */}
+      {/* Bottom border accent glow */}
       <div className="absolute bottom-0 left-[10%] right-[10%] h-[2px] bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-500 z-30" />
 
       <div className="relative z-10 flex flex-col h-full gap-6" style={{ transform: 'translateZ(30px)' }}>
