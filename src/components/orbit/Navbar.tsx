@@ -323,7 +323,7 @@ export function Navbar() {
               <div className="flex items-center gap-2">
                 {/* Active Page Indicator (Shown only on relevant subpages) */}
                 <AnimatePresence mode="wait">
-                  {activeSection !== 'hero' && (
+                  {activeSection !== 'hero' && !isProjectPage && (
                     <motion.div
                       key={activeSection}
                       initial={{ opacity: 0, x: 10 }}
@@ -399,7 +399,7 @@ export function Navbar() {
             animate={{ opacity: 1, clipPath: 'circle(150% at calc(100% - 60px) 40px)' }}
             exit={{ opacity: 0, clipPath: 'circle(30px at calc(100% - 60px) 40px)' }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 z-[999] flex flex-col p-8 sm:p-12 overflow-hidden"
+            className="fixed inset-0 z-[999] flex flex-col p-8 sm:p-12"
             style={{
               backgroundColor: isLightMode ? 'rgba(255,255,255,0.98)' : 'rgba(6,6,8,0.98)',
               backdropFilter: 'blur(10px)'
@@ -408,7 +408,7 @@ export function Navbar() {
             {/* Background Texture for Mobile Menu */}
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
-            <div className="mt-20 flex flex-col gap-8 flex-grow">
+            <div className="mt-20 flex flex-col gap-8 flex-grow overflow-y-auto custom-scrollbar pr-4">
               {isProjectPage ? (
                 <motion.div
                   initial={{ opacity: 0, x: -30 }}

@@ -725,6 +725,21 @@
   background: rgba(212,160,23,0.4);
 }
 
+/* ── Custom Scrollbar for Mobile Menu ── */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.2); /* Emerald 500/20 */
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.4);
+}
+
 /* ══════════════════════════════════════════════════════════
    MOBILE PERFORMANCE
    ══════════════════════════════════════════════════════════ */
