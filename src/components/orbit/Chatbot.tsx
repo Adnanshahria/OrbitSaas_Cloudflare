@@ -10,8 +10,14 @@ import { translations } from '@/lib/i18n';
 
 type Lang = 'en' | 'bn'; // Define Lang type
 
-// Context-aware dynamic messages — moved to module scope to avoid re-creating on every render
-const contextMessages: Record<string, Array<{ en: string, bn: string }>> = {
+// User behavior modes for dynamic message selection
+type UserMode = 'browsing' | 'reading' | 'deep-idle' | 'returning' | 'exploring' | 'casual';
+
+// Idle escalation levels: casual (3s) -> engaging (10s) -> action (30s)
+type EscalationLevel = 'casual' | 'engaging' | 'action';
+
+// Context-aware dynamic messages with mode tags for behavior-aware selection
+const contextMessages: Record<string, Array<{ en: string; bn: string; mode?: string }>> = {
   hero: [
     { en: 'Chat with ORBIT!', bn: 'ORBIT-এর সাথে চ্যাট করুন!' },
     { en: 'Ready to launch your project?', bn: 'প্রজেক্ট শুরু করতে প্রস্তুত?' },
@@ -96,6 +102,23 @@ const contextMessages: Record<string, Array<{ en: string, bn: string }>> = {
     { en: 'Your competitors are already building!', bn: 'আপনার প্রতিযোগীরা ইতিমধ্যে তৈরি করছে!' },
     { en: 'Tap me for instant answers!', bn: 'তাৎক্ষণিক উত্তরের জন্য আমাকে ট্যাপ করুন!' },
     { en: 'I can help you save time and money!', bn: 'আমি আপনার সময় ও টাকা বাঁচাতে পারি!' },
+  ],
+  reviews: [
+    { en: 'See what our clients say about us!', bn: 'আমাদের ক্লায়েন্টরা কী বলে দেখুন!', mode: 'casual' },
+    { en: 'Real reviews from real clients.', bn: 'আসল ক্লায়েন্টদের আসল রিভিউ।', mode: 'casual' },
+    { en: 'These reviews speak for themselves!', bn: 'এই রিভিউগুলো নিজেই কথা বলে!', mode: 'casual' },
+    { en: 'Hundreds of happy clients worldwide', bn: 'বিশ্বজুড়ে শত শত খুশি ক্লায়েন্ট', mode: 'engaging' },
+    { en: 'Your success story could be next!', bn: 'আপনার সাফল্যের গল্প পরবর্তী হতে পারে!', mode: 'engaging' },
+    { en: 'Join 100+ satisfied businesses!', bn: '১০০+ সন্তুষ্ট ব্যবসায়ে যোগ দিন!', mode: 'action' },
+    { en: '5-star rated by every client! Ask me why', bn: 'প্রতিটি ক্লায়েন্ট ৫-স্টার দিয়েছে! জিজ্ঞেস করুন কেন', mode: 'action' },
+  ],
+  returning: [
+    { en: 'Welcome back! Missed you!', bn: 'ফিরে এসেছেন! আপনাকে মিস করেছি!', mode: 'returning' },
+    { en: 'Hey, you are back! Need anything?', bn: 'হেই, ফিরে এসেছেন! কিছু লাগবে?', mode: 'returning' },
+    { en: 'Good to see you again!', bn: 'আবার দেখে ভালো লাগলো!', mode: 'returning' },
+    { en: 'Still thinking? Let me help decide!', bn: 'এখনো ভাবছেন? সিদ্ধান্ত নিতে সাহায্য করি!', mode: 'returning' },
+    { en: 'Back for more? I am here for you!', bn: 'আরো জানতে ফিরে এসেছেন? আমি এখানেই আছি!', mode: 'returning' },
+    { en: 'Picked up where you left off?', bn: 'যেখানে ছেড়েছিলেন সেখান থেকে শুরু করবেন?', mode: 'returning' },
   ]
 };
 
@@ -120,6 +143,18 @@ export function Chatbot() {
   const shownMessages = useRef<Set<string>>(new Set());
   const summarySentRef = useRef(false);
 
+  // --- Behavior mode detection refs ---
+  const scrollCountRef = useRef(0);
+  const lastScrollTimeRef = useRef(Date.now());
+  const sectionHistoryRef = useRef<Set<string>>(new Set());
+  const tabWasHiddenRef = useRef(false);
+  const idleLevelRef = useRef<EscalationLevel>('casual');
+  const escalationTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Typing animation state
+  const [typingText, setTypingText] = useState('');
+  const [isTypingAnim, setIsTypingAnim] = useState(false);
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
 
   // Helper to determine the section currently in view
   const getActiveSection = () => {
@@ -142,17 +177,44 @@ export function Chatbot() {
     return currentSection;
   };
 
-  // Select a random message for a section, never repeating until all are exhausted
-  const getRandomContextMessage = (sectionId: string) => {
-    const msgs = contextMessages[sectionId] || contextMessages['default'];
-    if (msgs.length === 1) return msgs[0];
+  // Detect current user behavior mode
+  const detectUserMode = (): UserMode => {
+    const now = Date.now();
+    const timeSinceLastScroll = now - lastScrollTimeRef.current;
+    if (tabWasHiddenRef.current) { tabWasHiddenRef.current = false; return 'returning'; }
+    if (sectionHistoryRef.current.size >= 3) return 'exploring';
+    if (scrollCountRef.current > 5 && timeSinceLastScroll < 8000) return 'browsing';
+    if (timeSinceLastScroll < 15000 && scrollCountRef.current > 1) return 'reading';
+    if (timeSinceLastScroll > 20000) return 'deep-idle';
+    return 'casual';
+  };
 
-    const unused = msgs.filter(m => !shownMessages.current.has(m.en));
+  // Select a mode-aware message, never repeating until all exhausted
+  const getRandomContextMessage = (sectionId: string, escalation?: EscalationLevel) => {
+    const userMode = detectUserMode();
+    const level = escalation || idleLevelRef.current;
+
+    // For returning users, prefer returning messages first
+    if (userMode === 'returning') {
+      const returnMsgs = contextMessages['returning'] || [];
+      const unusedReturn = returnMsgs.filter(m => !shownMessages.current.has(m.en));
+      if (unusedReturn.length > 0) {
+        const pick = unusedReturn[Math.floor(Math.random() * unusedReturn.length)];
+        shownMessages.current.add(pick.en);
+        return pick;
+      }
+    }
+
+    const allMsgs = contextMessages[sectionId] || contextMessages['default'];
+    const levelMsgs = allMsgs.filter(m => m.mode === level);
+    const pool = levelMsgs.length > 0 ? levelMsgs : allMsgs;
+
+    const unused = pool.filter(m => !shownMessages.current.has(m.en));
     if (unused.length === 0) {
       // All shown — reset and pick fresh
-      msgs.forEach(m => shownMessages.current.delete(m.en));
-      const fresh = msgs.filter(m => m.en !== popupMessage.en);
-      const pick = fresh.length > 0 ? fresh[Math.floor(Math.random() * fresh.length)] : msgs[0];
+      pool.forEach(m => shownMessages.current.delete(m.en));
+      const fresh = pool.filter(m => m.en !== popupMessage.en);
+      const pick = fresh.length > 0 ? fresh[Math.floor(Math.random() * fresh.length)] : pool[0];
       shownMessages.current.add(pick.en);
       return pick;
     }
@@ -179,22 +241,82 @@ export function Chatbot() {
     };
   }, []);
 
-  // Auto-cycle the message every ~8s if user stays idle and popup is visible
+  // Tab visibility tracking for returning-user detection
+  useEffect(() => {
+    const handleVisibility = () => { if (document.hidden) tabWasHiddenRef.current = true; };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
+  // Scroll tracking for behavior mode detection
+  useEffect(() => {
+    const handleScroll = () => {
+      scrollCountRef.current++;
+      lastScrollTimeRef.current = Date.now();
+      const sec = getActiveSection();
+      if (sec !== 'default') sectionHistoryRef.current.add(sec);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Typing animation — character-by-character reveal (30ms per char)
+  const startTypingAnimation = useCallback((text: string) => {
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    setIsTypingAnim(true);
+    setTypingText('');
+    let ci = 0;
+    const typeChar = () => {
+      if (ci < text.length) {
+        setTypingText(text.slice(0, ci + 1));
+        ci++;
+        typingTimerRef.current = setTimeout(typeChar, 30);
+      } else {
+        setIsTypingAnim(false);
+      }
+    };
+    typingTimerRef.current = setTimeout(typeChar, 30);
+  }, []);
+
+  // Progressive escalation: casual(3s) → engaging(10s) → action(30s)
   useEffect(() => {
     if (!showWelcomePopup || open) return;
 
+    const engagingTimer = setTimeout(() => {
+      idleLevelRef.current = 'engaging';
+      const activeSec = getActiveSection();
+      const msg = getRandomContextMessage(activeSec, 'engaging');
+      setPopupMessage(msg);
+      startTypingAnimation(chatLang === 'bn' ? msg.bn : msg.en);
+    }, 10000);
+
+    const actionTimer = setTimeout(() => {
+      idleLevelRef.current = 'action';
+      const activeSec = getActiveSection();
+      const msg = getRandomContextMessage(activeSec, 'action');
+      setPopupMessage(msg);
+      startTypingAnimation(chatLang === 'bn' ? msg.bn : msg.en);
+    }, 30000);
+
+    // Continue cycling every 8s
     cycleTimer.current = setInterval(() => {
       const activeSec = getActiveSection();
-      const newMessage = getRandomContextMessage(activeSec);
-      setPopupMessage(newMessage);
+      const msg = getRandomContextMessage(activeSec);
+      setPopupMessage(msg);
+      startTypingAnimation(chatLang === 'bn' ? msg.bn : msg.en);
     }, 8000);
 
-    return () => {
-      if (cycleTimer.current) clearInterval(cycleTimer.current as unknown as number);
-    };
-  }, [showWelcomePopup, open]);
+    escalationTimers.current = [engagingTimer, actionTimer];
 
-  // Idle tracking — hide instantly on ANY activity, re-appear after 5s idle
+    return () => {
+      clearTimeout(engagingTimer);
+      clearTimeout(actionTimer);
+      if (cycleTimer.current) clearInterval(cycleTimer.current as unknown as number);
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    };
+  }, [showWelcomePopup, open, chatLang]);
+
+  // Idle tracking — hide instantly on ANY activity, re-appear after 3s idle
   useEffect(() => {
     if (open || messages.length > 0) {
       setShowWelcomePopup(false);
@@ -204,31 +326,37 @@ export function Chatbot() {
 
     const showPopup = () => {
       if (!open && messages.length === 0) {
+        idleLevelRef.current = 'casual';
         const activeSec = getActiveSection();
-        const newMessage = getRandomContextMessage(activeSec);
-        setPopupMessage(newMessage);
+        const msg = getRandomContextMessage(activeSec, 'casual');
+        setPopupMessage(msg);
         setShowWelcomePopup(true);
+        startTypingAnimation(chatLang === 'bn' ? msg.bn : msg.en);
       }
     };
 
     const hideAndResetIdle = () => {
       setShowWelcomePopup(false);
+      setIsTypingAnim(false);
+      setTypingText('');
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      idleLevelRef.current = 'casual';
+      escalationTimers.current.forEach(t => clearTimeout(t));
       if (idleTimer.current) clearTimeout(idleTimer.current);
-      idleTimer.current = setTimeout(showPopup, 5000);
+      idleTimer.current = setTimeout(showPopup, 3000);
     };
 
-    // ALL activity events hide popup instantly + restart idle timer
     const events = ['mousemove', 'scroll', 'keydown', 'mousedown', 'touchstart', 'touchmove', 'click'];
     events.forEach(evt => window.addEventListener(evt, hideAndResetIdle, { passive: true }));
-
-    // Initial trigger
-    idleTimer.current = setTimeout(showPopup, 5000);
+    idleTimer.current = setTimeout(showPopup, 3000);
 
     return () => {
       if (idleTimer.current) clearTimeout(idleTimer.current);
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      escalationTimers.current.forEach(t => clearTimeout(t));
       events.forEach(evt => window.removeEventListener(evt, hideAndResetIdle));
     };
-  }, [open, messages.length, popupMessage.en]);
+  }, [open, messages.length, chatLang]);
 
 
   // Dynamic chatbot strings with fallbacks to static translations (memoized)
@@ -931,7 +1059,8 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
                     ORBIT AI
                   </p>
                   <span className="text-[12px] font-medium text-foreground tracking-wide whitespace-nowrap transition-all duration-300">
-                    {chatLang === 'bn' ? popupMessage.bn : popupMessage.en}
+                    {isTypingAnim ? typingText : (chatLang === 'bn' ? popupMessage.bn : popupMessage.en)}
+                    {isTypingAnim && <span className="inline-block w-[2px] h-[14px] bg-primary ml-[1px] animate-pulse" />}
                   </span>
                 </div>
               </motion.div>
