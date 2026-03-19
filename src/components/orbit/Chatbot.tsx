@@ -18,6 +18,12 @@ const contextMessages: Record<string, Array<{ en: string, bn: string }>> = {
     { en: 'Need a custom AI solution?', bn: 'কাস্টম এআই সলিউশন লাগবে?' },
     { en: 'Let’s transform your ideas into reality!', bn: 'আপনার আইডিয়াগুলোকে বাস্তবে রূপ দিই চলুন!' },
     { en: 'Looking for a reliable tech partner?', bn: 'নির্ভরযোগ্য টেক পার্টনার খুঁজছেন?' },
+    { en: 'Hey! Got a project in mind? 🚀', bn: 'হেই! কোনো প্রজেক্ট মাথায় আছে? 🚀' },
+    { en: 'Your next big idea starts here ✨', bn: 'আপনার পরবর্তী বড় আইডিয়া এখান থেকেই শুরু ✨' },
+    { en: 'I can help you get started fast!', bn: 'আমি আপনাকে দ্রুত শুরু করতে সাহায্য করতে পারি!' },
+    { en: 'Thinking about going digital?', bn: 'ডিজিটাল হওয়ার কথা ভাবছেন?' },
+    { en: '3 clients launched this week! You next?', bn: 'এই সপ্তাহে ৩টি ক্লায়েন্ট লঞ্চ! আপনি পরবর্তী?' },
+    { en: 'I know the perfect solution for you 😊', bn: 'আমি আপনার জন্য পারফেক্ট সলিউশন জানি 😊' },
   ],
   services: [
     { en: 'Need help choosing a service?', bn: 'সঠিক সেবা খুঁজতে সাহায্য লাগবে?' },
@@ -25,6 +31,11 @@ const contextMessages: Record<string, Array<{ en: string, bn: string }>> = {
     { en: 'We build Web, AI, and Mobile Apps.', bn: 'আমরা ওয়েব, এআই এবং মোবাইল অ্যাপ বানাই।' },
     { en: 'Looking for End-to-End Development?', bn: 'এন্ড-টু-এন্ড ডেভেলপমেন্ট খুঁজছেন?' },
     { en: 'Ask me about our tech expertise!', bn: 'আমাদের টেক এক্সপার্টিজ সম্পর্কে জিজ্ঞেস করুন!' },
+    { en: 'Which service caught your eye? 👀', bn: 'কোন সেবাটি আপনার চোখে পড়েছে? 👀' },
+    { en: 'AI chatbots are trending! Want one?', bn: 'AI চ্যাটবট এখন ট্রেন্ডিং! একটা চান?' },
+    { en: 'We handle everything from A to Z 💪', bn: 'আমরা A থেকে Z সব হ্যান্ডেল করি 💪' },
+    { en: 'Confused which service fits you best?', bn: 'কোন সেবাটি আপনার জন্য সেরা?' },
+    { en: 'Custom software, tailored for you 🎯', bn: 'আপনার জন্য কাস্টম সফটওয়্যার 🎯' },
   ],
   project: [
     { en: "Like our previous work?", bn: 'আমাদের কাজগুলো ভালো লেগেছে?' },
@@ -32,18 +43,31 @@ const contextMessages: Record<string, Array<{ en: string, bn: string }>> = {
     { en: 'Want a completely custom solution?', bn: 'আপনার জন্য সম্পূর্ণ কাস্টম সলিউশন চাই?' },
     { en: 'Check out the details of these projects.', bn: 'এই প্রজেক্টগুলোর বিস্তারিত দেখতে পারেন।' },
     { en: 'Tell me your project requirements!', bn: 'আপনার প্রজেক্টের রিকোয়ারমেন্টগুলো জানান!' },
+    { en: 'This could be YOUR project next! 🔥', bn: 'এটা আপনার পরবর্তী প্রজেক্ট! 🔥' },
+    { en: 'Impressed? Let me show you more!', bn: 'মুগ্ধ হয়েছেন? আরও দেখাতে পারি!' },
+    { en: 'We built this in just 2 weeks! ⚡', bn: 'আমরা এটা মাত্র ২ সপ্তাহে বানিয়েছি! ⚡' },
+    { en: 'Imagine your brand here!', bn: 'এখানে আপনার ব্র্যান্ড কল্পনা করুন!' },
+    { en: 'Real projects. Real results. Ask me!', bn: 'আসল প্রজেক্ট। আসল ফলাফল। জিজ্ঞেস করুন!' },
   ],
   'tech-stack': [
     { en: 'Curious about our technologies?', bn: 'আমাদের প্রযুক্তি সম্পর্কে জানতে চান?' },
     { en: 'Need a specific tech stack?', bn: 'কোনো নির্দিষ্ট প্রযুক্তির কাজ খুঁজছেন?' },
     { en: 'We use modern, scalable tech.', bn: 'আমরা আধুনিক এবং স্কেলেবল প্রযুক্তি ব্যবহার করি।' },
     { en: 'Ask me about any specific tool.', bn: 'কোনো নির্দিষ্ট টুল সম্পর্কে জিজ্ঞেস করতে পারেন।' },
+    { en: 'React, Next.js, AI - we do it all!', bn: 'React, Next.js, AI - সব করি!' },
+    { en: 'Tech choices matter. Let me guide you!', bn: 'প্রযুক্তি নির্বাচন গুরুত্বপূর্ণ। আমি গাইড করি!' },
+    { en: 'We pick the right stack for YOUR needs', bn: 'আপনার প্রয়োজন অনুযায়ী সেরা স্ট্যাক বাছাই করি' },
+    { en: 'Wondering which tech is best for you?', bn: 'কোন প্রযুক্তি আপনার জন্য সেরা ভাবছেন?' },
   ],
   'why-us': [
     { en: 'Want to know why clients choose us?', bn: 'ক্লায়েন্টরা কেন আমাদের ভালোবাসে?' },
     { en: 'We guarantee 100% satisfaction.', bn: 'আমরা ১০০% গ্যারান্টি দিয়ে কাজ করি।' },
     { en: 'Ask about our communication process.', bn: 'আমাদের কমিউনিকেশন প্রসেস সম্পর্কে জানুন।' },
     { en: 'We deliver on time, every time.', bn: 'আমরা সবসময় ঠিক সময়ে কাজ ডেলিভারি দিই।' },
+    { en: 'Still deciding? Let me convince you!', bn: 'এখনও ভাবছেন? আমি কনভিন্স করি!' },
+    { en: 'Our clients keep coming back!', bn: 'আমাদের ক্লায়েন্টরা বারবার ফিরে আসে!' },
+    { en: 'Direct communication - no middlemen!', bn: 'সরাসরি যোগাযোগ - কোনো মধ্যস্থতাকারী নেই!' },
+    { en: 'Milestone-based payments. Zero risk!', bn: 'মাইলস্টোন-ভিত্তিক পেমেন্ট। শূন্য ঝুঁকি!' },
   ],
   leadership: [
     { en: 'Want to talk to our leadership team?', bn: 'আমাদের লিডারশিপ টিমের সাথে কথা বলবেন?' },
@@ -54,6 +78,10 @@ const contextMessages: Record<string, Array<{ en: string, bn: string }>> = {
     { en: 'Drop me a message here!', bn: 'এখানে আমাকে ম্যাসেজ দিন!' },
     { en: 'Want to book a free consultation?', bn: 'ফ্রি কনসাল্টেশন বুক করতে চান?' },
     { en: 'I can connect you to our team.', bn: 'আমি আপনাকে আমাদের টিমের সাথে কানেক্ট করতে পারি।' },
+    { en: 'Ready to start? Let me help!', bn: 'শুরু করতে প্রস্তুত? আমি সাহায্য করি!' },
+    { en: 'One message away from your dream app!', bn: 'আপনার স্বপ্নের অ্যাপ থেকে মাত্র এক মেসেজ দূরে!' },
+    { en: 'I respond faster than email!', bn: 'আমি ইমেইলের চেয়ে দ্রুত উত্তর দিই!' },
+    { en: 'No commitment - just a friendly chat', bn: 'কোনো বাধ্যবাধকতা নেই - শুধু বন্ধুত্বপূর্ণ আলাপ' },
   ],
   default: [
     { en: 'Chat with ORBIT', bn: 'ORBIT-এর সাথে চ্যাট করুন' },
@@ -62,6 +90,12 @@ const contextMessages: Record<string, Array<{ en: string, bn: string }>> = {
     { en: 'Have any questions?', bn: 'আপনার কোনো প্রশ্ন আছে?' },
     { en: 'Let’s discuss your project.', bn: 'চলুন আপনার প্রজেক্ট নিয়ে আলোচনা করি।' },
     { en: 'Need a quick estimate?', bn: 'দ্রুত প্রজেক্টের খরচ জানতে চান?' },
+    { en: 'I noticed you are browsing around!', bn: 'দেখলাম আপনি ঘুরে দেখছেন!' },
+    { en: 'Got 30 seconds? Let me surprise you!', bn: '৩০ সেকেন্ড আছে? আমি চমকে দিই!' },
+    { en: 'Fun fact: I never sleep!', bn: 'মজার তথ্য: আমি কখনো ঘুমাই না!' },
+    { en: 'Your competitors are already building!', bn: 'আপনার প্রতিযোগীরা ইতিমধ্যে তৈরি করছে!' },
+    { en: 'Tap me for instant answers!', bn: 'তাৎক্ষণিক উত্তরের জন্য আমাকে ট্যাপ করুন!' },
+    { en: 'I can help you save time and money!', bn: 'আমি আপনার সময় ও টাকা বাঁচাতে পারি!' },
   ]
 };
 
@@ -79,10 +113,11 @@ export function Chatbot() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState({ en: 'Chat with ORBIT', bn: 'ORBIT-এর সাথে চ্যাট করুন' });
-  const [hasDismissedPopup, setHasDismissedPopup] = useState(false);
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hidePopupTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cycleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Track shown messages to never repeat until all exhausted
+  const shownMessages = useRef<Set<string>>(new Set());
   const summarySentRef = useRef(false);
 
 
@@ -107,22 +142,28 @@ export function Chatbot() {
     return currentSection;
   };
 
-  // Select a random message for a section, ensuring it's not the exact same as the current
+  // Select a random message for a section, never repeating until all are exhausted
   const getRandomContextMessage = (sectionId: string) => {
     const msgs = contextMessages[sectionId] || contextMessages['default'];
     if (msgs.length === 1) return msgs[0];
 
-    // Try to pick one that is different from the current
-    const unused = msgs.filter(m => m.en !== popupMessage.en);
-    if (unused.length > 0) {
-      return unused[Math.floor(Math.random() * unused.length)];
+    const unused = msgs.filter(m => !shownMessages.current.has(m.en));
+    if (unused.length === 0) {
+      // All shown — reset and pick fresh
+      msgs.forEach(m => shownMessages.current.delete(m.en));
+      const fresh = msgs.filter(m => m.en !== popupMessage.en);
+      const pick = fresh.length > 0 ? fresh[Math.floor(Math.random() * fresh.length)] : msgs[0];
+      shownMessages.current.add(pick.en);
+      return pick;
     }
-    return msgs[Math.floor(Math.random() * msgs.length)];
+    const pick = unused[Math.floor(Math.random() * unused.length)];
+    shownMessages.current.add(pick.en);
+    return pick;
   };
 
-  // Listen to external interactions to mute the popup (e.g., CTA dropdown opened)
+  // Listen to external interactions to temporarily hide the popup
   useEffect(() => {
-    const handleRemoteDismiss = () => setHasDismissedPopup(true);
+    const handleRemoteDismiss = () => setShowWelcomePopup(false);
     window.addEventListener('orbit-cta-open', handleRemoteDismiss);
     return () => window.removeEventListener('orbit-cta-open', handleRemoteDismiss);
   }, []);
@@ -138,72 +179,56 @@ export function Chatbot() {
     };
   }, []);
 
-  // Auto-hide the welcome popup after 8 seconds if ignored
+  // Auto-cycle the message every ~8s if user stays idle and popup is visible
   useEffect(() => {
-    if (showWelcomePopup) {
-      const t = setTimeout(() => {
-        setShowWelcomePopup(false);
-      }, 8000);
-      return () => clearTimeout(t);
-    }
-  }, [showWelcomePopup]);
+    if (!showWelcomePopup || open) return;
 
-  // Idle tracking logic
+    cycleTimer.current = setInterval(() => {
+      const activeSec = getActiveSection();
+      const newMessage = getRandomContextMessage(activeSec);
+      setPopupMessage(newMessage);
+    }, 8000);
+
+    return () => {
+      if (cycleTimer.current) clearInterval(cycleTimer.current as unknown as number);
+    };
+  }, [showWelcomePopup, open]);
+
+  // Idle tracking — hide instantly on ANY activity, re-appear after 5s idle
   useEffect(() => {
-    if (open || messages.length > 0 || hasDismissedPopup) {
+    if (open || messages.length > 0) {
       setShowWelcomePopup(false);
       if (idleTimer.current) clearTimeout(idleTimer.current);
-      if (hidePopupTimer.current) clearTimeout(hidePopupTimer.current);
       return;
     }
 
-    const resetIdleTimer = () => {
+    const showPopup = () => {
+      if (!open && messages.length === 0) {
+        const activeSec = getActiveSection();
+        const newMessage = getRandomContextMessage(activeSec);
+        setPopupMessage(newMessage);
+        setShowWelcomePopup(true);
+      }
+    };
+
+    const hideAndResetIdle = () => {
+      setShowWelcomePopup(false);
       if (idleTimer.current) clearTimeout(idleTimer.current);
-      if (hidePopupTimer.current) clearTimeout(hidePopupTimer.current);
-
-      idleTimer.current = setTimeout(() => {
-        // User has been idle for 10 seconds
-        if (!open && messages.length === 0 && !hasDismissedPopup) {
-          const activeSec = getActiveSection();
-          const newMessage = getRandomContextMessage(activeSec);
-          setPopupMessage(newMessage);
-          setShowWelcomePopup(true);
-        }
-      }, 10000); // 10 seconds idle triggers popup
+      idleTimer.current = setTimeout(showPopup, 5000);
     };
 
-    const hideAndReset = () => {
-      // Only hide if the user specifically interacts with the UI in a major way (click/tap), 
-      // otherwise natural scrolling shouldn't punish them by hiding the popup instantly.
-      setShowWelcomePopup((prev) => {
-        if (prev) return false;
-        return prev;
-      });
-      resetIdleTimer();
-    };
-
-    // Listeners for user activity
-    window.addEventListener('mousemove', resetIdleTimer, { passive: true });
-    window.addEventListener('scroll', resetIdleTimer, { passive: true }); // Scroll only resets timer, doesn't hide
-
-    // Hard interactions that hide the popup
-    window.addEventListener('keydown', hideAndReset, { passive: true });
-    window.addEventListener('mousedown', hideAndReset, { passive: true });
-    window.addEventListener('touchstart', hideAndReset, { passive: true });
+    // ALL activity events hide popup instantly + restart idle timer
+    const events = ['mousemove', 'scroll', 'keydown', 'mousedown', 'touchstart', 'touchmove', 'click'];
+    events.forEach(evt => window.addEventListener(evt, hideAndResetIdle, { passive: true }));
 
     // Initial trigger
-    resetIdleTimer();
+    idleTimer.current = setTimeout(showPopup, 5000);
 
     return () => {
       if (idleTimer.current) clearTimeout(idleTimer.current);
-      if (hidePopupTimer.current) clearTimeout(hidePopupTimer.current);
-      window.removeEventListener('mousemove', resetIdleTimer);
-      window.removeEventListener('scroll', resetIdleTimer);
-      window.removeEventListener('keydown', hideAndReset);
-      window.removeEventListener('mousedown', hideAndReset);
-      window.removeEventListener('touchstart', hideAndReset);
+      events.forEach(evt => window.removeEventListener(evt, hideAndResetIdle));
     };
-  }, [open, messages.length, hasDismissedPopup, popupMessage.en]);
+  }, [open, messages.length, popupMessage.en]);
 
 
   // Dynamic chatbot strings with fallbacks to static translations (memoized)
@@ -887,7 +912,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
 
       {/* Chatbot Welcome Popup (Speech Bubble) */}
       <AnimatePresence>
-        {!open && showWelcomePopup && !hasDismissedPopup && (
+        {!open && showWelcomePopup && (
           <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.3, transformOrigin: 'bottom right' }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
