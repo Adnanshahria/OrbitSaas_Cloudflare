@@ -846,6 +846,11 @@ LEADS: If user asks pricing/consultation/project start AND hasn't given email (s
 LINKS: Provide a link ONLY if the user specifically asks to see a project, service, or contact info. Do NOT include links in every message. NEVER use generic labels like "PROJECT SHOWCASE" or "AI SERVICES". Instead, use the actual name of the project or service (e.g., [Project Name](URL)). The UI will convert these into compact buttons. NEVER fabricate URLs. If a specific URL isn't provided, just describe it without a link.
 LANG: English only. If user speaks Bangla, prepend "[SUGGEST_SWITCH]".
 STYLE: Casual+professional. HARD LIMIT: 80-120 words max. Count your words. Max 4 bullets or 1-2 short paragraphs. NEVER exceed 120 words. If listing items, use very short bullet points (5-10 words each).
+ROADMAP FORMAT: When explaining processes, workflows, project phases, how-we-work, or step-by-step plans, ALWAYS use numbered steps format: "1. Step Title: Short description" on each line. Use at least 3 steps. The UI renders these as a beautiful visual timeline. Example:
+1. Discovery: We analyze your goals and requirements
+2. Planning: Technical architecture and roadmap
+3. Development: Building with modern tech stack
+4. Launch: Testing, deployment, and handoff
 FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on its OWN SEPARATE NEW LINE starting with "💬". NEVER embed the follow-up inside your reply paragraph. NEVER use 🟢 or any other emoji for the follow-up — ONLY use 💬. The follow-up line MUST be separated from the main text by a newline. CRITICAL: The follow-up is what the USER will say to YOU (ORBIT). Write it as a request FROM the user TO ORBIT. The word "your" must refer to ORBIT's things (your services, your pricing, your projects). NEVER write follow-ups where "your" refers to the user's things (like "your project idea" or "your requirements"). BAD examples: "💬 Tell me about your project idea" (sounds like bot asking user), "💬 What kind of software are you building?" (bot asking user), "💬 Share your requirements" (bot asking user). GOOD examples: "💬 Tell me about your pricing" (user asking ORBIT), "💬 Show me your AI projects" (user asking ORBIT), "💬 I want to start a project" (user stating intent), "💬 Help me plan my project" (user requesting help), "💬 What technologies do you use?" (user asking ORBIT). NEVER phrase as bot asking user questions. NEVER use "our". NEVER skip this.`
         : `আপনি ORBIT SaaS-এর বন্ধুসুলভ AI সহকারী। নিয়ম:
 শুভেচ্ছা: প্রথম মেসেজে "হ্যালো! Orbit SaaS-এ স্বাগতম 😊" পরে আর পরিচয় নয়।
@@ -858,6 +863,7 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
 লিংক: শুধু knowledge base-এর URL দিন। নতুন URL বানাবেন না।
 ভাষা: সহজ বাংলায় কথা বলুন। কঠিন/টেকনিক্যাল শব্দ এড়িয়ে চলুন। একজন সাধারণ মানুষও যেন বুঝতে পারে এমন করে লিখুন। বন্ধুর মতো কথা বলুন। ইংরেজি বললে "[SUGGEST_SWITCH]" দিন।
 শৈলী: উষ্ণ, বন্ধুসুলভ এবং সহজ। ৮০-১২০ শব্দের মধ্যে উত্তর দিন। সর্বোচ্চ ৪ বুলেট বা ১-২ ছোট প্যারা।
+রোডম্যাপ ফরম্যাট: প্রক্রিয়া, কর্মপ্রবাহ, প্রজেক্ট ধাপ বা ধাপে ধাপে পরিকল্পনা ব্যাখ্যা করলে সবসময় নম্বর দেওয়া ফরম্যাট ব্যবহার করুন: "1. ধাপের শিরোনাম: ছোট বিবরণ"। কমপক্ষে ৩টি ধাপ দিন।
 ফলো-আপ: প্রতিটি উত্তরে অবশ্যই শেষে আলাদা নতুন লাইনে "💬" দিয়ে ১টি পরবর্তী পদক্ষেপ দিন। গুরুত্বপূর্ণ: ফলো-আপটি ইউজার ORBIT-কে যা বলবে সেভাবে লিখুন। "তোমাদের" মানে ORBIT-এর জিনিস (তোমাদের সেবা, তোমাদের প্রাইসিং)। কখনো ইউজারকে প্রশ্ন করবেন না (যেমন "আপনার প্রজেক্ট কী?")। ভুল: "💬 আপনার প্রজেক্টের কথা বলুন" বা "💬 আপনি কী বানাতে চান?"। সঠিক: "💬 তোমাদের প্রাইসিং জানাও" বা "💬 আমার প্রজেক্ট প্ল্যান করতে সাহায্য করো" বা "💬 তোমাদের AI প্রজেক্টগুলো দেখাও"।`);
       const systemPrompt = (adminPrompt && adminPrompt.trim()) ? adminPrompt : defaultPrompt;
 
@@ -1136,6 +1142,123 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
       });
     };
 
+    // ── TIMELINE/ROADMAP DETECTION ──
+    // Detect 3+ numbered steps like "1. Title: description" or "**1. Title:** description"
+    const numberedStepPattern = /^(?:\*\*)?(\d+)[.)]\s*(.+?)(?:\*\*)?$/;
+    const steps: { num: string; title: string; desc: string }[] = [];
+    const preLines: string[] = [];
+    const postLines: string[] = [];
+    let inSteps = false;
+    let doneSteps = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        if (inSteps) continue; // skip empty lines between steps
+        if (doneSteps) { postLines.push(line); continue; }
+        preLines.push(line);
+        continue;
+      }
+
+      // Check for numbered step: "1. Title: desc" or "1) Title: desc" or "**1. Title:** desc"
+      // Also handle bullet+number combos like "- 1. Title: desc"
+      const cleanForStep = trimmed.replace(/^[\s*-]*/, '');
+      const stepMatch = cleanForStep.match(numberedStepPattern);
+
+      if (stepMatch) {
+        inSteps = true;
+        const num = stepMatch[1];
+        const rest = stepMatch[2].replace(/\*\*/g, '').trim();
+        // Split on first colon or dash to separate title/desc
+        const sepMatch = rest.match(/^(.+?)[\s]*[:–—-][\s]*(.+)$/);
+        if (sepMatch) {
+          steps.push({ num, title: sepMatch[1].trim(), desc: sepMatch[2].trim() });
+        } else {
+          steps.push({ num, title: rest, desc: '' });
+        }
+      } else if (inSteps && !doneSteps) {
+        // Non-step line after steps started — it's post-content
+        doneSteps = true;
+        postLines.push(line);
+      } else if (!inSteps) {
+        preLines.push(line);
+      } else {
+        postLines.push(line);
+      }
+    }
+
+    // Render timeline if 3+ steps detected
+    if (steps.length >= 3) {
+      const renderTextLines = (textLines: string[]) =>
+        textLines.map((line, li) => {
+          const isBullet = /^\s*[*-]\s+/.test(line);
+          let cleanLine = line.replace(/^\s*[*-]\s+/, '');
+          if (isBullet) {
+            const colonIndex = cleanLine.indexOf(':');
+            if (colonIndex > 0 && colonIndex < 80 && !cleanLine.includes('**')) {
+              cleanLine = `**${cleanLine.substring(0, colonIndex + 1)}**${cleanLine.substring(colonIndex + 1)}`;
+            }
+          }
+          const inline = renderInline(isBullet ? cleanLine : line, `tl-${li}`);
+          if (isBullet) {
+            return (
+              <div key={`tl-${li}`} className="flex gap-2 pl-1 my-0.5 text-[15px] md:text-sm">
+                <span className="text-primary mt-1.5 w-1 h-1 rounded-full bg-primary shrink-0" />
+                <span className="flex-1 leading-relaxed">{inline}</span>
+              </div>
+            );
+          }
+          return (
+            <div key={`tl-${li}`} className={`text-[15px] md:text-sm leading-relaxed ${line.trim() === '' ? 'h-2' : 'mb-1.5 last:mb-0'}`}>
+              {inline}
+            </div>
+          );
+        });
+
+      return (
+        <>
+          {/* Pre-timeline text */}
+          {preLines.filter(l => l.trim()).length > 0 && renderTextLines(preLines)}
+
+          {/* Timeline */}
+          <div className="relative mt-3 mb-2 ml-1">
+            {steps.map((step, idx) => (
+              <div key={`step-${idx}`} className="relative flex gap-3 pb-4 last:pb-0 animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: `${idx * 120}ms` }}>
+                {/* Vertical line */}
+                {idx < steps.length - 1 && (
+                  <div className="absolute left-[15px] top-[34px] bottom-0 w-[2px] bg-gradient-to-b from-primary/60 to-primary/10" />
+                )}
+                {/* Step number circle */}
+                <div className="relative z-10 shrink-0 w-[32px] h-[32px] rounded-full border-2 border-primary bg-primary/15 flex items-center justify-center shadow-[0_0_12px_rgba(16,185,129,0.25)]">
+                  <span className="text-[11px] font-black text-primary leading-none">
+                    {step.num.padStart(2, '0')}
+                  </span>
+                </div>
+                {/* Content card */}
+                <div className="flex-1 bg-background/60 border border-border/60 rounded-lg px-3 py-2 min-w-0 shadow-sm">
+                  <p className="text-[10px] font-bold text-primary/70 uppercase tracking-[0.15em] mb-0.5">
+                    Step {step.num.padStart(2, '0')}
+                  </p>
+                  <p className="text-[13px] md:text-xs font-bold text-foreground leading-snug">
+                    {renderInline(step.title, `st-${idx}`)}
+                  </p>
+                  {step.desc && (
+                    <p className="text-[12px] md:text-[11px] text-muted-foreground leading-relaxed mt-1">
+                      {renderInline(step.desc, `sd-${idx}`)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Post-timeline text */}
+          {postLines.filter(l => l.trim()).length > 0 && renderTextLines(postLines)}
+        </>
+      );
+    }
+
+    // ── DEFAULT LINE-BY-LINE RENDERING (no timeline detected) ──
     return lines.map((line, lineIndex) => {
       // Handle Bullet Points
       const isBullet = /^\s*[*-]\s+/.test(line);
