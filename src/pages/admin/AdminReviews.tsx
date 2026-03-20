@@ -142,29 +142,18 @@ export default function AdminReviews() {
     const ReviewSocialField = ({ idx, label, platform, icon: Icon }: { idx: number, label: string, platform: string, icon?: any }) => {
         const item = items[idx].social?.[platform as keyof NonNullable<ReviewItem['social']>] || { url: '', enabled: false };
         return (
-            <div className="space-y-1.5 p-2 rounded-lg bg-secondary/10 border border-border/30 group/socket transition-all hover:bg-secondary/20 hover:border-primary/30">
-                <div className="flex items-center justify-between gap-2 mb-1">
-                    <div className="flex items-center gap-1.5">
-                        {Icon && <Icon className="w-3 h-3 text-muted-foreground group-hover/socket:text-primary transition-colors" />}
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider group-hover/socket:text-foreground">{label}</span>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => updateSocial(idx, platform, 'enabled', !item.enabled)}
-                        className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors focus:outline-none cursor-pointer ${item.enabled ? 'bg-primary' : 'bg-muted'}`}
-                    >
-                        <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${item.enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
-                    </button>
+            <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-secondary/10 border border-border/30 group/socket transition-all hover:bg-secondary/20 hover:border-primary/30">
+                <div className="flex items-center gap-1.5">
+                    {Icon && <Icon className="w-3 h-3 text-muted-foreground group-hover/socket:text-primary transition-colors" />}
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider group-hover/socket:text-foreground">{label}</span>
                 </div>
-                {item.enabled && (
-                    <input
-                        type="text"
-                        value={item.url}
-                        onChange={(e) => updateSocial(idx, platform, 'url', e.target.value)}
-                        placeholder="URL"
-                        className="w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground/50 border-none focus:ring-0 p-0"
-                    />
-                )}
+                <button
+                    type="button"
+                    onClick={() => updateSocial(idx, platform, 'enabled', !item.enabled)}
+                    className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors focus:outline-none cursor-pointer ${item.enabled ? 'bg-primary' : 'bg-muted'}`}
+                >
+                    <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${item.enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                </button>
             </div>
         );
     };

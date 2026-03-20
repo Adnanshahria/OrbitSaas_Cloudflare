@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
-import { Star, Quote, Twitter, Instagram, Facebook, Linkedin, Mail, ArrowUpRight, Github, MessageCircle, Briefcase, Globe, AtSign } from 'lucide-react';
+import { Star, Quote, Twitter, Instagram, Facebook, Linkedin, Mail, ArrowUpRight, Github, Briefcase, Globe, AtSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { WaveDivider } from '@/components/ui/WaveDivider';
 
@@ -13,7 +13,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
-const SocialIcon = ({ type, url }: { type: string, url?: string }) => {
+const SocialIcon = ({ type }: { type: string }) => {
     const icons: Record<string, any> = {
         google: Mail,
         whatsapp: WhatsAppIcon,
@@ -44,54 +44,21 @@ const SocialIcon = ({ type, url }: { type: string, url?: string }) => {
                 }
             }
             .whatsapp-review-pulse-dark { animation: whatsappThemePulse-Review-Dark 4s ease-in-out infinite; }
-            .whatsapp-review-pulse-dark:hover {
-                 animation: NONE !important;
-                 background-color: #22C55E !important;
-                 border-color: #22C55E !important;
-                 color: white !important;
-                 box-shadow: 0 0 20px rgba(34, 197, 94, 0.4) !important;
-            }
         `;
         
         return (
             <>
                 <style>{pulseStyles}</style>
-                {url ? (
-                    <a 
-                        href={url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className={`w-7 h-7 rounded-full border flex items-center justify-center transition-all duration-300 whatsapp-review-pulse-dark`}
-                    >
-                        <WhatsAppIcon className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
-                    </a>
-                ) : (
-                    <div className={`w-7 h-7 rounded-full border flex items-center justify-center whatsapp-review-pulse-dark opacity-50`}>
-                        <WhatsAppIcon className="w-3.5 h-3.5" />
-                    </div>
-                )}
+                <div className={`w-7 h-7 rounded-full border flex items-center justify-center whatsapp-review-pulse-dark`}>
+                    <WhatsAppIcon className="w-3.5 h-3.5" />
+                </div>
             </>
         );
     }
 
-    const commonClasses = "w-7 h-7 rounded-full border flex items-center justify-center transition-all duration-300";
-    
-    if (url) {
-        return (
-            <a 
-                href={url} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className={`${commonClasses} bg-white/[0.03] border-white/10 text-gray-400 hover:text-white hover:border-[#22C55E] hover:bg-[#22C55E]/20 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]`}
-            >
-                <Icon size={14} />
-            </a>
-        );
-    }
-
     return (
-        <div className={`${commonClasses} bg-white/[0.01] border-white/5 text-gray-600`} title={`${type} (No link)`}>
-            <Icon size={12} />
+        <div className="w-7 h-7 rounded-full border flex items-center justify-center transition-all duration-300 bg-white/[0.03] border-white/10 text-gray-400" title={type}>
+            <Icon size={14} />
         </div>
     );
 };
@@ -259,9 +226,8 @@ export function ReviewsSection() {
                                                 {showSocials && review.social && (
                                                     <div className="flex flex-wrap gap-1.5 relative z-20">
                                                         {Object.entries(review.social).map(([type, val]: [string, any]) => {
-                                                            const url = typeof val === 'string' ? val : val?.url;
                                                             const enabled = typeof val === 'string' ? true : val?.enabled !== false;
-                                                            return enabled && <SocialIcon key={type} type={type} url={url} />;
+                                                            return enabled && <SocialIcon key={type} type={type} />;
                                                         })}
                                                     </div>
                                                 )}
