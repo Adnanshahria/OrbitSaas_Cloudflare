@@ -21,7 +21,7 @@ async function executeAiRequest(
     
     if (env.AGENT_ROUTER_API_KEY) {
         try {
-            const dsRes = await fetch('https://api.agentrouter.org/v1/chat/completions', {
+            const dsRes = await fetch('https://agentrouter.org/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -40,10 +40,11 @@ async function executeAiRequest(
                 const content = data.choices?.[0]?.message?.content;
                 if (content) return { content, source: `DeepSeek (${options.deepseekModel})` };
             } else {
-                console.warn(`[AI Fallback] DeepSeek returned status ${dsRes.status}. Falling back to Groq...`);
+                const errorText = await dsRes.text().catch(() => 'No error body');
+                console.warn(`[AI Fallback] DeepSeek (AgentRouter) failed with status ${dsRes.status}: ${errorText}`);
             }
-        } catch (e) {
-            console.warn('[AI Fallback] DeepSeek request failed. Falling back to Groq...', e);
+        } catch (e: any) {
+            console.warn(`[AI Fallback] DeepSeek request failed: ${e.message}`);
         }
     }
 
