@@ -99,9 +99,17 @@ async function handleSubmit(request: Request, env: Env): Promise<Response> {
 
     if (existing.rows.length > 0) {
         if (chat_summary || interest) {
+            // Append new chat_summary to existing (with timestamp separator) instead of overwriting
             await db.execute({
-                sql: 'UPDATE leads SET chat_summary = COALESCE(?, chat_summary), interest = COALESCE(?, interest) WHERE email = ?',
-                args: [chat_summary || null, interest || null, email],
+                sql: `UPDATE leads SET 
+                  chat_summary = CASE 
+                    WHEN chat_summary IS NOT NULL AND ? IS NOT NULL 
+                    THEN chat_summary || char(10) || '---[' || datetime('now') || ']---' || char(10) || ? 
+                    ELSE COALESCE(?, chat_summary) 
+                  END,
+                  interest = COALESCE(?, interest) 
+                WHERE email = ?`,
+                args: [chat_summary || null, chat_summary || null, chat_summary || null, interest || null, email],
             });
         }
         return jsonResponse({ success: true, message: 'Lead already captured, updated via chat' }, request);

@@ -387,10 +387,18 @@ export function Chatbot() {
   }, [showMenu]);
 
   const scrollYRef = useRef(0);
+  // Ref to track latest messages for use in close handler without adding to deps
+  const messagesRef = useRef<ChatMessage[]>([]);
+  messagesRef.current = messages;
 
   useEffect(() => {
     // Notify other components about chatbot state
     window.dispatchEvent(new CustomEvent('orbit-chatbot-state-change', { detail: { isOpen: open } }));
+
+    // Send chat summary when chatbot is closed (for returning users who already gave email)
+    if (!open && hasProvidedEmail && messagesRef.current.length > 0) {
+      sendChatSummary(messagesRef.current);
+    }
 
     const isMobile = window.innerWidth < 768;
 
@@ -460,6 +468,8 @@ export function Chatbot() {
   const [showEmailPrompt, setShowEmailPrompt] = useState(false);
   const [leadEmail, setLeadEmail] = useState('');
   const [leadStatus, setLeadStatus] = useState<'idle' | 'loading'>('idle');
+  // Ref to hold pending messages while waiting for email submission
+  const pendingMessagesRef = useRef<ChatMessage[] | null>(null);
 
   // Load email status on mount
   useEffect(() => {
@@ -469,63 +479,114 @@ export function Chatbot() {
     }
   }, []);
 
-  // --- INACTIVITY SUMMARY: After 25s of no new messages, generate AI summary and update lead ---
+  // --- Reusable function to generate AI summary and send to leads API ---
+  const sendChatSummary = useCallback(async (currentMessages: ChatMessage[], sync = false) => {
+    if (summarySentRef.current) return;
+
+    const userMsgs = currentMessages.filter(m => m.role === 'user');
+    const assistantMsgs = currentMessages.filter(m => m.role === 'assistant');
+    if (userMsgs.length < 1 || assistantMsgs.length < 1) return;
+
+    const storedEmail = leadEmail || localStorage.getItem('orbit_chatbot_email') || '';
+    if (!storedEmail) return;
+
+    summarySentRef.current = true;
+
+    // For sync (beacon) calls, send raw chat without AI summary
+    if (sync) {
+      const rawChat = currentMessages
+        .filter(m => m.role !== 'system')
+        .map(m => `${m.role === 'user' ? 'User' : 'Orbit AI'}: ${m.content}`)
+        .join('\n');
+      const API_BASE = import.meta.env.VITE_API_URL || '';
+      try {
+        navigator.sendBeacon(
+          `${API_BASE}/api/leads?action=submit`,
+          new Blob([JSON.stringify({
+            email: storedEmail,
+            source: 'Chatbot Gateway',
+            interest: userMsgs[userMsgs.length - 1]?.content || 'General Inquiry',
+            chat_summary: `[Raw Chat - ${new Date().toLocaleString()}]\n${rawChat}`
+          })], { type: 'application/json' })
+        );
+      } catch { /* fail silently */ }
+      return;
+    }
+
+    try {
+      const rawChat = currentMessages
+        .filter(m => m.role !== 'system')
+        .map(m => `${m.role === 'user' ? 'User' : 'Orbit AI'}: ${m.content}`)
+        .join('\n');
+
+      const summaryPrompt: ChatMessage[] = [
+        {
+          role: 'system',
+          content: `You are a chat summarizer. Given a conversation between a user and Orbit SaaS AI, produce a compact 2-4 sentence summary. Include: what the user asked about, what services/projects interested them, and any action items. Be concise and factual. Do NOT use markdown. Output ONLY the summary text.`
+        },
+        { role: 'user', content: rawChat }
+      ];
+
+      const aiSummary = await sendToGroq(summaryPrompt);
+
+      const API_BASE = import.meta.env.VITE_API_URL || '';
+      await fetch(`${API_BASE}/api/leads?action=submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: storedEmail,
+          source: 'Chatbot Gateway',
+          interest: userMsgs[userMsgs.length - 1]?.content || 'General Inquiry',
+          chat_summary: `[AI Summary] ${aiSummary}`
+        })
+      });
+    } catch {
+      // Fail silently — this is a background enhancement
+    }
+  }, [leadEmail]);
+
+  // --- INACTIVITY SUMMARY: After 45s of no new messages, generate AI summary and update lead ---
   useEffect(() => {
-    // Clear previous timer on every message change
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
 
-    // Only trigger if: user has provided email, there are meaningful messages, and summary hasn't been sent for this session
     const userMsgs = messages.filter(m => m.role === 'user');
     const assistantMsgs = messages.filter(m => m.role === 'assistant');
     if (!hasProvidedEmail || userMsgs.length < 1 || assistantMsgs.length < 1) return;
 
-    inactivityTimer.current = setTimeout(async () => {
-      if (summarySentRef.current) return;
-      summarySentRef.current = true;
-
-      try {
-        // Build the raw chat for the AI to summarize
-        const rawChat = messages
-          .filter(m => m.role !== 'system')
-          .map(m => `${m.role === 'user' ? 'User' : 'Orbit AI'}: ${m.content}`)
-          .join('\n');
-
-        // Ask the AI to produce a compact 2-4 sentence summary
-        const summaryPrompt: ChatMessage[] = [
-          {
-            role: 'system',
-            content: `You are a chat summarizer. Given a conversation between a user and Orbit SaaS AI, produce a compact 2-4 sentence summary. Include: what the user asked about, what services/projects interested them, and any action items. Be concise and factual. Do NOT use markdown. Output ONLY the summary text.`
-          },
-          { role: 'user', content: rawChat }
-        ];
-
-        const aiSummary = await sendToGroq(summaryPrompt);
-
-        // Get the stored email (from lead form or interceptor)
-        const storedEmail = leadEmail || localStorage.getItem('orbit_chatbot_email') || '';
-        if (!storedEmail) return;
-
-        // Update the lead with the AI-generated summary
-        const API_BASE = import.meta.env.VITE_API_URL || '';
-        await fetch(`${API_BASE}/api/leads?action=submit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: storedEmail,
-            source: 'Chatbot Gateway',
-            interest: userMsgs[userMsgs.length - 1]?.content || 'General Inquiry',
-            chat_summary: `[AI Summary] ${aiSummary}`
-          })
-        });
-      } catch {
-        // Fail silently — this is a background enhancement
-      }
+    inactivityTimer.current = setTimeout(() => {
+      sendChatSummary(messages);
     }, 45000);
 
     return () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
     };
-  }, [messages, hasProvidedEmail]);
+  }, [messages, hasProvidedEmail, sendChatSummary]);
+
+  // --- SUMMARY ON PAGE LEAVE / TAB SWITCH: Catch returning users who leave without waiting 45s ---
+  useEffect(() => {
+    if (!hasProvidedEmail) return;
+
+    const handleBeforeUnload = () => {
+      const userMsgs = messages.filter(m => m.role === 'user');
+      const assistantMsgs = messages.filter(m => m.role === 'assistant');
+      if (userMsgs.length < 1 || assistantMsgs.length < 1 || summarySentRef.current) return;
+      // Use sync sendBeacon for page unload (async fetch won't complete)
+      sendChatSummary(messages, true);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && messages.filter(m => m.role === 'user').length >= 1) {
+        sendChatSummary(messages, true);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [messages, hasProvidedEmail, sendChatSummary]);
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -567,8 +628,11 @@ export function Chatbot() {
         summarySentRef.current = false; // Allow summary to fire for this session
         toast.success(chatLang === 'bn' ? 'ধন্যবাদ! এখন আপনি চ্যাট শুরু করতে পারেন।' : 'Thank you! You can now start chatting.');
 
-        // Auto-reply to the message they already typed
-        executeAIResponse(messages);
+        // Now trigger the AI response for the pending messages
+        const pending = pendingMessagesRef.current || messages;
+        pendingMessagesRef.current = null;
+        setIsLoading(true);
+        executeAIResponse(pending);
       } else {
         throw new Error('Failed');
       }
@@ -654,7 +718,6 @@ export function Chatbot() {
     setMessages(newMessages);
     setInput('');
     setSuggestions([]);
-    setIsLoading(true);
 
     // --- EMAIL INTERCEPTOR ---
     // If the user types an email, capture it silently in the background
@@ -690,9 +753,18 @@ export function Chatbot() {
         // Fail silently so chat UX is not interrupted
       }
     }
-    // Strict cut-off gate removed: Allow executeAIResponse to run even on 2nd question.
-    // The email prompt is now gracefully triggered AFTER the bot answers.
 
+    // --- EMAIL GATE: On 2nd question, show email form BEFORE AI reply ---
+    const userMsgCount = newMessages.filter(m => m.role === 'user').length;
+    const emailAlreadyProvided = hasProvidedEmail || !!emailMatch;
+    if (userMsgCount >= 2 && !emailAlreadyProvided) {
+      // Store messages and show email form — don't call AI yet
+      pendingMessagesRef.current = newMessages;
+      setShowEmailPrompt(true);
+      return; // Block AI response until email is submitted
+    }
+
+    setIsLoading(true);
     await executeAIResponse(newMessages);
   };
 
@@ -955,20 +1027,9 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
         return s;
       }).filter(Boolean);
 
-      // Enhanced Email Gate: Show the email prompt if the AI explicitly asks for contact info, 
-      // OR if the user has asked at least 1 follow-up question (user message count >= 2).
-      // We do this here so the AI actually gets to answer their question before the prompt appears!
-      const userMsgCount = chatHistory.filter(m => m.role === 'user').length;
-      const askForEmailKeywords = ['email', 'e-mail', 'mail', 'contact detail', 'contact info', 'reach you', 'ইমেইল', 'ই-মেইল', 'যোগাযোগ'];
-      const aiAskedForContact = askForEmailKeywords.some(kw => cleanedContent.toLowerCase().includes(kw)) || newSuggestions.some(s => askForEmailKeywords.some(kw => s.toLowerCase().includes(kw)));
-      
-      if (!hasProvidedEmail && (aiAskedForContact || userMsgCount >= 2)) {
-        setShowEmailPrompt(true);
-        // Filter out any awkward "Share your email" suggestion chips
-        setSuggestions(newSuggestions.filter(s => !askForEmailKeywords.some(kw => s.toLowerCase().includes(kw))));
-      } else {
-        setSuggestions(newSuggestions);
-      }
+      // Email gate is now handled BEFORE calling executeAIResponse (in handleSend).
+      // Here we just set suggestions and add the response message.
+      setSuggestions(newSuggestions);
       setMessages(prev => [...prev, { role: 'assistant', content: cleanedContent }]);
     } catch (error) {
       console.error('Failed to get response:', error);
@@ -1404,10 +1465,16 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
                             const newMessages = [...messages, userMessage];
                             setMessages(newMessages);
                             setInput('');
-                            setIsLoading(true);
 
-                            // The strict email gate was removed from here to allow the AI to answer.
-                            // executeAIResponse will gracefully trigger the native email prompt afterwards.
+                            // Email gate: on 2nd question, show email form before AI reply
+                            const userMsgCount = newMessages.filter(m => m.role === 'user').length;
+                            if (userMsgCount >= 2 && !hasProvidedEmail) {
+                              pendingMessagesRef.current = newMessages;
+                              setShowEmailPrompt(true);
+                              return;
+                            }
+
+                            setIsLoading(true);
                             executeAIResponse(newMessages);
                           }, 50);
                         }}
