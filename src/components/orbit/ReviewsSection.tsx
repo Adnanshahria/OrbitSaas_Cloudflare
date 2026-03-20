@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
-import { Star, Quote, Twitter, Instagram, Facebook, Linkedin, Mail, ArrowUpRight, Github, Briefcase, Globe, AtSign } from 'lucide-react';
+import { Star, Quote, User, Twitter, Instagram, Facebook, Linkedin, Mail, ArrowUpRight, Github, Briefcase, Globe, AtSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { WaveDivider } from '@/components/ui/WaveDivider';
 
@@ -27,38 +27,10 @@ const SocialIcon = ({ type }: { type: string }) => {
         github: Github
     };
     const Icon = icons[type.toLowerCase()] || Mail;
-    if (type.toLowerCase() === 'whatsapp') {
-        const pulseStyles = `
-            @keyframes whatsappThemePulse-Review-Dark {
-                0%, 100% {
-                    color: #22C55E;
-                    border-color: rgba(34, 197, 94, 0.4);
-                    background-color: rgba(34, 197, 94, 0.05);
-                    box-shadow: 0 0 15px rgba(34, 197, 94, 0.1);
-                }
-                50% {
-                    color: #FACC15;
-                    border-color: rgba(250, 204, 21, 0.4);
-                    background-color: rgba(250, 204, 21, 0.05);
-                    box-shadow: 0 0 15px rgba(250, 204, 21, 0.1);
-                }
-            }
-            .whatsapp-review-pulse-dark { animation: whatsappThemePulse-Review-Dark 4s ease-in-out infinite; }
-        `;
-        
-        return (
-            <>
-                <style>{pulseStyles}</style>
-                <div className={`w-7 h-7 rounded-full border flex items-center justify-center whatsapp-review-pulse-dark`}>
-                    <WhatsAppIcon className="w-3.5 h-3.5" />
-                </div>
-            </>
-        );
-    }
 
     return (
-        <div className="w-7 h-7 rounded-full border flex items-center justify-center transition-all duration-300 bg-white/[0.03] border-white/10 text-gray-400" title={type}>
-            <Icon size={14} />
+        <div className="w-8 h-8 rounded-full border border-white/10 bg-white/[0.03] flex items-center justify-center text-gray-400 group-hover:border-[#22C55E]/40 group-hover:bg-[#22C55E]/5 transition-all duration-300 shadow-sm" title={type}>
+            <Icon size={16} className="w-4 h-4" />
         </div>
     );
 };
@@ -145,7 +117,14 @@ export function ReviewsSection() {
                                 transition={{ duration: 0.8, delay: i * 0.1, ease: [0.23, 1, 0.32, 1] }}
                                 className="group relative h-full"
                             >
-                                <div className="h-full bg-white/[0.02] backdrop-blur-[40px] rounded-2xl border border-white/[0.08] p-8 flex flex-col transition-all duration-700 hover:border-[#FACC15]/40 hover:bg-white/[0.04] hover:-translate-y-2 shadow-2xl relative overflow-hidden">
+                                <div className="h-full bg-white/[0.02] backdrop-blur-[40px] rounded-2xl border border-white/[0.08] p-8 flex flex-col transition-all duration-700 hover:border-[#FACC15]/40 hover:bg-white/[0.04] hover:-translate-y-2 shadow-2xl relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-[#22C55E]/50">
+                                    {review.projectId && (
+                                        <Link 
+                                            to={`/project/${review.projectId}`} 
+                                            className="absolute inset-0 z-30" 
+                                            aria-label={`View project ${review.projectName}`}
+                                        />
+                                    )}
                                     
                                     {/* Glass reflection gradient sweep */}
                                     <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
@@ -155,9 +134,11 @@ export function ReviewsSection() {
 
                                     <div className="relative z-10 flex flex-col h-full">
                                         <div className="flex items-start justify-between mb-8">
-                                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/[0.03] border border-white/10 group-hover:border-[#FACC15]/30 group-hover:bg-[#FACC15]/10 transition-colors duration-500">
-                                                <Quote size={16} className="text-[#22C55E] group-hover:text-[#FACC15] transition-colors duration-500" />
-                                            </div>
+                                                <div className="flex items-center gap-1">
+                                                    {Array.from({ length: review.rating || 5 }, (_, si) => (
+                                                        <Star key={si} size={12} fill="#FACC15" color="#FACC15" className="opacity-90" />
+                                                    ))}
+                                                </div>
                                             
                                             {/* Project Badge */}
                                             {review.badgeName && (
@@ -185,39 +166,20 @@ export function ReviewsSection() {
                                                                 <img src={review.avatar} alt={review.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                                             </div>
                                                         ) : (
-                                                            <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-gray-800 to-gray-900 border border-white/10 flex items-center justify-center text-white font-bold text-sm relative z-10">
-                                                                {review.name?.charAt(0) || 'U'}
+                                                            <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-gray-800 to-gray-900 border border-white/10 flex items-center justify-center text-gray-500 relative z-10">
+                                                                <User size={18} className="opacity-60 group-hover:opacity-100 transition-opacity" />
                                                             </div>
                                                         )}
                                                         
-                                                        {/* Avatar Icon Badge */}
-                                                        <div className="absolute -bottom-1 -right-1 w-4.5 h-4.5 bg-[#0A0A0A] rounded-full flex items-center justify-center border border-gray-800 group-hover:border-[#FACC15]/50 transition-colors shadow-black/50 z-20">
-                                                            {(() => {
-                                                                const firstSocial = review.social ? Object.entries(review.social).find(([_, val]) => {
-                                                                    const v = val as any;
-                                                                    return typeof v === 'string' ? !!v : v?.enabled !== false;
-                                                                }) : null;
-                                                                
-                                                                if (firstSocial) {
-                                                                    const [type] = firstSocial as [string, any];
-                                                                    const icons: Record<string, any> = {
-                                                                        google: Mail, whatsapp: WhatsAppIcon, instagram: Instagram, 
-                                                                        facebook: Facebook, threads: AtSign, twitter: Twitter, 
-                                                                        fiverr: Briefcase, upwork: Globe, linkedin: Linkedin, github: Github
-                                                                    };
-                                                                    const Icon = icons[type.toLowerCase()] || Star;
-                                                                    return <Icon size={9} className="text-[#22C55E] group-hover:text-[#FACC15] transition-colors duration-500" />;
-                                                                }
-                                                                return <Star size={9} fill="#22C55E" color="#22C55E" className="group-hover:fill-[#FACC15] group-hover:text-[#FACC15] transition-colors duration-500" />;
-                                                            })()}
-                                                        </div>
                                                     </div>
                                                     <div>
                                                         <div className="text-[17px] font-bold text-white group-hover:text-[#22C55E] transition-colors duration-500">
                                                             {review.name}
                                                         </div>
-                                                        <div className="text-[10px] font-medium uppercase tracking-[0.15em] text-gray-500 mt-0.5">
-                                                            {review.role}
+                                                        <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 mt-1 flex items-center gap-2">
+                                                            <span className="opacity-80">{review.role}</span>
+                                                            <span className="w-1 h-1 rounded-full bg-[#22C55E]/40" />
+                                                            <span className="text-[#22C55E]/80 font-black">Verified Client</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -233,18 +195,14 @@ export function ReviewsSection() {
                                                 )}
                                             </div>
 
-                                            {/* Stars and Project Link */}
-                                            <div className="flex items-center justify-between mt-1">
-                                                <div className="flex gap-1">
-                                                    {Array.from({ length: review.rating || 5 }, (_, si) => (
-                                                        <Star key={si} size={11} fill="#FACC15" color="#FACC15" className="opacity-90" />
-                                                    ))}
-                                                </div>
+                                            <div className="flex items-center justify-center mt-2">
                                                 {review.projectId && (
-                                                    <Link to={`/project/${review.projectId}`} className="flex items-center gap-1.5 group/link relative z-20 bg-white/[0.03] hover:bg-white/[0.08] px-3 py-1.5 rounded-full border border-white/[0.05] transition-all duration-300">
-                                                        <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 group-hover/link:text-white transition-colors duration-300">Deep Dive</span>
-                                                        <ArrowUpRight size={12} className="text-[#22C55E] group-hover/link:rotate-12 transition-transform duration-300" />
-                                                    </Link>
+                                                    <div className="flex items-center gap-1.5 opacity-40 group-hover:opacity-100 transition-all duration-500">
+                                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#FACC15]">Explore Project</span>
+                                                        <div className="w-6 h-6 rounded-full bg-[#FACC15]/10 border border-[#FACC15]/20 flex items-center justify-center">
+                                                            <ArrowUpRight size={12} className="text-[#FACC15] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-500" />
+                                                        </div>
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>

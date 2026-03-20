@@ -91,8 +91,8 @@ export default function AdminFooter() {
 
     const [loading, setLoading] = useState(true);
     const [sectionInfo, setSectionInfo] = useState({
-        en: { brandName: '', rights: '', tagline: '', email: '', phone: '', location: '', madeWith: '' },
-        bn: { brandName: '', rights: '', tagline: '', email: '', phone: '', location: '', madeWith: '' },
+        en: { brandName: '', rights: '', tagline: '', email: '', phone: '', location: '', mapLink: '', madeWith: '' },
+        bn: { brandName: '', rights: '', tagline: '', email: '', phone: '', location: '', mapLink: '', madeWith: '' },
     });
     const [socials, setSocials] = useState<SocialLink[]>(DEFAULT_SOCIALS);
     const [quickLinks, setQuickLinks] = useState<QuickLink[]>([]);
@@ -125,6 +125,7 @@ export default function AdminFooter() {
                 email: enF.email || '',
                 phone: enF.phone || '',
                 location: enF.location || '',
+                mapLink: enF.mapLink || '',
                 madeWith: enF.madeWith || '',
             },
             bn: {
@@ -134,6 +135,7 @@ export default function AdminFooter() {
                 email: bnF.email || '',
                 phone: bnF.phone || '',
                 location: bnF.location || '',
+                mapLink: bnF.mapLink || '',
                 madeWith: bnF.madeWith || '',
             },
         });
@@ -175,6 +177,7 @@ export default function AdminFooter() {
                 email: sectionInfo.en.email,
                 phone: sectionInfo.en.phone,
                 location: sectionInfo.en.location,
+                mapLink: sectionInfo.en.mapLink,
                 quickLinks,
                 legalLinks,
                 socials,
@@ -187,6 +190,7 @@ export default function AdminFooter() {
                 email: sectionInfo.bn.email,
                 phone: sectionInfo.bn.phone,
                 location: sectionInfo.bn.location,
+                mapLink: sectionInfo.bn.mapLink,
                 quickLinks,
                 legalLinks,
                 socials,
@@ -336,6 +340,14 @@ export default function AdminFooter() {
                         }
                         lang="en"
                     />
+                    <TextField
+                        label="Google Maps Link"
+                        value={sectionInfo.en.mapLink}
+                        onChange={(v) =>
+                            setSectionInfo({ ...sectionInfo, en: { ...sectionInfo.en, mapLink: v } })
+                        }
+                        lang="en"
+                    />
                 </div>
                 <div className="space-y-4">
                     <h3 className="font-semibold text-foreground flex items-center gap-2">📞 Contact Info (BN)</h3>
@@ -360,6 +372,14 @@ export default function AdminFooter() {
                         value={sectionInfo.bn.location}
                         onChange={(v) =>
                             setSectionInfo({ ...sectionInfo, bn: { ...sectionInfo.bn, location: v } })
+                        }
+                        lang="bn"
+                    />
+                    <TextField
+                        label="গুগল ম্যাপ লিংক (Map Link)"
+                        value={sectionInfo.bn.mapLink}
+                        onChange={(v) =>
+                            setSectionInfo({ ...sectionInfo, bn: { ...sectionInfo.bn, mapLink: v } })
                         }
                         lang="bn"
                     />
@@ -530,6 +550,7 @@ export default function AdminFooter() {
                             email: sectionInfo.en.email,
                             phone: sectionInfo.en.phone,
                             location: sectionInfo.en.location,
+                            mapLink: sectionInfo.en.mapLink,
                             madeWith: sectionInfo.en.madeWith,
                             quickLinks,
                             legalLinks,
@@ -542,6 +563,7 @@ export default function AdminFooter() {
                             email: sectionInfo.bn.email,
                             phone: sectionInfo.bn.phone,
                             location: sectionInfo.bn.location,
+                            mapLink: sectionInfo.bn.mapLink,
                             madeWith: sectionInfo.bn.madeWith,
                             quickLinks,
                             legalLinks,
@@ -561,6 +583,7 @@ export default function AdminFooter() {
                                 email: parsed.en.email || '',
                                 phone: parsed.en.phone || '',
                                 location: parsed.en.location || '',
+                                mapLink: parsed.en.mapLink || '',
                                 madeWith: parsed.en.madeWith || '',
                             },
                             bn: {
@@ -570,6 +593,7 @@ export default function AdminFooter() {
                                 email: parsed.bn.email || '',
                                 phone: parsed.bn.phone || '',
                                 location: parsed.bn.location || '',
+                                mapLink: parsed.bn.mapLink || '',
                                 madeWith: parsed.bn.madeWith || '',
                             },
                         });

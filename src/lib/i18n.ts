@@ -160,6 +160,10 @@ export const translations = {
       brandName: 'ORBIT SaaS',
       rights: '© 2025 ORBIT SaaS. All rights reserved.',
       tagline: 'Full-Service Software & AI Agency — Web, AI, Mobile & Beyond.',
+      email: 'contact@orbitsaas.com',
+      phone: '+8801853452264',
+      location: 'Rajshahi, Bangladesh',
+      mapLink: 'https://www.google.com/maps/search/?api=1&query=24.36545054786298,88.62639818383883',
       socials: [
         { platform: 'facebook', url: '', enabled: false },
         { platform: 'instagram', url: '', enabled: false },
@@ -369,6 +373,10 @@ export const translations = {
       brandName: 'ORBIT SaaS',
       rights: '© ২০২৬ অরবিট সাস (ORBIT SaaS)। সকল অধিকার সংরক্ষিত।',
       tagline: 'ফুল-সার্ভিস সফটওয়্যার ও এআই এজেন্সি — ওয়েব, এআই, মোবাইল অ্যাপস এবং আরও অনেক কিছু।',
+      email: 'contact@orbitsaas.com',
+      phone: '+8801853452264',
+      location: 'রাজশাহী, বাংলাদেশ',
+      mapLink: 'https://www.google.com/maps/search/?api=1&query=24.36545054786298,88.62639818383883',
       socials: [
         { platform: 'facebook', url: '', enabled: false },
         { platform: 'instagram', url: '', enabled: false },

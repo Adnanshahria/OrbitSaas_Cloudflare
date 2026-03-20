@@ -613,11 +613,13 @@ export function ContactSection() {
   const { content } = useContent();
   const { lang } = useLang();
 
-  const t = (content[lang] as any)?.contact;
-  const socials = (content[lang] as any)?.footer?.socials || [];
+  const t = (content[lang] as any)?.contact || {};
+  const footerData = (content[lang] as any)?.footer || {};
+  const socials = footerData.socials || [];
   const activeSocials = socials.filter((s: any) => s.enabled && s.url);
-
-  const whatsappNumber = t?.whatsapp || '+8801853452264';
+ 
+  const whatsappNumber = footerData.phone || t?.whatsapp || '+8801853452264';
+  const emailAddress = footerData.email || t?.email || 'contact@orbitsaas.com';
   const whatsappLink = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`;
 
   return (
@@ -730,8 +732,8 @@ export function ContactSection() {
             <ContactCard
               icon={Mail}
               title="Email Us"
-              value="contact@orbitsaas.com"
-              href="mailto:contact@orbitsaas.com"
+              value={emailAddress}
+              href={`mailto:${emailAddress}`}
               delay={0.4}
             />
             {whatsappNumber && (
@@ -746,8 +748,8 @@ export function ContactSection() {
             <ContactCard
               icon={MapPin}
               title="Global HQ"
-              value="Rajshahi, Bangladesh"
-              href="https://www.google.com/maps/search/?api=1&query=24.36545054786298,88.62639818383883"
+              value={footerData.location || t?.address || "Rajshahi, Bangladesh"}
+              href={footerData.mapLink || t?.mapLink || "https://www.google.com/maps/search/?api=1&query=24.36545054786298,88.62639818383883"}
               delay={0.6}
             />
           </div>
