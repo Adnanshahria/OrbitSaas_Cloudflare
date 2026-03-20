@@ -11,7 +11,16 @@ const ALLOWED_ORIGINS = [
  */
 export function getCorsHeaders(request: Request): Record<string, string> {
     const origin = request.headers.get('origin') || '';
-    const isAllowed = ALLOWED_ORIGINS.includes(origin) || origin.startsWith('http://localhost:');
+    
+    // Check if it's a local network IP: 192.168.x.x, 10.x.x.x, or 172.x.x.x
+    const isLocalNetwork = origin.startsWith('http://192.168.') || 
+                           origin.startsWith('http://10.') || 
+                           /^http:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\./.test(origin);
+                           
+    const isAllowed = ALLOWED_ORIGINS.includes(origin) || 
+                      origin.startsWith('http://localhost:') || 
+                      isLocalNetwork;
+                      
     const allowedOrigin = isAllowed ? origin : ALLOWED_ORIGINS[0];
 
     return {

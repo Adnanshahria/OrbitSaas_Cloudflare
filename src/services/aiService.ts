@@ -23,6 +23,11 @@ export const sendToGroq = async (messages: ChatMessage[]) => {
         }
 
         const data = await response.json();
+        
+        if (data.source) {
+            console.log(`%c[AI Provider]: %c${data.source}`, 'color: #D4A017; font-weight: bold;', 'color: #10B981; font-weight: bold;');
+        }
+        
         return data.content || 'Sorry, I could not generate a response.';
     } catch (error) {
         console.error('Error calling Chat API:', error);

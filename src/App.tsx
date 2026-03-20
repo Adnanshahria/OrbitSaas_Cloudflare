@@ -167,7 +167,9 @@ function PublicSite() {
   useEffect(() => {
     let sessionId = localStorage.getItem('orbit_visitor_session_id');
     if (!sessionId) {
-      sessionId = crypto.randomUUID();
+      sessionId = typeof crypto !== 'undefined' && crypto.randomUUID 
+        ? crypto.randomUUID() 
+        : 'session-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
       localStorage.setItem('orbit_visitor_session_id', sessionId);
     }
     const API_BASE = import.meta.env.VITE_API_URL || '';

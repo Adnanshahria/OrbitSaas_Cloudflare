@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000', // wrangler pages dev
+        target: 'https://orbitsaas.cloud', // Proxy to prod to bypass CORS when sharing on local network
         changeOrigin: true,
       },
     },

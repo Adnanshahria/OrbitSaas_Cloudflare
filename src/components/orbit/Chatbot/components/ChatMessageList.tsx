@@ -67,6 +67,7 @@ export function ChatMessageList() {
             </div>
           </div>
         )}
+        <div className="h-4 shrink-0" />
         <div ref={messagesEndRef} />
         <div ref={messagesEndRef} />
       </div>

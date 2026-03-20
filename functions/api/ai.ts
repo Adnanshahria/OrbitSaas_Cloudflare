@@ -6,6 +6,72 @@ import type { Env } from '../_lib/types';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const SITE_BASE_URL = 'https://orbitsaas.cloud';
 
+// ─── AI Helper: Primary (DeepSeek) with Fallback (Groq) ───
+async function executeAiRequest(
+    messages: unknown[],
+    env: Env,
+    options: {
+        deepseekModel: string;
+        groqModel: string;
+        temperature: number;
+        max_tokens: number;
+    }
+): Promise<{ content: string; source: string }> {
+    let source = 'deepseek';
+    
+    if (env.AGENT_ROUTER_API_KEY) {
+        try {
+            const dsRes = await fetch('https://api.agentrouter.org/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${env.AGENT_ROUTER_API_KEY}`,
+                },
+                body: JSON.stringify({
+                    model: options.deepseekModel,
+                    messages,
+                    temperature: options.temperature,
+                    max_tokens: options.max_tokens,
+                }),
+            });
+            
+            if (dsRes.ok) {
+                const data = await dsRes.json() as any;
+                const content = data.choices?.[0]?.message?.content;
+                if (content) return { content, source: `DeepSeek (${options.deepseekModel})` };
+            } else {
+                console.warn(`[AI Fallback] DeepSeek returned status ${dsRes.status}. Falling back to Groq...`);
+            }
+        } catch (e) {
+            console.warn('[AI Fallback] DeepSeek request failed. Falling back to Groq...', e);
+        }
+    }
+
+    if (!env.GROQ_API_KEY) throw new Error('AI configuration missing');
+
+    const grRes = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${env.GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+            model: options.groqModel,
+            messages,
+            temperature: options.temperature,
+            max_tokens: options.max_tokens,
+        }),
+    });
+
+    if (!grRes.ok) {
+        throw new Error(`Groq API failed: ${grRes.statusText}`);
+    }
+
+    const data = await grRes.json() as any;
+    const content = data.choices?.[0]?.message?.content || 'Sorry, I could not generate a response.';
+    return { content, source: `Llama 3.1 Fallback (${options.groqModel})` };
+}
+
 // ─── Action: Chat ───
 async function handleChat(request: Request, env: Env): Promise<Response> {
     if (request.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, request, 405);
@@ -13,31 +79,18 @@ async function handleChat(request: Request, env: Env): Promise<Response> {
     const body = await request.json() as { messages?: unknown[] };
     const { messages } = body;
     if (!messages || !Array.isArray(messages)) return jsonResponse({ error: 'Missing or invalid messages array' }, request, 400);
-    if (!env.GROQ_API_KEY) return jsonResponse({ error: 'AI configuration missing' }, request, 500);
 
-    const response = await fetch(GROQ_API_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${env.GROQ_API_KEY}`,
-        },
-        body: JSON.stringify({
-            model: 'llama-3.1-8b-instant',
-            messages,
+    try {
+        const { content, source } = await executeAiRequest(messages, env, {
+            deepseekModel: 'deepseek-v3.2',
+            groqModel: 'llama-3.1-8b-instant',
             temperature: 0.7,
             max_tokens: 500,
-        }),
-    });
-
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Groq API Error:', errorData);
-        throw new Error(`Groq API failed: ${response.statusText}`);
+        });
+        return jsonResponse({ success: true, content, source }, request);
+    } catch (e: any) {
+        return jsonResponse({ error: e.message || 'AI request failed' }, request, 500);
     }
-
-    const data = await response.json() as { choices: { message: { content: string } }[] };
-    const content = data.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
-    return jsonResponse({ success: true, content }, request);
 }
 
 // ─── Action: Chatbot Context ───
@@ -85,28 +138,25 @@ function buildKnowledgeBase(content: Record<string, any>): string {
     return kb;
 }
 
-async function generateGist(knowledgeBase: string, apiKey: string): Promise<string | null> {
-    if (!apiKey) return null;
+async function generateGist(knowledgeBase: string, env: Env): Promise<string | null> {
     try {
-        const response = await fetch(GROQ_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-            body: JSON.stringify({
-                model: 'llama-3.1-8b-instant',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'You are a technical documentator. Summarize the following company knowledge base into a SHORT factual reference (~150 words max). CRITICAL: All URLs and proper names (Project Titles, Service Names) must be preserved EXACTLY as in the source. NEVER synthesize new categories like "PROJECT SHOWCASE" or "AI SERVICES". NEVER abbreviate or abbreviate URLs. If the source says "LifeSolver: https://site.com/project/1", keep it exactly like that. NO marketing fluff. Output ONLY the summary.'
-                    },
-                    { role: 'user', content: knowledgeBase }
-                ],
+        const { content } = await executeAiRequest(
+            [
+                {
+                    role: 'system',
+                    content: 'You are a technical documentator. Summarize the following company knowledge base into a SHORT factual reference (~150 words max). CRITICAL: All URLs and proper names (Project Titles, Service Names) must be preserved EXACTLY as in the source. NEVER synthesize new categories like "PROJECT SHOWCASE" or "AI SERVICES". NEVER abbreviate or abbreviate URLs. If the source says "LifeSolver: https://site.com/project/1", keep it exactly like that. NO marketing fluff. Output ONLY the summary.'
+                },
+                { role: 'user', content: knowledgeBase }
+            ], 
+            env, 
+            {
+                deepseekModel: 'deepseek-v3.2',
+                groqModel: 'llama-3.1-8b-instant',
                 temperature: 0.2,
                 max_tokens: 300,
-            }),
-        });
-        if (!response.ok) return null;
-        const data = await response.json() as { choices: { message: { content: string } }[] };
-        return data.choices[0]?.message?.content?.trim() || null;
+            }
+        );
+        return content.trim() || null;
     } catch { return null; }
 }
 
@@ -156,7 +206,7 @@ async function handleContext(request: Request, env: Env): Promise<Response> {
         } catch { /* skip */ }
 
         const fullKBWithLeads = fullKB + leadInfo;
-        const gist = await generateGist(fullKBWithLeads, env.GROQ_API_KEY);
+        const gist = await generateGist(fullKBWithLeads, env);
 
         if (gist) {
             knowledgeBase = gist;
@@ -205,31 +255,29 @@ async function handleEnhance(request: Request, env: Env): Promise<Response> {
     const body = await request.json() as { text?: string; lang?: string };
     const { text, lang } = body;
     if (!text || !lang) return jsonResponse({ error: 'Missing text or lang' }, request, 400);
-    if (!env.GROQ_API_KEY) return jsonResponse({ error: 'AI configuration missing' }, request, 500);
-
     const systemPrompt = lang === 'en'
         ? "You are a professional copywriter for ORBIT SaaS. Your goal is to refine and compact the user's input. Make it more professional, high-impact, and premium. Keep it extremely concise (compact). Use active voice. If the input contains HTML tags, PRESERVE them. Return ONLY the refined text, no preamble."
-        : "আপনি ORBIT SaaS-এর একজন পেশাদার কপিরাইটার। আপনার লক্ষ্য হলো ইউজারের ইনপুটকে আরও মার্জিত, পেশাদার এবং প্রিমিয়াম করা। কথাগুলো খুব সংক্ষিপ্ত কিন্তু আকর্ষণীয় রাখুন। যদি ইনপুটে HTML ট্যাগ থাকে, সেগুলো পরিবর্তন করবেন না। শুধুমাত্র সংশোধিত টেক্সটটি রিটার্ন করুন, অন্য কোনো কথা বলবেন না।";
+        : "আপনি ORBIT SaaS-এর একজন পেশাদার কপিরাইটার। আপনার লক্ষ্য হলো ইউজারের ইনপুটকে আরও মার্জিত, পেশাদার এবং প্রিমিয়াম করা। কথাগুলো খুব সংক্ষিপ্ত কিন্তু আকর্ষণীয় রাখুন। যদি ইনপুটে HTML ট্যাগ থাকে, সেগুলো পরিবর্তন করবেন ঘনবেন না। শুধুমাত্র সংশোধিত টেক্সটটি রিটার্ন করুন, অন্য কোনো কথা বলবেন না।";
 
-    const response = await fetch(GROQ_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.GROQ_API_KEY}` },
-        body: JSON.stringify({
-            model: 'llama-3.1-8b-instant',
-            messages: [
+    try {
+        const { content, source } = await executeAiRequest(
+            [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: text },
             ],
-            temperature: 0.5,
-            max_tokens: 512,
-        }),
-    });
-
-    if (!response.ok) throw new Error(`Groq API failed: ${response.statusText}`);
-
-    const data = await response.json() as { choices: { message: { content: string } }[] };
-    const enhancedText = data.choices[0]?.message?.content?.trim() || text;
-    return jsonResponse({ success: true, enhancedText }, request);
+            env,
+            {
+                deepseekModel: 'deepseek-v3.2',
+                groqModel: 'llama-3.1-8b-instant',
+                temperature: 0.5,
+                max_tokens: 512,
+            }
+        );
+        const enhancedText = content.trim() || text;
+        return jsonResponse({ success: true, enhancedText, source }, request);
+    } catch (e: any) {
+        throw new Error(`AI API failed: ${e.message}`);
+    }
 }
 
 // ─── Main Router ───

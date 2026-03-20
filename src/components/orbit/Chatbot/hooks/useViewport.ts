@@ -31,8 +31,9 @@ export function useViewport(open: boolean) {
             window.scrollTo(0, 0);
           }
         } else {
-          const availableHeight = window.visualViewport.height - 100;
-          const maxH = Math.min(availableHeight, window.innerHeight * 0.85);
+          // Account for Navbar (~80px) and bottom spacing (~84px + margin)
+          const availableHeight = window.visualViewport.height - 180;
+          const maxH = Math.min(availableHeight, window.innerHeight * 0.80);
           setViewportStyle({
             maxHeight: `${maxH}px`,
           });
