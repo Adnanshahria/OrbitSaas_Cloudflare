@@ -114,7 +114,30 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   // ─── Simple helpers ───
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => {
+      if (!messagesEndRef.current) return;
+      
+      const container = messagesEndRef.current.closest('.chatbot-messages-area');
+      if (!container) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+
+      const messageElements = container.querySelectorAll('[id^="chat-msg-"]');
+      const lastMsg = messageElements[messageElements.length - 1] as HTMLElement;
+
+      if (lastMsg) {
+        const idealScrollTop = container.scrollHeight - container.clientHeight;
+        const maxScrollTop = Math.max(0, lastMsg.offsetTop - 20); // 20px padding above message
+        
+        // Scroll to the bottom of the container, but NEVER push the top of the last message out of view
+        const finalScrollTop = Math.min(idealScrollTop, maxScrollTop);
+        container.scrollTo({ top: finalScrollTop, behavior: 'smooth' });
+      } else {
+        // Fallback
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 50);
   };
 
   const clearChat = () => {

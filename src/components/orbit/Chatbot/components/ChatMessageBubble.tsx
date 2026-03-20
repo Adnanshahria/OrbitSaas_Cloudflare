@@ -15,7 +15,7 @@ export function ChatMessageBubble({ msg, index }: ChatMessageBubbleProps) {
   const cleanContent = isAssistant ? msg.content.replace('[SUGGEST_SWITCH]', '').trim() : msg.content;
 
   return (
-    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div id={`chat-msg-${index}`} className="space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : ''}`}>
         {isAssistant && (
           <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center shrink-0">
