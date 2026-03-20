@@ -974,6 +974,14 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
         let s = l.replace(/^[\s💬🟢➡️👉✅🔹🔸💡🎯📌⭐🚀🔵🟡🟠🔴⚡]*/, '').trim();
 
         // ── Convert bot-asking-user questions into user-asking-bot statements ──
+        // "Can you share your email/number/details so I can..."
+        s = s.replace(/^can you (share|provide|give me|send) your (email|e-mail|phone|number|contact|details).*$/i, 'I want to get in touch');
+        // "Share your email/contact"
+        s = s.replace(/^share your (email|e-mail|phone|number|contact|details).*$/i, 'I want to get in touch');
+        // "Please provide your email"
+        s = s.replace(/^please (share|provide|give|send) (me )?(your )?(email|e-mail|phone|number|contact|details).*$/i, 'I want to get in touch');
+        // "What is your email/phone?"
+        s = s.replace(/^what('s| is) your (email|e-mail|phone|number|contact).*\??$/i, 'I want to get in touch');
         // "Tell me about your project idea/requirements/needs"
         s = s.replace(/^tell me about your (project idea|requirements|needs|project|business|goals)/i, 'Help me plan my project');
         // "What kind of software are you building?"
@@ -988,6 +996,8 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
         s = s.replace(/^describe your (project|idea|needs|requirements)/i, 'Help me plan my project');
         // Generic "What do you need?" / "What are you looking for?"
         s = s.replace(/^what (do you need|are you looking for).*\??$/i, 'I need help with my project');
+        // Generic "Can you tell me..." (bot asking user)
+        s = s.replace(/^can you (tell|share|explain|describe) (me )?(about )?(your|more about your) /i, 'I want to discuss my ');
 
         // Mixed grammar corrections
         s = s.replace(/^help me explain/i, 'Help me describe');
@@ -1024,13 +1034,33 @@ FOLLOW-UP: You MUST ALWAYS end EVERY reply with exactly 1 suggested action on it
             s = 'I want to start a project';
         }
 
+        // Failsafe: catch any remaining email/contact requests from bot perspective
+        if (/\b(share|provide|give|send)\b.*\b(your|you)\b.*\b(email|e-mail|phone|contact|number)\b/i.test(s) ||
+            /\b(your|you)\b.*\b(email|e-mail|phone|contact|number)\b.*\b(share|provide|give|send|so i can)\b/i.test(s)) {
+            s = 'I want to get in touch';
+        }
+
         return s;
       }).filter(Boolean);
 
-      // Email gate is now handled BEFORE calling executeAIResponse (in handleSend).
-      // Here we just set suggestions and add the response message.
-      setSuggestions(newSuggestions);
-      setMessages(prev => [...prev, { role: 'assistant', content: cleanedContent }]);
+      // Auto-trigger email form: detect email/contact requests in BOTH
+      // the suggestion chips AND the AI's response body text
+      const emailSuggestionPattern = /\b(email|e-mail|contact|phone|get in touch)\b/i;
+      const emailBodyPattern = /\b(share|provide|give|send|drop)\b.{0,30}\b(your|you).{0,15}\b(email|e-mail|phone|contact)\b/i;
+      const hasEmailSuggestion = newSuggestions.some(s => emailSuggestionPattern.test(s));
+      const hasEmailInBody = emailBodyPattern.test(cleanedContent);
+
+      if ((hasEmailSuggestion || hasEmailInBody) && !hasProvidedEmail) {
+        // Remove email-related suggestions — the form replaces them
+        const filteredSuggestions = newSuggestions.filter(s => !emailSuggestionPattern.test(s));
+        setSuggestions(filteredSuggestions);
+        setMessages(prev => [...prev, { role: 'assistant', content: cleanedContent }]);
+        // Auto-show the email lead form after a brief delay for natural feel
+        setTimeout(() => setShowEmailPrompt(true), 600);
+      } else {
+        setSuggestions(newSuggestions);
+        setMessages(prev => [...prev, { role: 'assistant', content: cleanedContent }]);
+      }
     } catch (error) {
       console.error('Failed to get response:', error);
       setMessages(prev => [...prev, { role: 'assistant', content: "I'm sorry, I'm having trouble connecting right now. Please try again later." }]);
