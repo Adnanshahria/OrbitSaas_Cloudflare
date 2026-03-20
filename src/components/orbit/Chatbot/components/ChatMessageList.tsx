@@ -1,4 +1,5 @@
 import { Bot } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useChatContext } from '../ChatContext';
 import { ChatMessageBubble } from './ChatMessageBubble';
 import { ChatEmailPrompt } from './ChatEmailPrompt';
@@ -54,10 +55,15 @@ export function ChatMessageList() {
             <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center shrink-0">
               <Bot className="w-4 h-4 text-foreground" />
             </div>
-            <div className="bg-muted border border-border rounded-xl rounded-tl-none px-4 py-3 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-white" style={{ animation: 'dotBounce 1.4s ease-in-out infinite' }} />
-              <span className="w-2 h-2 rounded-full bg-white" style={{ animation: 'dotBounce 1.4s ease-in-out 0.2s infinite' }} />
-              <span className="w-2 h-2 rounded-full bg-white" style={{ animation: 'dotBounce 1.4s ease-in-out 0.4s infinite' }} />
+            <div className="bg-muted border border-border rounded-xl rounded-tl-none px-4 flex items-center gap-1.5 h-[38px]">
+              {[0, 0.15, 0.3].map((delay, i) => (
+                <motion.span
+                  key={i}
+                  className="w-2 h-2 rounded-full bg-foreground/70"
+                  animate={{ y: [0, -4, 0], opacity: [0.4, 1, 0.4], scale: [0.8, 1.1, 0.8] }}
+                  transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay }}
+                />
+              ))}
             </div>
           </div>
         )}

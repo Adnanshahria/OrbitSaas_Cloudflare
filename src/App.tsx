@@ -58,10 +58,41 @@ const AdminLegal = lazy(() => import('./pages/admin/AdminLegal'));
 const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'));
 const AdminProfile = lazy(() => import('./pages/admin/AdminProfile'));
 
-function AdminLoading() {
+function SitePreloader() {
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center" style={{ background: 'var(--bg-dark)' }}>
-      <div className="w-8 h-8 border-3 rounded-full animate-spin" style={{ borderColor: 'rgba(255,69,0,0.3)', borderTopColor: 'var(--accent)' }} />
+    <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center bg-[#060606] overflow-hidden">
+      <div className="relative flex items-center justify-center w-32 h-32">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-0 rounded-full border border-white/5 border-t-[#D4A017]/80"
+          style={{ borderWidth: '1px' }}
+        />
+        <motion.div
+          animate={{ rotate: -360 }}
+          transition={{ duration: 4.5, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-3 rounded-full border border-white/5 border-b-[#E8B423]/60"
+          style={{ borderWidth: '1px' }}
+        />
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-6 rounded-full border border-white/5 border-r-[#F5C542]/40"
+          style={{ borderWidth: '1px' }}
+        />
+        <motion.div
+          animate={{ scale: [0.8, 1.1, 0.8], opacity: [0.6, 1, 0.6] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute w-4 h-4 rounded-full bg-gradient-to-tr from-[#D4A017] to-[#F5C542] shadow-[0_0_20px_rgba(212,160,23,0.8)]"
+        />
+      </div>
+      <motion.div 
+        animate={{ opacity: [0.3, 0.8, 0.3] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        className="mt-8 text-[11px] font-bold uppercase tracking-[0.4em] text-[#D4A017]/80"
+      >
+        Initializing
+      </motion.div>
     </div>
   );
 }
@@ -259,7 +290,7 @@ export default function App() {
             <CustomCursor />
             <SEOHead />
             <NavbarVisibilityWrapper />
-            <Suspense fallback={<AdminLoading />}>
+            <Suspense fallback={<SitePreloader />}>
                 <Routes>
                   {/* Public Core Pages with PageFlip Transitions - Consolidated to prevent unmount/flicker */}
                   <Route element={
