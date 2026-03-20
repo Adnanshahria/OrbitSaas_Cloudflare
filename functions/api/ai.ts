@@ -22,7 +22,7 @@ async function handleChat(request: Request, env: Env): Promise<Response> {
             'Authorization': `Bearer ${env.GROQ_API_KEY}`,
         },
         body: JSON.stringify({
-            model: 'llama-3.1-8b-instant',
+            model: 'gemma2-9b-it',
             messages,
             temperature: 0.7,
             max_tokens: 500,
@@ -92,7 +92,7 @@ async function generateGist(knowledgeBase: string, apiKey: string): Promise<stri
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
             body: JSON.stringify({
-                model: 'llama-3.1-8b-instant',
+                model: 'gemma2-9b-it',
                 messages: [
                     {
                         role: 'system',
@@ -215,7 +215,7 @@ async function handleEnhance(request: Request, env: Env): Promise<Response> {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.GROQ_API_KEY}` },
         body: JSON.stringify({
-            model: 'llama-3.1-8b-instant',
+            model: 'gemma2-9b-it',
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: text },

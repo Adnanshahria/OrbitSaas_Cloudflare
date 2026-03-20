@@ -79,6 +79,16 @@ export function extractAndCleanSuggestions(responseContent: string): {
     }
   }
 
+  // Cleanup: Remove conversational filler immediately preceding the suggestion chip
+  while (remainingLines.length > 0) {
+    const lastBodyLine = remainingLines[remainingLines.length - 1].trim();
+    if (/^(next|here (are|is)|some|possible)?\s*(next\s*steps?|you can (also )?ask|what you can ask|here are some things you can ask|suggested|actions?|you can reply with|would you like to|feel free to ask|ask me about|to proceed|or you can|for example):?$/i.test(lastBodyLine) || lastBodyLine === '💬') {
+      remainingLines.pop();
+    } else {
+      break;
+    }
+  }
+
   const cleanedContent = remainingLines.join('\n').trimEnd();
 
   // Convert bot-perspective suggestions to user-perspective
