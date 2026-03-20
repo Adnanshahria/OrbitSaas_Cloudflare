@@ -262,10 +262,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // --- EMAIL GATE ---
-    const userMsgCount = newMessages.filter(m => m.role === 'user').length;
+    // --- EMAIL GATE (every message until email is provided) ---
     const emailAlreadyProvided = hasProvidedEmail || !!emailMatch;
-    if (userMsgCount >= 2 && !emailAlreadyProvided) {
+    if (!emailAlreadyProvided) {
       pendingMessagesRef.current = newMessages;
       setShowEmailPrompt(true);
       return;

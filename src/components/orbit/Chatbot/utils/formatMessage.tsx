@@ -123,8 +123,8 @@ export function formatMessage(content: string): React.ReactNode {
         const inline = renderInline(isBullet ? cleanLine : line, `tl-${li}`);
         if (isBullet) {
           return (
-            <div key={`tl-${li}`} className="flex gap-2 pl-1 my-0.5 text-[15px] md:text-sm">
-              <span className="text-primary mt-1.5 w-1 h-1 rounded-full bg-primary shrink-0" />
+            <div key={`tl-${li}`} className="flex gap-2.5 pl-1 my-1 text-[15px] md:text-sm group/bullet">
+              <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shrink-0 shadow-[0_0_6px_rgba(16,185,129,0.4)] group-hover/bullet:shadow-[0_0_10px_rgba(16,185,129,0.6)] transition-shadow" />
               <span className="flex-1 leading-relaxed">{inline}</span>
             </div>
           );
@@ -136,35 +136,70 @@ export function formatMessage(content: string): React.ReactNode {
         );
       });
 
+    // Determine if steps are sequential (process) or independent (list)
+    const introText = preLines.join(' ').toLowerCase();
+    const sequentialKeywords = /\b(step|process|follow|phase|plan|how|workflow|approach|stage|procedure|roadmap|order|sequence|first|then|next|finally|after)\b/i;
+    const allHaveDesc = steps.every(s => s.desc.length > 0);
+    const isSequential = sequentialKeywords.test(introText) || (allHaveDesc && steps.length <= 6);
+
     return (
       <>
         {/* Pre-timeline text */}
         {preLines.filter(l => l.trim()).length > 0 && renderTextLines(preLines)}
 
-        {/* Timeline */}
-        <div className="relative mt-3 mb-2 ml-1">
+        {/* Steps container */}
+        <div className="relative mt-3.5 mb-2 ml-0.5">
           {steps.map((step, idx) => (
-            <div key={`step-${idx}`} className="relative flex gap-3 pb-4 last:pb-0 animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: `${idx * 120}ms` }}>
-              {/* Vertical line */}
-              {idx < steps.length - 1 && (
-                <div className="absolute left-[15px] top-[34px] bottom-0 w-[2px] bg-gradient-to-b from-primary/60 to-primary/10" />
+            <div
+              key={`step-${idx}`}
+              className={`relative flex gap-3.5 ${isSequential ? 'pb-3' : 'pb-2.5'} last:pb-0 animate-in fade-in slide-in-from-bottom-3 duration-500`}
+              style={{ animationDelay: `${idx * 150}ms`, animationFillMode: 'both' }}
+            >
+              {/* Connector line — only for sequential steps */}
+              {isSequential && idx < steps.length - 1 && (
+                <div
+                  className="absolute left-[15px] top-[36px] bottom-0 w-[2px] animate-in fade-in duration-700"
+                  style={{
+                    background: 'linear-gradient(to bottom, rgba(16,185,129,0.5), rgba(16,185,129,0.08))',
+                    animationDelay: `${idx * 150 + 200}ms`,
+                    animationFillMode: 'both',
+                  }}
+                />
               )}
-              {/* Step number circle */}
-              <div className="relative z-10 shrink-0 w-[32px] h-[32px] rounded-full border-2 border-primary bg-primary/15 flex items-center justify-center shadow-[0_0_12px_rgba(16,185,129,0.25)]">
-                <span className="text-[11px] font-black text-primary leading-none">
+
+              {/* Step number circle — glowing badge */}
+              <div
+                className="relative z-10 shrink-0 w-[32px] h-[32px] rounded-full flex items-center justify-center"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(16,185,129,0.08) 100%)',
+                  border: '2px solid rgba(16,185,129,0.6)',
+                  boxShadow: '0 0 14px rgba(16,185,129,0.2), inset 0 1px 2px rgba(16,185,129,0.15)',
+                }}
+              >
+                <span
+                  className="text-[11px] font-black leading-none"
+                  style={{ color: '#34d399' }}
+                >
                   {step.num.padStart(2, '0')}
                 </span>
               </div>
+
               {/* Content card */}
-              <div className="flex-1 bg-background/60 border border-border/60 rounded-lg px-3 py-2 min-w-0 shadow-sm">
-                <p className="text-[10px] font-bold text-primary/70 uppercase tracking-[0.15em] mb-0.5">
-                  Step {step.num.padStart(2, '0')}
-                </p>
+              <div
+                className="flex-1 min-w-0 rounded-xl px-3.5 py-2.5 transition-all duration-300"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.04)',
+                }}
+              >
+                {/* Title */}
                 <p className="text-[13px] md:text-xs font-bold text-foreground leading-snug">
                   {renderInline(step.title, `st-${idx}`)}
                 </p>
+                {/* Description */}
                 {step.desc && (
-                  <p className="text-[12px] md:text-[11px] text-muted-foreground leading-relaxed mt-1">
+                  <p className="text-[11.5px] md:text-[11px] text-muted-foreground leading-relaxed mt-1 opacity-80">
                     {renderInline(step.desc, `sd-${idx}`)}
                   </p>
                 )}
@@ -195,8 +230,8 @@ export function formatMessage(content: string): React.ReactNode {
 
     if (isBullet) {
       return (
-        <div key={`line-${lineIndex}`} className="flex gap-2 pl-1 my-0.5 text-[15px] md:text-sm">
-          <span className="text-primary mt-1.5 w-1 h-1 rounded-full bg-primary shrink-0" />
+        <div key={`line-${lineIndex}`} className="flex gap-2.5 pl-1 my-1 text-[15px] md:text-sm group/bullet">
+          <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shrink-0 shadow-[0_0_6px_rgba(16,185,129,0.4)] group-hover/bullet:shadow-[0_0_10px_rgba(16,185,129,0.6)] transition-shadow" />
           <span className="flex-1 leading-relaxed">{inlineContent}</span>
         </div>
       );
