@@ -1,5 +1,5 @@
-import { Bot } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Zap } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useChatContext } from '../ChatContext';
 import { ChatMessageBubble } from './ChatMessageBubble';
 import { ChatEmailPrompt } from './ChatEmailPrompt';
@@ -15,7 +15,7 @@ export function ChatMessageList() {
           <div className="space-y-4 py-2">
             <div className="flex gap-2">
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 border border-primary/30">
-                <Bot className="w-4 h-4 text-primary" />
+                <Zap className="w-4 h-4 text-primary" />
               </div>
               <div className="bg-muted border border-border rounded-xl rounded-tl-none px-3 py-2 text-xs text-foreground max-w-[85%] leading-relaxed">
                 <p className="font-bold mb-1 uppercase tracking-widest text-[10px] text-primary">
@@ -50,25 +50,56 @@ export function ChatMessageList() {
         {/* Email Prompt */}
         <ChatEmailPrompt />
 
-        {isLoading && (
-          <div className="flex gap-2">
-            <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center shrink-0">
-              <Bot className="w-4 h-4 text-foreground" />
-            </div>
-            <div className="bg-muted border border-border rounded-xl rounded-tl-none px-4 flex items-center gap-1.5 h-[38px]">
-              {[0, 0.15, 0.3].map((delay, i) => (
-                <motion.span
-                  key={i}
-                  className="w-2 h-2 rounded-full bg-foreground/70"
-                  animate={{ y: [0, -4, 0], opacity: [0.4, 1, 0.4], scale: [0.8, 1.1, 0.8] }}
-                  transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+        {/* ── Typing Indicator ── */}
+        <AnimatePresence>
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -5, scale: 0.95 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="flex gap-2"
+            >
+              <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0 border border-primary/25">
+                <motion.div
+                  animate={{
+                    scale: [1, 1.2, 0.9, 1.1, 1],
+                    rotate: [0, -15, 20, -10, 0],
+                    filter: ['brightness(1)', 'brightness(1.3)', 'brightness(1)'],
+                  }}
+                  transition={{
+                    duration: 1.2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <Zap className="w-4 h-4 text-primary fill-primary/40" />
+                </motion.div>
+              </div>
+              <div className="bg-muted border border-border rounded-xl rounded-tl-none px-5 flex items-center gap-2 h-[38px]">
+                {[0, 0.2, 0.4].map((delay, i) => (
+                  <motion.span
+                    key={i}
+                    className="w-[7px] h-[7px] rounded-full bg-primary"
+                    animate={{
+                      y: [0, -5, 0],
+                      opacity: [0.4, 1, 0.4],
+                      scale: [0.85, 1.15, 0.85],
+                    }}
+                    transition={{
+                      duration: 0.9,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                      delay,
+                    }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="h-4 shrink-0" />
-        <div ref={messagesEndRef} />
         <div ref={messagesEndRef} />
       </div>
     </div>

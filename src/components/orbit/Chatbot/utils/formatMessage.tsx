@@ -70,7 +70,7 @@ export function formatMessage(content: string): React.ReactNode {
 
   // ── TIMELINE/ROADMAP DETECTION ──
   const numberedStepPattern = /^(?:\*\*)?(\d+)[.)]\s*(.+?)(?:\*\*)?$/;
-  const steps: { num: string; title: string; desc: string }[] = [];
+  const steps: { num: string; title: string; desc: string; url?: string }[] = [];
   const preLines: string[] = [];
   const postLines: string[] = [];
   let inSteps = false;
@@ -93,11 +93,29 @@ export function formatMessage(content: string): React.ReactNode {
       const num = stepMatch[1];
       const rest = stepMatch[2].replace(/\*\*/g, '').trim();
       const sepMatch = rest.match(/^(.+?)[\s]*[:–—-][\s]*(.+)$/);
+      
+      let title = '';
+      let desc = '';
+      
       if (sepMatch) {
-        steps.push({ num, title: sepMatch[1].trim(), desc: sepMatch[2].trim() });
+        title = sepMatch[1].trim();
+        desc = sepMatch[2].trim();
       } else {
-        steps.push({ num, title: rest, desc: '' });
+        title = rest;
+        desc = '';
       }
+
+      // Check if title contains a link placeholder
+      let url = '';
+      const linkMatch = title.match(/__LINK_(\d+)__/);
+      if (linkMatch) {
+        const linkData = linkPlaceholders[parseInt(linkMatch[1], 10)];
+        url = linkData.url;
+        // Clean title to just be the text, removing the link placeholder
+        title = title.replace(`__LINK_${linkMatch[1]}__`, linkData.text).trim();
+      }
+
+      steps.push({ num, title, desc, url });
     } else if (inSteps && !doneSteps) {
       doneSteps = true;
       postLines.push(line);
@@ -185,25 +203,52 @@ export function formatMessage(content: string): React.ReactNode {
               </div>
 
               {/* Content card */}
-              <div
-                className="flex-1 min-w-0 rounded-xl px-3.5 py-2.5 transition-all duration-300"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.04)',
-                }}
-              >
-                {/* Title */}
-                <p className="text-[13px] md:text-xs font-bold text-foreground leading-snug">
-                  {renderInline(step.title, `st-${idx}`)}
-                </p>
-                {/* Description */}
-                {step.desc && (
-                  <p className="text-[11.5px] md:text-[11px] text-muted-foreground leading-relaxed mt-1 opacity-80">
-                    {renderInline(step.desc, `sd-${idx}`)}
+              {step.url ? (
+                <a
+                  href={step.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 min-w-0 rounded-xl px-3.5 py-2.5 transition-all duration-300 block hover:-translate-y-0.5 group/card"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
+                    border: '1px solid rgba(16,185,129,0.3)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2), 0 0 15px rgba(16,185,129,0.1), inset 0 1px 0 rgba(255,255,255,0.04)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-[13px] md:text-xs font-bold text-emerald-400 group-hover/card:text-emerald-300 leading-snug transition-colors">
+                      {renderInline(step.title, `st-${idx}`)}
+                    </p>
+                    <svg className="w-3 h-3 text-emerald-500 shrink-0 mt-0.5 opacity-70 group-hover/card:opacity-100 group-hover/card:-translate-y-0.5 group-hover/card:translate-x-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </div>
+                  {step.desc && (
+                    <p className="text-[11.5px] md:text-[11px] text-muted-foreground leading-relaxed mt-1 opacity-80 group-hover/card:opacity-100 transition-opacity">
+                      {renderInline(step.desc, `sd-${idx}`)}
+                    </p>
+                  )}
+                </a>
+              ) : (
+                <div
+                  className="flex-1 min-w-0 rounded-xl px-3.5 py-2.5 transition-all duration-300"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.04)',
+                  }}
+                >
+                  <p className="text-[13px] md:text-xs font-bold text-foreground leading-snug">
+                    {renderInline(step.title, `st-${idx}`)}
                   </p>
-                )}
-              </div>
+                  {step.desc && (
+                    <p className="text-[11.5px] md:text-[11px] text-muted-foreground leading-relaxed mt-1 opacity-80">
+                      {renderInline(step.desc, `sd-${idx}`)}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -5,72 +5,45 @@ import type { Env } from '../_lib/types';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const SITE_BASE_URL = 'https://orbitsaas.cloud';
+const MAX_MESSAGES = 50;
+const MAX_MESSAGE_LENGTH = 2000;
+const MAX_ENHANCE_LENGTH = 2000;
 
-// ─── AI Helper: Primary (DeepSeek) with Fallback (Groq) ───
+// ─── AI Helper: Groq API ───
 async function executeAiRequest(
     messages: unknown[],
     env: Env,
     options: {
-        deepseekModel: string;
-        groqModel: string;
+        model: string;
         temperature: number;
         max_tokens: number;
     }
 ): Promise<{ content: string; source: string }> {
-    let source = 'deepseek';
-    
-    if (env.AGENT_ROUTER_API_KEY) {
-        try {
-            const dsRes = await fetch('https://agentrouter.org/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${env.AGENT_ROUTER_API_KEY}`,
-                },
-                body: JSON.stringify({
-                    model: options.deepseekModel,
-                    messages,
-                    temperature: options.temperature,
-                    max_tokens: options.max_tokens,
-                }),
-            });
-            
-            if (dsRes.ok) {
-                const data = await dsRes.json() as any;
-                const content = data.choices?.[0]?.message?.content;
-                if (content) return { content, source: `DeepSeek (${options.deepseekModel})` };
-            } else {
-                const errorText = await dsRes.text().catch(() => 'No error body');
-                console.warn(`[AI Fallback] DeepSeek (AgentRouter) failed with status ${dsRes.status}: ${errorText}`);
-            }
-        } catch (e: any) {
-            console.warn(`[AI Fallback] DeepSeek request failed: ${e.message}`);
-        }
-    }
-
     if (!env.GROQ_API_KEY) throw new Error('AI configuration missing');
 
-    const grRes = await fetch(GROQ_API_URL, {
+    const res = await fetch(GROQ_API_URL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${env.GROQ_API_KEY}`,
         },
         body: JSON.stringify({
-            model: options.groqModel,
+            model: options.model,
             messages,
             temperature: options.temperature,
             max_tokens: options.max_tokens,
         }),
     });
 
-    if (!grRes.ok) {
-        throw new Error(`Groq API failed: ${grRes.statusText}`);
+    if (!res.ok) {
+        const errorText = await res.text().catch(() => 'Unknown error');
+        console.error(`[AI] Groq API error ${res.status}: ${errorText}`);
+        throw new Error('AI provider unavailable');
     }
 
-    const data = await grRes.json() as any;
+    const data = await res.json() as any;
     const content = data.choices?.[0]?.message?.content || 'Sorry, I could not generate a response.';
-    return { content, source: `Llama 3.1 Fallback (${options.groqModel})` };
+    return { content, source: 'Orbit AI' };
 }
 
 // ─── Action: Chat ───
@@ -81,16 +54,26 @@ async function handleChat(request: Request, env: Env): Promise<Response> {
     const { messages } = body;
     if (!messages || !Array.isArray(messages)) return jsonResponse({ error: 'Missing or invalid messages array' }, request, 400);
 
+    // Input validation: limit message count and individual message length
+    if (messages.length > MAX_MESSAGES) return jsonResponse({ error: `Too many messages (max ${MAX_MESSAGES})` }, request, 400);
+    for (const msg of messages) {
+        const m = msg as any;
+        if (typeof m?.content === 'string' && m.content.length > MAX_MESSAGE_LENGTH) {
+            return jsonResponse({ error: `Message too long (max ${MAX_MESSAGE_LENGTH} characters)` }, request, 400);
+        }
+    }
+
     try {
-        const { content, source } = await executeAiRequest(messages, env, {
-            deepseekModel: 'deepseek-v3.2',
-            groqModel: 'llama-3.1-8b-instant',
+        const result = await executeAiRequest(messages, env, {
+            model: 'llama-3.1-8b-instant',
             temperature: 0.7,
             max_tokens: 500,
         });
-        return jsonResponse({ success: true, content, source }, request);
+
+        return jsonResponse({ success: true, content: result.content, source: result.source }, request);
     } catch (e: any) {
-        return jsonResponse({ error: e.message || 'AI request failed' }, request, 500);
+        console.error('[Chat] AI error:', e);
+        return jsonResponse({ error: 'Failed to generate response. Please try again.' }, request, 500);
     }
 }
 
@@ -151,8 +134,7 @@ async function generateGist(knowledgeBase: string, env: Env): Promise<string | n
             ], 
             env, 
             {
-                deepseekModel: 'deepseek-v3.2',
-                groqModel: 'llama-3.1-8b-instant',
+                model: 'llama-3.1-8b-instant',
                 temperature: 0.2,
                 max_tokens: 300,
             }
@@ -256,6 +238,10 @@ async function handleEnhance(request: Request, env: Env): Promise<Response> {
     const body = await request.json() as { text?: string; lang?: string };
     const { text, lang } = body;
     if (!text || !lang) return jsonResponse({ error: 'Missing text or lang' }, request, 400);
+
+    // Input validation: limit text length
+    if (text.length > MAX_ENHANCE_LENGTH) return jsonResponse({ error: `Text too long (max ${MAX_ENHANCE_LENGTH} characters)` }, request, 400);
+
     const systemPrompt = lang === 'en'
         ? "You are a professional copywriter for ORBIT SaaS. Your goal is to refine and compact the user's input. Make it more professional, high-impact, and premium. Keep it extremely concise (compact). Use active voice. If the input contains HTML tags, PRESERVE them. Return ONLY the refined text, no preamble."
         : "আপনি ORBIT SaaS-এর একজন পেশাদার কপিরাইটার। আপনার লক্ষ্য হলো ইউজারের ইনপুটকে আরও মার্জিত, পেশাদার এবং প্রিমিয়াম করা। কথাগুলো খুব সংক্ষিপ্ত কিন্তু আকর্ষণীয় রাখুন। যদি ইনপুটে HTML ট্যাগ থাকে, সেগুলো পরিবর্তন করবেন ঘনবেন না। শুধুমাত্র সংশোধিত টেক্সটটি রিটার্ন করুন, অন্য কোনো কথা বলবেন না।";
@@ -268,8 +254,7 @@ async function handleEnhance(request: Request, env: Env): Promise<Response> {
             ],
             env,
             {
-                deepseekModel: 'deepseek-v3.2',
-                groqModel: 'llama-3.1-8b-instant',
+                model: 'llama-3.1-8b-instant',
                 temperature: 0.5,
                 max_tokens: 512,
             }
@@ -277,7 +262,8 @@ async function handleEnhance(request: Request, env: Env): Promise<Response> {
         const enhancedText = content.trim() || text;
         return jsonResponse({ success: true, enhancedText, source }, request);
     } catch (e: any) {
-        throw new Error(`AI API failed: ${e.message}`);
+        console.error('[Enhance] AI error:', e);
+        return jsonResponse({ error: 'Failed to enhance text. Please try again.' }, request, 500);
     }
 }
 

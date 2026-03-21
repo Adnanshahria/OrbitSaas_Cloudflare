@@ -235,10 +235,12 @@ export function ProcessSection() {
       isFirstMount.current = false;
       return;
     }
-    if (step >= 0 && step <= sortedSteps.length) {
+    // Only play sound when section is actually visible — prevents sound
+    // firing when scrolling OUT causes step to reset to 0
+    if (isFullyVisible && step >= 0 && step <= sortedSteps.length) {
       playWindSwoosh();
     }
-  }, [step, sortedSteps.length]);
+  }, [step, sortedSteps.length, isFullyVisible]);
 
   // Trigger animation when the section becomes visible
   useEffect(() => {

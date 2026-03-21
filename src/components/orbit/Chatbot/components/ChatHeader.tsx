@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { MoreVertical, ChevronDown, Trash2 } from 'lucide-react';
+import { MoreVertical, ChevronDown, Trash2, Bot } from 'lucide-react';
 import { useChatContext } from '../ChatContext';
 
 export function ChatHeader() {
@@ -7,15 +7,23 @@ export function ChatHeader() {
 
   return (
     <div className="shrink-0 px-5 py-3.5 bg-primary/20 border-b border-border flex items-center justify-between relative">
-      <div>
-        <h4 className="font-semibold text-foreground text-sm leading-tight">
-          {chatContentMemo.title}
-        </h4>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
-            {chatLang === 'bn' ? 'অনলাইন' : 'Online'}
-          </p>
+      <div className="flex items-center gap-3">
+        {/* Chatbot Icon */}
+        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30 shadow-sm shrink-0">
+          <Bot className="w-4 h-4 text-primary" />
+        </div>
+        
+        {/* Title & Status */}
+        <div>
+          <h4 className="font-semibold text-foreground text-sm leading-tight">
+            {chatContentMemo.title}
+          </h4>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+              {chatLang === 'bn' ? 'অনলাইন' : 'Online'}
+            </p>
+          </div>
         </div>
       </div>
 

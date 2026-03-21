@@ -657,14 +657,17 @@ export function Home() {
                 <div className="absolute top-[15%] right-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-[100px] -z-10" />
                 
                 {/* 3D Glass Objects Layer */}
-                <div className="absolute inset-[-10%] z-0 pointer-events-none md:pointer-events-auto">
+                <div className="absolute inset-[-10%] z-0 pointer-events-none" data-idm-ignore="true">
                   <Suspense fallback={null}>
                     <Canvas 
                       camera={{ position: [0, 0, 7], fov: 45 }} 
                       gl={{ antialias: true, alpha: true }}
-                      // @ts-ignore
-                      idm-ignore="true"
-                      data-idm-ignore="true"
+                      style={{ pointerEvents: 'none' }}
+                      onCreated={({ gl }) => {
+                        // Tell IDM to ignore the internal canvas Three.js creates
+                        gl.domElement.setAttribute('data-idm-ignore', 'true');
+                        gl.domElement.style.pointerEvents = 'none';
+                      }}
                     >
                       <Suspense fallback={null}>
                         <Hero3DVisual />

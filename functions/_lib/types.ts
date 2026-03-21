@@ -15,7 +15,6 @@ export interface Env {
 
   // AI
   GROQ_API_KEY: string;
-  AGENT_ROUTER_API_KEY?: string;
 
   // Image upload
   VITE_IMGBB_API_KEY: string;

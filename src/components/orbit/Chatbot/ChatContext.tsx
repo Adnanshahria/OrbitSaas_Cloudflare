@@ -124,18 +124,45 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       }
 
       const messageElements = container.querySelectorAll('[id^="chat-msg-"]');
-      const lastMsg = messageElements[messageElements.length - 1] as HTMLElement;
-
-      if (lastMsg) {
-        const idealScrollTop = container.scrollHeight - container.clientHeight;
-        const maxScrollTop = Math.max(0, lastMsg.offsetTop - 20); // 20px padding above message
-        
-        // Scroll to the bottom of the container, but NEVER push the top of the last message out of view
-        const finalScrollTop = Math.min(idealScrollTop, maxScrollTop);
-        container.scrollTo({ top: finalScrollTop, behavior: 'smooth' });
-      } else {
-        // Fallback
+      if (messageElements.length === 0) {
         messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+
+      const lastMsgEl = messageElements[messageElements.length - 1] as HTMLElement;
+      const lastMsgRole = lastMsgEl.getAttribute('data-role');
+      const idealScrollTop = container.scrollHeight - container.clientHeight;
+
+      // If the last message is from the USER (AI hasn't replied yet),
+      // scroll fully to the bottom so user sees their message + loading dots
+      if (lastMsgRole === 'user') {
+        container.scrollTo({ top: idealScrollTop, behavior: 'smooth' });
+        return;
+      }
+
+      // AI reply exists — find the last USER message to use as anchor
+      let lastUserMsg: HTMLElement | null = null;
+      for (let i = messageElements.length - 1; i >= 0; i--) {
+        const el = messageElements[i] as HTMLElement;
+        if (el.getAttribute('data-role') === 'user') {
+          lastUserMsg = el;
+          break;
+        }
+      }
+
+      if (lastUserMsg) {
+        // Only anchor to the user's question if scrolling to the bottom
+        // would actually push the user's question out of view (AI reply is very tall).
+        // If it's a short reply, just natural scroll to bottom.
+        if (lastUserMsg.offsetTop < idealScrollTop) {
+          const anchoredScrollTop = Math.max(0, lastUserMsg.offsetTop - 12);
+          container.scrollTo({ top: anchoredScrollTop, behavior: 'smooth' });
+        } else {
+          container.scrollTo({ top: idealScrollTop, behavior: 'smooth' });
+        }
+      } else {
+        // No user message found, just scroll to bottom
+        container.scrollTo({ top: idealScrollTop, behavior: 'smooth' });
       }
     }, 50);
   };
@@ -176,10 +203,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  // ─── Scroll to bottom on new messages ───
+  // ─── Scroll to bottom on new messages or loading state change ───
   useEffect(() => {
     scrollToBottom();
-  }, [messages, open]);
+  }, [messages, open, isLoading]);
 
   // ─── Core AI response function ───
   const executeAIResponse = async (chatHistory: ChatMessage[]) => {
