@@ -7,6 +7,7 @@ import { useContent } from '@/contexts/ContentContext';
 import { Helmet } from 'react-helmet-async';
 import { ArrowUpRight } from 'lucide-react';
 import { WaveDivider } from '@/components/ui/WaveDivider';
+import { fallbackProjects } from '@/data/projects';
 
 // --- Types ---
 interface ProjectItem {
@@ -172,7 +173,13 @@ export function ProjectsSection() {
 
     const enData = (content.en as any).projects || {};
     const bnData = (content.bn as any).projects || {};
-    const enItems: any[] = Array.isArray(enData.items) ? enData.items : [];
+    const enItems: any[] = Array.isArray(enData.items) && enData.items.length > 0
+        ? enData.items
+        : fallbackProjects.map((p, i) => ({
+            ...p,
+            _originalIndex: i,
+            _id: p.id,
+        }));
     const bnItems: any[] = Array.isArray(bnData.items) ? bnData.items : [];
 
     const displayItems = enItems.map((enItem, i) => {

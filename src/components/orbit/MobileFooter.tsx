@@ -182,8 +182,23 @@ export function MobileFooter() {
           </div>
         )}
 
-        {/* 5. Copyright */}
+        {/* 5. Copyright & NAP */}
         <div className="pt-6 mt-2 flex flex-col items-center gap-3 text-[11px] text-center" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', color: 'var(--text-tertiary)' }}>
+          <address
+            itemScope
+            itemType="https://schema.org/LocalBusiness"
+            className="not-italic text-inherit flex flex-wrap items-center justify-center gap-x-2 gap-y-1"
+            style={{ fontStyle: 'normal' }}
+          >
+            <span itemProp="name">ORBIT SaaS</span>
+            <span>·</span>
+            <span itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
+              <span itemProp="addressLocality">Rajshahi</span>,{' '}
+              <span itemProp="addressCountry">Bangladesh</span>
+            </span>
+            <span>·</span>
+            <a itemProp="telephone" href="tel:+8801853452264" className="hover:text-primary transition-colors">+880 1853-452264</a>
+          </address>
           <span>{t?.rights || '© 2025 ORBIT SaaS. All rights reserved.'}</span>
         </div>
       </div>

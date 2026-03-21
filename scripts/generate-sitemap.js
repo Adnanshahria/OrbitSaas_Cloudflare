@@ -28,7 +28,9 @@ async function generateSitemap() {
             '/#why-us',
             '/#projects',
             '/#leadership',
-            '/#contact'
+            '/#contact',
+            '/privacy',
+            '/terms'
         ];
 
         let sitemap = `<?xml version="1.0" encoding="UTF-8"?>

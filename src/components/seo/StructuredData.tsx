@@ -28,13 +28,13 @@ export function StructuredData() {
                 "image": "https://orbitsaas.cloud/og-banner-v2.png",
                 "description": "ORBIT SaaS is a full-service web development and AI agency offering custom websites, SaaS platforms, AI chatbot integration, mobile app development, eCommerce & enterprise solutions.",
                 "slogan": "Build Smarter — Web, AI, Mobile & Automation Solutions That Scale",
-                "foundingDate": "2024",
+                "foundingDate": "2022",
                 "founders": [
                     { "@type": "Person", "name": "Muhammed Nisar Uddin", "jobTitle": "Founder & CTO" },
                     { "@type": "Person", "name": "Mohammed Adnan Shahria", "jobTitle": "Co-Founder & CEO" }
                 ],
                 "numberOfEmployees": { "@type": "QuantitativeValue", "minValue": 2, "maxValue": 10 },
-                "address": { "@type": "PostalAddress", "addressCountry": "BD" },
+                "address": { "@type": "PostalAddress", "addressLocality": "Rajshahi", "addressCountry": "BD" },
                 "contactPoint": {
                     "@type": "ContactPoint",
                     "contactType": "sales",
@@ -94,7 +94,7 @@ export function StructuredData() {
                 "image": "https://orbitsaas.cloud/og-banner-v2.png",
                 "description": "Full-service web development and AI agency specializing in custom websites, web applications, AI chatbot integration, SaaS development, mobile apps (Flutter, React Native), eCommerce & enterprise solutions.",
                 "priceRange": "$$",
-                "address": { "@type": "PostalAddress", "addressCountry": "BD" },
+                "address": { "@type": "PostalAddress", "addressLocality": "Rajshahi", "addressCountry": "BD" },
                 "telephone": whatsappRaw,
                 "areaServed": [
                     { "@type": "Country", "name": "Bangladesh" },
@@ -139,8 +139,9 @@ export function StructuredData() {
                     { "@type": "Question", "name": "Can ORBIT SaaS build an AI chatbot for my website?", "acceptedAnswer": { "@type": "Answer", "text": "Yes! ORBIT SaaS builds custom AI chatbots powered by OpenAI and LangChain. Our chatbots automate customer support, qualify leads, and provide 24/7 intelligent assistance with a human-like touch — fully customized for your business." } },
                     { "@type": "Question", "name": "Does ORBIT SaaS develop mobile apps?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ORBIT SaaS builds native and cross-platform mobile apps for Android and iOS using Flutter, React Native, and Java — from MVP to enterprise-grade production apps." } },
                     { "@type": "Question", "name": "What technologies does ORBIT SaaS use for web development?", "acceptedAnswer": { "@type": "Answer", "text": "We use React, Next.js, TypeScript, Node.js, Express, PostgreSQL, MongoDB, Flutter, React Native, OpenAI API, LangChain, Docker, AWS, Cloudflare, and modern cloud infrastructure." } },
-                    { "@type": "Question", "name": "How much does custom web development cost?", "acceptedAnswer": { "@type": "Answer", "text": "Custom web development costs vary by complexity. ORBIT SaaS offers competitive project-based pricing — from startup packages to enterprise-grade solutions. Contact us for a free consultation and quote." } },
-                    { "@type": "Question", "name": "How long does a web development project take?", "acceptedAnswer": { "@type": "Answer", "text": "Simple websites: 1-2 weeks. Complex web applications, SaaS platforms, or AI integrations: 2-3 months. We provide detailed timelines during our free consultation." } },
+                    { "@type": "Question", "name": "How much does custom web development cost?", "acceptedAnswer": { "@type": "Answer", "text": "Custom web development costs vary based on project complexity. ORBIT SaaS offers competitive pricing — simple websites start from $299, complex SaaS platforms or AI integrations from $999. Contact us for a free consultation and detailed quote." } },
+                    { "@type": "Question", "name": "How long does web development take?", "acceptedAnswer": { "@type": "Answer", "text": "Simple websites take 1–2 weeks. Complex web applications, SaaS platforms, or AI integrations take 4–12 weeks. We provide detailed timelines during our free consultation." } },
+                    { "@type": "Question", "name": "Where is ORBIT SaaS located?", "acceptedAnswer": { "@type": "Answer", "text": "ORBIT SaaS is headquartered in Rajshahi, Bangladesh, and serves clients worldwide with remote-first web development, AI, and software engineering services." } },
                     { "@type": "Question", "name": "How can I hire ORBIT SaaS for my project?", "acceptedAnswer": { "@type": "Answer", "text": `Book a free web development consultation via WhatsApp at ${whatsappRaw} or visit orbitsaas.cloud. We work with businesses of all sizes — startups to enterprises — delivering custom web, AI, mobile, and automation solutions.` } }
                 ]
             },

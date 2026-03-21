@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "preview": "npx wrangler pages dev dist --compatibility-date 2024-12-01 --compatibility-flag nodejs_compat",
     "deploy": "npm run build && npx wrangler pages deploy dist",
-    "generate-sitemap": "node scripts/generate-sitemap.js"
+    "generate-sitemap": "node scripts/generate-sitemap.js",
+    "postbuild": "node scripts/generate-sitemap.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

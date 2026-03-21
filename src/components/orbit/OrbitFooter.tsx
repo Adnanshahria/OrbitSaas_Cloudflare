@@ -209,6 +209,23 @@ export function OrbitFooter() {
             color: 'var(--text-tertiary)',
           }}
         >
+          <address
+            itemScope
+            itemType="https://schema.org/LocalBusiness"
+            className="not-italic text-inherit flex flex-wrap items-center gap-x-2 gap-y-1"
+            style={{ fontStyle: 'normal' }}
+          >
+            <span itemProp="name">ORBIT SaaS</span>
+            <span className="hidden md:inline">·</span>
+            <span itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
+              <span itemProp="addressLocality">Rajshahi</span>,{' '}
+              <span itemProp="addressCountry">Bangladesh</span>
+            </span>
+            <span className="hidden md:inline">·</span>
+            <a itemProp="telephone" href="tel:+8801853452264" className="hover:text-[var(--accent-luminous)] transition-colors">+880 1853-452264</a>
+            <span className="hidden md:inline">·</span>
+            <a itemProp="url" href="https://orbitsaas.cloud" className="hover:text-[var(--accent-luminous)] transition-colors">orbitsaas.cloud</a>
+          </address>
           <span>{t?.rights || '© 2025 ORBIT SaaS. All rights reserved.'}</span>
           <div className="flex gap-4">
             <Link to="/privacy" className="hover:text-[var(--accent-luminous)] transition-colors cursor-pointer">Privacy Policy</Link>

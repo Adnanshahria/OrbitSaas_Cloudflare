@@ -10,8 +10,8 @@ export function SEOHead() {
     const seoData = content[lang] as Record<string, any> || {};
 
     // Keyword-optimized defaults
-    const defaultTitle = "ORBIT SaaS | Custom Software, AI & Web Development Agency";
-    const defaultDesc = "ORBIT SaaS — custom web development, AI chatbot integration, SaaS platforms, mobile apps & enterprise solutions. Hire our expert full-stack team. Get a free consultation today.";
+    const defaultTitle = "ORBIT SaaS | Custom Web Development, AI Chatbot & SaaS Agency";
+    const defaultDesc = "ORBIT SaaS is a full-service web development and AI agency based in Bangladesh. We build custom websites, SaaS platforms, AI chatbots, mobile apps, and enterprise solutions for businesses worldwide.";
     const defaultKeywords = "web development, web development company, custom web development, best web development company, hire web developers, full stack web development, custom website development, web application development, website design and development, responsive web design, frontend development, backend development, React development, Node.js development, Next.js development, TypeScript development, web development agency, web development Bangladesh, best web development company Bangladesh, software development agency, custom software development, SaaS development, custom SaaS platform, AI chatbot development, custom AI chatbot, chatbot integration, conversational AI, AI automation, agentic AI, mobile app development, Flutter app development, React Native app development, eCommerce website development, enterprise web application, PWA development, progressive web app, orbit, ORBIT SaaS, orbit saas, orbot saas, OrbitSaaS, orbitsaas, orbit sass, orbit sas, Orbot, Assa, orbit software, orbit agency, orbit ai, orbitsaas.cloud, orboit, orboit saas, orboit assa, orbit sasa, orbit assa, orbt saas, obit saas, orbir saas, orbit saass, orbot sas, orbot assa, orbit cloud, orbit development, orbit web agency, orbit software agency, orbit ai agency";
 
     // Data from DB (saved via AdminSEO)
@@ -60,6 +60,9 @@ export function SEOHead() {
 
             {/* Additional SEO meta */}
             <meta name="language" content={lang === 'bn' ? 'Bengali' : 'English'} />
+
+            {/* Google Search Console verification */}
+            <meta name="google-site-verification" content="REPLACE_WITH_YOUR_GOOGLE_SEARCH_CONSOLE_VERIFICATION_TOKEN" />
         </Helmet>
     );
 }
