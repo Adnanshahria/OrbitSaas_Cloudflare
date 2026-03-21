@@ -62,7 +62,7 @@ export function SEOHead() {
             <meta name="language" content={lang === 'bn' ? 'Bengali' : 'English'} />
 
             {/* Google Search Console verification */}
-            <meta name="google-site-verification" content="REPLACE_WITH_YOUR_GOOGLE_SEARCH_CONSOLE_VERIFICATION_TOKEN" />
+            <meta name="google-site-verification" content="google686da8116d698aaf" />
         </Helmet>
     );
 }
