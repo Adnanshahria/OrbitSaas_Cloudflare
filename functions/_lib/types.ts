@@ -9,6 +9,7 @@ export interface Env {
 
   // Auth
   JWT_SECRET: string;
+  PAYLOAD_SECRET?: string;
   ADMIN_ACCESS_CODE: string;
   ADMIN_PASSWORD: string;
   ADMIN_EMAIL?: string;

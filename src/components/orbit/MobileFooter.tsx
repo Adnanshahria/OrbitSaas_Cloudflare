@@ -67,8 +67,8 @@ export function MobileFooter() {
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-[300px] h-[300px] bg-primary/10 rounded-full blur-[80px] opacity-20" />
         <div className="absolute bottom-0 right-1/4 w-[200px] h-[200px] bg-emerald-600/5 rounded-full blur-[80px] opacity-10" />
-        {/* Grain Overlay */}
-        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")' }} />
+        {/* Grain Overlay - Localized Data-URI to prevent 403 */}
+        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' opacity=\'0.04\'/%3E%3C/svg%3E")' }} />
       </div>
 
       <div className="px-6 relative z-10 flex flex-col gap-10">

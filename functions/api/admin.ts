@@ -69,8 +69,8 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
 
     // Support both encrypted payload and raw unencrypted requests (for backward compatibility if needed)
     if (body.payload) {
-        // We use JWT_SECRET as the symmetric encryption key if a specific PAYLOAD_SECRET isn't defined
-        const secret = env.JWT_SECRET; // Ensure env matches frontend secret approach
+        // Prefer PAYLOAD_SECRET if defined, fallback to JWT_SECRET for backward compatibility
+        const secret = env.PAYLOAD_SECRET || env.JWT_SECRET; 
         const decrypted = await decryptPayload(body.payload, secret);
         if (decrypted) {
             code = decrypted.code;
@@ -97,7 +97,13 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
         const hash = result.rows[0].password_hash as string;
         isValid = await bcrypt.compare(code, hash);
     } else {
-        // 2. Fallback to static access code if user not in DB yet (e.g. before seeding)
+        // 2. Fallback to static access code ONLY IF the email matches the authorized admin email 
+        // AND the user is not in the DB yet (e.g. before initial seeding).
+        const authorizedEmail = env.ADMIN_EMAIL || 'admin@orbitsaas.com';
+        if (adminEmail !== authorizedEmail) {
+            return jsonResponse({ error: 'Unauthorized email' }, request, 401);
+        }
+
         if (!env.ADMIN_ACCESS_CODE) return jsonResponse({ error: 'ADMIN_ACCESS_CODE not configured' }, request, 500);
         isValid = timingSafeEqual(code, env.ADMIN_ACCESS_CODE);
     }
