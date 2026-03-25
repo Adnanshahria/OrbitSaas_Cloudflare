@@ -34,7 +34,7 @@ export function MobileFooter() {
     setIsSubmitting(true);
     try {
       const API_BASE = import.meta.env.VITE_API_URL || '';
-      const res = await fetch(`${API_BASE}/api/leads`, {
+      const res = await fetch(`${API_BASE}/api/leads?action=submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, source: 'footer_newsletter_mobile' }),
