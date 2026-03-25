@@ -60,14 +60,51 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
     }
 
     const { signToken } = await import('../_lib/auth');
-    const body = await request.json() as { code?: string };
-    const { code } = body;
+    const bcrypt = await import('bcryptjs');
+    const { decryptPayload, timingSafeEqual } = await import('../_lib/crypto');
+    
+    const body = await request.json() as any;
+    let code: string | undefined;
+    let email: string | undefined;
 
-    if (!env.ADMIN_ACCESS_CODE) return jsonResponse({ error: 'ADMIN_ACCESS_CODE not configured' }, request, 500);
+    // Support both encrypted payload and raw unencrypted requests (for backward compatibility if needed)
+    if (body.payload) {
+        // We use JWT_SECRET as the symmetric encryption key if a specific PAYLOAD_SECRET isn't defined
+        const secret = env.JWT_SECRET; // Ensure env matches frontend secret approach
+        const decrypted = await decryptPayload(body.payload, secret);
+        if (decrypted) {
+            code = decrypted.code;
+            email = decrypted.email;
+        }
+    } else {
+        code = body.code;
+        email = body.email;
+    }
+
     if (!code) return jsonResponse({ error: 'Access code required' }, request, 400);
-    if (code !== env.ADMIN_ACCESS_CODE) return jsonResponse({ error: 'Invalid access code' }, request, 401);
 
-    const token = await signToken({ id: 'admin', email: 'admin@orbitsaas.com' }, env.JWT_SECRET);
+    const db = getDb(env);
+    const adminEmail = email || env.ADMIN_EMAIL || 'admin@orbitsaas.com';
+
+    // 1. Try to find user in DB
+    const result = await db.execute({
+        sql: 'SELECT password_hash FROM admin_users WHERE email = ?',
+        args: [adminEmail],
+    });
+
+    let isValid = false;
+    if (result.rows.length > 0) {
+        const hash = result.rows[0].password_hash as string;
+        isValid = await bcrypt.compare(code, hash);
+    } else {
+        // 2. Fallback to static access code if user not in DB yet (e.g. before seeding)
+        if (!env.ADMIN_ACCESS_CODE) return jsonResponse({ error: 'ADMIN_ACCESS_CODE not configured' }, request, 500);
+        isValid = timingSafeEqual(code, env.ADMIN_ACCESS_CODE);
+    }
+
+    if (!isValid) return jsonResponse({ error: 'Invalid access code' }, request, 401);
+
+    const token = await signToken({ id: 'admin', email: adminEmail }, env.JWT_SECRET);
     return jsonResponse({ success: true, token }, request);
 }
 
@@ -289,9 +326,13 @@ async function handleCache(request: Request, env: Env): Promise<Response> {
 async function handleSeed(request: Request, env: Env): Promise<Response> {
     if (request.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, request, 405);
 
+    // SECURITY: handleSeed should be protected by JWT auth if already seeded, 
+    // or by ADMIN_ACCESS_CODE if it's the first initialization.
+    const isAuth = await isAuthorized(request, env.JWT_SECRET);
     const body = await request.json() as { code?: string };
     const { code } = body;
-    if (!env.ADMIN_ACCESS_CODE || code !== env.ADMIN_ACCESS_CODE) {
+
+    if (!isAuth && (!env.ADMIN_ACCESS_CODE || code !== env.ADMIN_ACCESS_CODE)) {
         return jsonResponse({ error: 'Unauthorized' }, request, 401);
     }
 
@@ -386,6 +427,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         }
     } catch (error) {
         console.error('Admin API error:', error);
-        return jsonResponse({ error: 'Internal server error' }, request, 500);
+        return jsonResponse({ error: 'Failed to process admin request' }, request, 500);
     }
 };

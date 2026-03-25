@@ -220,36 +220,47 @@ export default function AdminLayout() {
     };
 
     return (
-        <div className="min-h-[100dvh] bg-background flex overflow-x-hidden">
+        <div className="min-h-[100dvh] bg-[#09090b] flex overflow-hidden relative">
             <Toaster position="top-right" theme="dark" richColors closeButton />
             <Helmet>
                 <title>Admin Panel | Orbit SaaS</title>
                 <meta name="robots" content="noindex, nofollow" />
             </Helmet>
-            {/* Overlay — closes sidebar on tap (mobile only) */}
-            {sidebarOpen && (
-                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
-            )}
 
-            {/* Sidebar — controlled entirely by sidebarOpen */}
-            <aside className={`fixed top-0 left-0 z-50 h-[100dvh] w-64 bg-card border-r border-border flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            {/* Mobile Dark Base (visible behind scaled main content) */}
+            <div className="fixed inset-0 bg-[#09090b] z-0 lg:hidden" />
+
+            {/* Sidebar */}
+            <aside 
+                className={`fixed top-0 left-0 h-[100dvh] w-64 bg-card border-r border-border flex flex-col transition-all duration-500 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] ${
+                    sidebarOpen 
+                        ? 'translate-x-0 z-10 opacity-100' 
+                        : '-translate-x-12 opacity-0 pointer-events-none lg:pointer-events-auto lg:opacity-100 lg:-translate-x-full z-0'
+                }`}
+            >
+                <div className="px-4 py-4 border-b border-border flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <LayoutDashboard className="w-5 h-5 text-primary" />
-                        <span className="font-display font-bold text-foreground">Admin Panel</span>
+                        <LayoutDashboard className="w-5 h-5 text-emerald-500" />
+                        <span className="font-display font-bold text-foreground">Orbit Admin</span>
                     </div>
+                    {/* Only show collapse button on desktop, since mobile uses tap-outside */}
                     <button
                         type="button"
                         onClick={() => setSidebarOpen(false)}
-                        className="p-2 -mr-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:bg-secondary transition-colors flex items-center justify-center cursor-pointer"
-                        aria-label="Collapse sidebar"
-                        title="Collapse sidebar"
+                        className="hidden lg:flex p-2 -mr-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors items-center justify-center cursor-pointer"
                     >
                         <PanelLeftClose className="w-5 h-5" />
                     </button>
+                    <button
+                        type="button"
+                        onClick={() => setSidebarOpen(false)}
+                        className="lg:hidden p-2 -mr-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center justify-center cursor-pointer"
+                    >
+                        <XCircle className="w-5 h-5" />
+                    </button>
                 </div>
 
-                <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
+                <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5 custom-scrollbar">
                     {navItems.map(item => (
                         <NavLink
                             key={item.path}
@@ -258,9 +269,9 @@ export default function AdminLayout() {
                                 if (window.innerWidth < 1024) setSidebarOpen(false);
                             }}
                             className={({ isActive }) =>
-                                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
-                                    ? 'bg-primary/10 text-primary'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${isActive
+                                    ? 'bg-emerald-500/10 text-emerald-500 scale-[1.02]'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary hover:translate-x-1'
                                 }`
                             }
                         >
@@ -270,9 +281,7 @@ export default function AdminLayout() {
                     ))}
                 </nav>
 
-                <div className="p-3 border-t border-border space-y-1">
-
-
+                <div className="p-3 border-t border-border space-y-1 bg-card w-full">
                     <button
                         onClick={handlePublishCache}
                         disabled={publishing}
@@ -307,18 +316,31 @@ export default function AdminLayout() {
                 </div>
             </aside>
 
-            {/* Main content — left padding shifts when sidebar is open on desktop */}
-            <main className={`flex-1 min-h-[100dvh] w-full flex flex-col relative z-10 transition-all duration-300 ${sidebarOpen ? 'lg:pl-64' : ''}`}>
-                {/* Top Bar — always visible when sidebar is collapsed; hidden on lg when sidebar open */}
+            {/* Main Content Area — features a unique 3D scale down on mobile when sidebar is open */}
+            <main 
+                className={`flex-1 min-h-[100dvh] w-full flex flex-col relative z-20 bg-background transition-all duration-500 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] ${
+                    sidebarOpen 
+                        ? 'lg:ml-64 max-lg:translate-x-[256px] max-lg:scale-[0.88] max-lg:rounded-l-[2rem] max-lg:shadow-[-20px_0_40px_rgba(0,0,0,0.5)] max-lg:overflow-hidden max-lg:border-l border-white/10' 
+                        : 'lg:ml-0 translate-x-0 scale-100 rounded-none shadow-none origin-right overflow-auto'
+                }`}
+            >
+                {/* Mobile overlay to intercept clicks and close sidebar */}
+                {sidebarOpen && (
+                    <div 
+                        className="absolute inset-0 z-50 lg:hidden cursor-pointer"
+                        onClick={() => setSidebarOpen(false)}
+                        aria-label="Tap to close sidebar"
+                    />
+                )}
+
+                {/* Top Desktop Bar (Hidden when sidebar is open on Desktop) */}
                 {!sidebarOpen && (
-                    <div className="sticky top-0 left-0 w-full z-30 bg-card/95 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
+                    <div className="hidden lg:flex sticky top-0 left-0 w-full z-30 bg-card/95 backdrop-blur-xl border-b border-border px-4 py-3 items-center justify-between shadow-sm">
                         <div className="flex items-center gap-3">
                             <button
                                 type="button"
                                 onClick={() => setSidebarOpen(true)}
-                                className="p-2 -ml-2 rounded-lg text-foreground bg-secondary/30 hover:bg-secondary/80 active:bg-secondary transition-colors cursor-pointer flex items-center justify-center"
-                                aria-label="Expand sidebar"
-                                title="Expand sidebar"
+                                className="p-2 -ml-2 rounded-lg text-foreground bg-secondary/30 hover:bg-secondary/80 focus:bg-secondary/80 transition-colors flex items-center justify-center cursor-pointer"
                             >
                                 <PanelLeft className="w-5 h-5" />
                             </button>
@@ -327,13 +349,24 @@ export default function AdminLayout() {
                     </div>
                 )}
 
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="p-4 sm:p-5 lg:p-8 max-w-[1200px] mx-auto w-full relative z-0 flex-1"
-                >
-                    <Outlet />
-                </motion.div>
+                {/* Top Mobile Bar (Always visible on mobile to toggle sidebar) */}
+                <div className="lg:hidden sticky top-0 left-0 w-full z-30 bg-card/95 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setSidebarOpen(!sidebarOpen)}
+                            className="p-2 -ml-2 rounded-lg text-foreground bg-secondary/30 hover:bg-secondary/80 focus:bg-secondary/80 transition-colors flex items-center justify-center cursor-pointer"
+                        >
+                            <Menu className="w-5 h-5" />
+                        </button>
+                        <span className="font-display font-bold text-foreground text-lg">Orbit Admin</span>
+                    </div>
+                </div>
+
+                {/* Actual Page Content */}
+                <div className={`p-4 sm:p-5 lg:p-8 max-w-[1200px] mx-auto w-full relative z-0 flex-1 transition-opacity duration-300 ${sidebarOpen ? 'max-lg:opacity-50 max-lg:pointer-events-none' : 'opacity-100'}`}>
+                   <Outlet />
+                </div>
             </main>
         </div>
     );

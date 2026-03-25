@@ -6,6 +6,8 @@ import { Helmet } from 'react-helmet-async';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
+import { encryptPayload } from '@/lib/crypto';
+
 export default function AdminLogin() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
@@ -20,10 +22,16 @@ export default function AdminLogin() {
         setLoading(true);
 
         try {
+            // Encrypt the payload so it cannot be read in the Network tab
+            const encryptedBody = await encryptPayload({ 
+                email: email || undefined,
+                code: password 
+            });
+
             const res = await fetch(`${API_BASE}/api/admin?action=login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: password }),
+                body: JSON.stringify({ payload: encryptedBody }),
             });
 
             const data = await res.json();
@@ -65,6 +73,20 @@ export default function AdminLogin() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label className="text-sm font-medium text-foreground mb-1.5 block">Admin Email</label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                    className="w-full bg-secondary rounded-lg pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/50 border border-border"
+                                    placeholder="admin@orbitsaas.com"
+                                />
+                            </div>
+                        </div>
+
                         <div>
                             <label className="text-sm font-medium text-foreground mb-1.5 block">Admin Access Code</label>
                             <div className="relative">

@@ -114,7 +114,7 @@ function ArchiveCard({ item, i }: { item: ProjectItem; i: number }) {
 
                     {/* Shimmer */}
                     <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1.5s] ease-in-out bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+                        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform [transition-duration:1.5s] ease-in-out bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
                     </div>
 
                     {/* Bottom Fade */}

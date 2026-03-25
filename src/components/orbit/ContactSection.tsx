@@ -4,8 +4,10 @@ import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
 import { ArrowRight, Mail, MapPin, ExternalLink, Globe2, Facebook, Instagram, Linkedin, Send, Twitter, Youtube, Github, MessageCircle } from 'lucide-react';
 
+import DOMPurify from 'dompurify';
+
 const RichText = ({ text }: { text: string }) => (
-  <span dangerouslySetInnerHTML={{ __html: text }} />
+  <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }} />
 );
 
 // ── Interactive Background Canvas (Comet Collision with Physics) ──

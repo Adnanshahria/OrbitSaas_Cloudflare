@@ -474,7 +474,7 @@ function SuggestedProjectCard({ item, routeId }: { item: any, routeId: string })
                     </motion.div>
                 </AnimatePresence>
                 <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1.2s] ease-in-out bg-gradient-to-r from-transparent via-white/[0.2] to-transparent" />
+                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform [transition-duration:1.2s] ease-in-out bg-gradient-to-r from-transparent via-white/[0.2] to-transparent" />
                 </div>
                 {/* Bottom Fade */}
                 <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
