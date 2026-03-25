@@ -1,7 +1,7 @@
 import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
-import { useEffect, useRef, useCallback, useState, Suspense, lazy } from 'react';
+import React, { useEffect, useRef, useCallback, useState, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RichText } from '@/components/ui/RichText';
 
@@ -202,8 +202,8 @@ const ICON_MAP: Record<string, LucideIcon | any> = {
 /* ═══════════════════════════════════════════════════════════
    FLASHY CARDS — Premium glassmorphism interactive units
    ═══════════════════════════════════════════════════════════ */
-
-function FlashyCard({ children, icon: Icon, title, delay, className = "" }: any) {
+ 
+const FlashyCard = React.memo(({ children, icon: Icon, title, delay, className = "" }: any) => {
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
   const [isHovered, setIsHovered] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -277,9 +277,9 @@ function FlashyCard({ children, icon: Icon, title, delay, className = "" }: any)
       <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700" />
     </motion.div>
   );
-}
+});
 
-function AIWorkflow({ steps }: { steps: string[] }) {
+const AIWorkflow = React.memo(({ steps }: { steps: string[] }) => {
   const [activeStep, setActiveStep] = useState(0);
   const displaySteps = steps?.length > 0 ? steps : ['DISCOVERY', 'AGENT_INIT', 'EXECUTION', 'OPTIMIZE'];
   
@@ -305,9 +305,9 @@ function AIWorkflow({ steps }: { steps: string[] }) {
       ))}
     </div>
   );
-}
+});
 
-function ChatBotVisual({ query, response }: { query: string; response: string }) {
+const ChatBotVisual = React.memo(({ query, response }: { query: string; response: string }) => {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-start gap-2">
@@ -328,9 +328,9 @@ function ChatBotVisual({ query, response }: { query: string; response: string })
       </div>
     </div>
   );
-}
+});
 
-function PerformanceMetric({ label, value, sub1, sub2 }: { label: string; value: string; sub1: string; sub2: string }) {
+const PerformanceMetric = React.memo(({ label, value, sub1, sub2 }: { label: string; value: string; sub1: string; sub2: string }) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-end">
@@ -351,7 +351,7 @@ function PerformanceMetric({ label, value, sub1, sub2 }: { label: string; value:
       </div>
     </div>
   );
-}
+});
 
 /* ═══════════════════════════════════════════════════════════
    HOME — Electric Left-Aligned Redesign
@@ -423,17 +423,32 @@ export function Home() {
   const titleText = "Turning Ideas into";
 
   return (
-    <section id="home" className="relative min-h-[100svh] flex flex-col items-center justify-center pt-24 pb-16 overflow-hidden noise-overlay border-none">
-      <BackgroundBlobs />
-      <FloatingParticles />
+    <section id="home" className="relative min-h-[100svh] flex flex-col items-center pt-24 md:pt-32 lg:pt-36 pb-16 overflow-hidden noise-overlay border-none">
+      <Suspense fallback={null}>
+        <motion.div
+           initial={{ opacity: 0 }}
+           animate={{ opacity: 1 }}
+           transition={{ delay: 1, duration: 1.2 }}
+        >
+          <BackgroundBlobs />
+          <FloatingParticles />
+        </motion.div>
+      </Suspense>
       <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black pointer-events-none" />
       {/* ── Canvas Background ── */}
-      <canvas
+      <motion.canvas
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.6 }}
+        transition={{ delay: 1.8, duration: 2 }}
         ref={canvasRef}
         data-idm-ignore="true"
         // @ts-ignore
         idm-ignore="true"
-        className="absolute inset-0 z-0 pointer-events-none opacity-60"
+        disable-idm="true"
+        aria-hidden="true"
+        role="presentation"
+        onContextMenu={(e) => e.preventDefault()}
+        className="absolute inset-0 z-0 pointer-events-none"
       />
 
       {/* ── Grid Layout ── */}
@@ -462,14 +477,14 @@ export function Home() {
                 }}
               >
                 {/* Line 1: Static Title */}
-                <div className="text-[2.8rem] leading-[1.1] md:text-[5rem] lg:text-[4rem] xl:text-[5.2rem] flex flex-wrap lg:flex-nowrap lg:whitespace-nowrap items-center mb-1">
+                <div className="text-[2rem] leading-[1.1] md:text-[5rem] lg:text-[4rem] xl:text-[5.2rem] flex flex-wrap lg:flex-nowrap lg:whitespace-nowrap items-center mb-1">
                   {titleText.split(' ').map((word, i) => (
                     <motion.span
                       key={i}
                       className="inline-block mr-[0.25em]"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 + (i * 0.1), duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ delay: 0.6 + (i * 0.15), duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                       style={{ color: 'white' }}
                     >
                       {word}
@@ -506,14 +521,14 @@ export function Home() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.8, duration: 1 }}
               >
-                <p className="text-base md:text-xl text-white/50 max-w-xl leading-relaxed mb-8 md:mb-12">
-                  <RichText text={subtitle} />
-                </p>
+                  <p className="text-base md:text-xl text-white/50 max-w-xl leading-relaxed mb-8 md:mb-12">
+                   <RichText text={subtitle} />
+                 </p>
 
                 <div className="mb-10 md:mb-12 relative">
                   <div className="absolute -inset-4 bg-indigo-500/5 blur-3xl rounded-[3rem] -z-10" />
                   
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-6 md:flex md:flex-wrap md:items-center md:gap-x-8 md:gap-y-4 bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl rounded-2xl p-4 md:px-8 md:py-5 shadow-2xl relative overflow-hidden group/stats">
+                  <div className="w-fit grid grid-cols-2 gap-x-4 gap-y-6 md:flex md:flex-wrap md:items-center md:gap-x-8 md:gap-y-4 bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl rounded-2xl p-4 md:px-8 md:py-5 shadow-2xl relative overflow-hidden group/stats">
                     {/* Premium iridescent scan line */}
                     <motion.div 
                       animate={{ x: ['-200%', '200%'] }}
@@ -666,7 +681,10 @@ export function Home() {
                       onCreated={({ gl }) => {
                         // Tell IDM to ignore the internal canvas Three.js creates
                         gl.domElement.setAttribute('data-idm-ignore', 'true');
+                        gl.domElement.setAttribute('idm-ignore', 'true');
+                        gl.domElement.setAttribute('disable-idm', 'true');
                         gl.domElement.style.pointerEvents = 'none';
+                        gl.domElement.oncontextmenu = (e) => e.preventDefault();
                       }}
                     >
                       <Suspense fallback={null}>

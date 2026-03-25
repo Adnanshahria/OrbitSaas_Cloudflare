@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ChevronDown, ArrowLeft } from 'lucide-react';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import orbitLogo from '@/assets/orbit-logo.png';
 
@@ -44,6 +44,7 @@ export function Navbar() {
   const { content } = useContent();
   const { lang, toggleLang } = useLang();
   const t = content[lang] as any;
+  const [isPending, startTransition] = useTransition();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -90,13 +91,15 @@ export function Navbar() {
               // Map the internal DOM ID back to our route-based activeSection identifier
               const virtualSection = id === 'projects' ? 'project' : id === 'techstack' ? 'tech' : id;
               if (activeSection !== virtualSection) {
-                 setActiveSection(virtualSection);
-                 
-                 // Optionally update URL gracefully based on mapped path, avoiding reload
-                 const pathRecord = Object.entries(PATH_TO_SECTION).find(([path, sec]) => sec === virtualSection && path !== '/project' && path !== '/proj');
-                 if (pathRecord && window.location.pathname !== pathRecord[0]) {
-                   window.history.replaceState(null, '', pathRecord[0]);
-                 }
+                 startTransition(() => {
+                   setActiveSection(virtualSection);
+                   
+                   // Optionally update URL gracefully based on mapped path, avoiding reload
+                   const pathRecord = Object.entries(PATH_TO_SECTION).find(([path, sec]) => sec === virtualSection && path !== '/project' && path !== '/proj');
+                   if (pathRecord && window.location.pathname !== pathRecord[0]) {
+                     window.history.replaceState(null, '', pathRecord[0]);
+                   }
+                 });
               }
               break;
             }
