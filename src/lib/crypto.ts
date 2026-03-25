@@ -11,7 +11,7 @@
 // For this SaaS, we'll use a derived key from the environment variable (backend)
 // and an environment variable (frontend) to encrypt the payload.
 
-const ENCRYPTION_SECRET = import.meta.env ? import.meta.env.VITE_PAYLOAD_SECRET || 'orbitsaas_secure_payload_v1_key!!' : '';
+const ENCRYPTION_SECRET = import.meta.env ? import.meta.env.VITE_PAYLOAD_SECRET || 'orbit-admin-jwt-secret-2025' : 'orbit-admin-jwt-secret-2025';
 
 // Helper to convert string to ArrayBuffer
 function str2ab(str: string): ArrayBuffer {

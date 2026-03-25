@@ -69,8 +69,8 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
 
     // Support both encrypted payload and raw unencrypted requests (for backward compatibility if needed)
     if (body.payload) {
-        // Prefer PAYLOAD_SECRET if defined, fallback to JWT_SECRET for backward compatibility
-        const secret = env.PAYLOAD_SECRET || env.JWT_SECRET; 
+        // Prefer PAYLOAD_SECRET if defined, fallback to JWT_SECRET, then a hardcoded stable key for reliability
+        const secret = env.PAYLOAD_SECRET || env.JWT_SECRET || 'orbit-admin-jwt-secret-2025'; 
         const decrypted = await decryptPayload(body.payload, secret);
         if (decrypted) {
             code = decrypted.code;
