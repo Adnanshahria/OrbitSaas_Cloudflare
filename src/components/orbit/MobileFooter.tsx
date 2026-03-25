@@ -55,10 +55,10 @@ export function MobileFooter() {
   const activeSocials = (t?.socials || []).filter((s: any) => s.enabled && s.url);
 
   const footerNavLinks = [
-    { label: nav?.services || 'Services', href: '/#services' },
-    { label: nav?.techStack || 'Tech Stack', href: '/#tech' },
-    { label: nav?.projects || 'Projects', href: '/#project' },
-    { label: nav?.leadership || 'Team', href: '/#leadership' },
+    { label: nav?.services || 'Services', href: '/services' },
+    { label: nav?.techStack || 'Tech Stack', href: '/techstack' },
+    { label: nav?.projects || 'Projects', href: '/proj' },
+    { label: nav?.leadership || 'Team', href: '/leadership' },
   ];
 
   return (
@@ -125,9 +125,9 @@ export function MobileFooter() {
             <ul className="space-y-3">
               {footerNavLinks.map((link, i) => (
                 <li key={i}>
-                  <a href={link.href} className="text-[13px] font-medium text-white/50 transition-colors hover:text-primary">
+                  <Link to={link.href} className="text-[13px] font-medium text-white/50 transition-colors hover:text-primary">
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

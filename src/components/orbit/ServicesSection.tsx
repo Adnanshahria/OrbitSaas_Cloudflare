@@ -1000,7 +1000,14 @@ export function ServicesSection({ embedded }: { embedded?: boolean }) {
         >
           {/* Left: Aesthetic Get Early Access CTA */}
           <button
-            onClick={() => window.dispatchEvent(new CustomEvent('trigger-lead-magnet'))}
+            onClick={() => {
+              const el = document.getElementById('contact');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                navigate('/contact');
+              }
+            }}
             className="order-1 md:order-1 group relative px-12 py-5 bg-[#0e0e10] text-white rounded-[2rem] font-bold text-base md:text-lg border border-white/10 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.4)] transition-all duration-500 hover:scale-[1.02] active:scale-95 overflow-hidden cursor-pointer"
           >
             {/* Agent Skills Background Glow */}

@@ -57,12 +57,12 @@ export function OrbitFooter() {
   const activeSocials = (t?.socials || []).filter((s: any) => s.enabled && s.url);
 
   const footerNavLinks = [
-    { label: nav?.services || 'Services', href: '/#services' },
-    { label: nav?.techStack || 'Tech Stack', href: '/#tech' },
-    { label: nav?.whyUs || 'Why Us', href: '/#why-us' },
-    { label: nav?.projects || 'Projects', href: '/#project' },
-    { label: nav?.leadership || 'Team', href: '/#leadership' },
-    { label: nav?.contact || 'Contact', href: '/#contact' },
+    { label: nav?.services || 'Services', href: '/services' },
+    { label: nav?.techStack || 'Tech Stack', href: '/techstack' },
+    { label: nav?.whyUs || 'Why Us', href: '/why-us' },
+    { label: nav?.projects || 'Projects', href: '/proj' },
+    { label: nav?.leadership || 'Team', href: '/leadership' },
+    { label: nav?.contact || 'Contact', href: '/contact' },
   ];
 
   return (
@@ -129,12 +129,12 @@ export function OrbitFooter() {
             <ul className="space-y-3">
               {footerNavLinks.map((link, i) => (
                 <li key={i}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="text-sm font-medium text-white/50 transition-all duration-300 hover:text-primary hover:translate-x-1 inline-block"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
