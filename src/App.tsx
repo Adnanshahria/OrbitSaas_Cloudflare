@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState, createContext, useContext, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ContentProvider } from './contexts/ContentContext';
@@ -13,6 +13,79 @@ import { HelmetProvider } from 'react-helmet-async';
 import { SEOHead } from './components/seo/SEOHead';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CustomCursor } from './components/orbit/CustomCursor';
+
+/* ═══════════════════════════════════════════════════════════
+   APP ORCHESTRATION — Coordinates sequential reveal:
+   Phase 0: Nothing visible (preloader)
+   Phase 1: Hero title words animate in
+   Phase 2: Subtitle & CTA fade in
+   Phase 3: Navbar slides down
+   Phase 4: Below-fold sections ready
+   ═══════════════════════════════════════════════════════════ */
+
+interface OrchestrationContextValue {
+  phase: number;
+  advanceTo: (p: number) => void;
+  isReady: boolean; // true once content data has arrived at least once
+}
+
+const OrchestrationContext = createContext<OrchestrationContextValue>({
+  phase: 0,
+  advanceTo: () => {},
+  isReady: false,
+});
+
+export function useOrchestration() {
+  return useContext(OrchestrationContext);
+}
+
+function OrchestrationProvider({ children }: { children: React.ReactNode }) {
+  const [phase, setPhase] = useState(0);
+  const { loading } = useContent();
+  const hasBeenReady = useRef(false);
+
+  // Mark ready once content has loaded at least once (fallback translations are always available)
+  if (!loading) hasBeenReady.current = true;
+  const isReady = hasBeenReady.current || !loading;
+
+  // Kick off phase 1 once content is ready
+  useEffect(() => {
+    if (isReady && phase === 0) {
+      // Small RAF delay to ensure the browser has painted the black bg first
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setPhase(1);
+        });
+      });
+    }
+  }, [isReady, phase]);
+
+  // Auto-advance the cascade: 1→2→3→4 with staggered timing
+  useEffect(() => {
+    if (phase === 1) {
+      const t = setTimeout(() => setPhase(2), 600);  // subtitle after title words
+      return () => clearTimeout(t);
+    }
+    if (phase === 2) {
+      const t = setTimeout(() => setPhase(3), 400);  // navbar after subtitle
+      return () => clearTimeout(t);
+    }
+    if (phase === 3) {
+      const t = setTimeout(() => setPhase(4), 300);  // rest
+      return () => clearTimeout(t);
+    }
+  }, [phase]);
+
+  const advanceTo = useCallback((p: number) => {
+    setPhase(prev => Math.max(prev, p));
+  }, []);
+
+  return (
+    <OrchestrationContext.Provider value={{ phase, advanceTo, isReady }}>
+      {children}
+    </OrchestrationContext.Provider>
+  );
+}
 
 // Lazy load public sections
 const StatsSection = lazy(() => import('./components/orbit/StatsSection').then(m => ({ default: m.StatsSection })));
@@ -270,15 +343,20 @@ const queryClient = new QueryClient({
 function NavbarVisibilityWrapper() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
-  const [isLoaded, setIsLoaded] = useState(false);
+  const { phase } = useOrchestration();
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoaded(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
+  // Don't render navbar until orchestration phase 3 (after title + subtitle)
+  if (isAdmin || phase < 3) return null;
 
-  if (isAdmin || !isLoaded) return null;
-  return <Navbar />;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <Navbar />
+    </motion.div>
+  );
 }
 
 export default function App() {
@@ -286,74 +364,76 @@ export default function App() {
     <>
       <QueryClientProvider client={queryClient}>
         <ContentProvider>
-          <LanguageProvider>
-            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <ScrollToTop />
-            <CustomCursor />
-            <SEOHead />
-            <NavbarVisibilityWrapper />
-            <Suspense fallback={<SitePreloader />}>
-                <Routes>
-                  {/* Public Core Pages with PageFlip Transitions - Consolidated to prevent unmount/flicker */}
-                  <Route element={
-                    <VisitorGateway>
-                      <StructuredData />
-                      <PublicSite />
-                    </VisitorGateway>
-                  }>
-                    {['/', '/services', '/process', '/techstack', '/why-us', '/proj', '/reviews', '/leadership', '/contact'].map(path => (
-                      <Route key={path} path={path} element={null} />
-                    ))}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Route>
-                  <Route path="/privacy" element={
-                    <VisitorGateway>
-                      <StructuredData />
-                      <PrivacyPolicy />
-                    </VisitorGateway>
-                  } />
-                  <Route path="/terms" element={
-                    <VisitorGateway>
-                      <StructuredData />
-                      <TermsOfService />
-                    </VisitorGateway>
-                  } />
-                  <Route path="/project/:id" element={
-                    <VisitorGateway>
-                      <StructuredData />
-                      <ProjectDetail />
-                    </VisitorGateway>
-                  } />
+          <OrchestrationProvider>
+            <LanguageProvider>
+              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <ScrollToTop />
+              <CustomCursor />
+              <SEOHead />
+              <NavbarVisibilityWrapper />
+              <Suspense fallback={<SitePreloader />}>
+                  <Routes>
+                    {/* Public Core Pages with PageFlip Transitions - Consolidated to prevent unmount/flicker */}
+                    <Route element={
+                      <VisitorGateway>
+                        <StructuredData />
+                        <PublicSite />
+                      </VisitorGateway>
+                    }>
+                      {['/', '/services', '/process', '/techstack', '/why-us', '/proj', '/reviews', '/leadership', '/contact'].map(path => (
+                        <Route key={path} path={path} element={null} />
+                      ))}
+                      <Route path="*" element={<Navigate to="/" replace />} />
+                    </Route>
+                    <Route path="/privacy" element={
+                      <VisitorGateway>
+                        <StructuredData />
+                        <PrivacyPolicy />
+                      </VisitorGateway>
+                    } />
+                    <Route path="/terms" element={
+                      <VisitorGateway>
+                        <StructuredData />
+                        <TermsOfService />
+                      </VisitorGateway>
+                    } />
+                    <Route path="/project/:id" element={
+                      <VisitorGateway>
+                        <StructuredData />
+                        <ProjectDetail />
+                      </VisitorGateway>
+                    } />
 
-                  {/* Admin Area */}
-                  <Route path="/admin" element={<AdminLayout />}>
-                    <Route index element={<Navigate to="/admin/hero" replace />} />
-                    <Route path="login" element={<AdminLogin />} />
-                    <Route path="hero" element={<AdminHero />} />
-                    <Route path="stats" element={<AdminStats />} />
-                    <Route path="services" element={<AdminServices />} />
-                    <Route path="process" element={<AdminProcess />} />
-                    <Route path="tech-stack" element={<AdminTechStack />} />
-                    <Route path="why-us" element={<AdminWhyUs />} />
-                    <Route path="project" element={<AdminProjects />} />
-                    <Route path="leadership" element={<AdminLeadership />} />
-                    <Route path="reviews" element={<AdminReviews />} />
-                    <Route path="contact" element={<AdminContact />} />
-                    <Route path="footer" element={<AdminFooter />} />
-                    <Route path="chatbot" element={<AdminChatbot />} />
-                    <Route path="links" element={<AdminLinks />} />
-                    <Route path="navbar" element={<AdminNavbar />} />
-                    <Route path="seo" element={<AdminSEO />} />
-                    <Route path="leads" element={<AdminLeads />} />
-                    <Route path="backup" element={<AdminBackup />} />
-                    <Route path="legal" element={<AdminLegal />} />
-                    <Route path="notifications" element={<AdminNotifications />} />
-                    <Route path="profile" element={<AdminProfile />} />
-                  </Route>
-                </Routes>
-              </Suspense>
-            </BrowserRouter>
-          </LanguageProvider>
+                    {/* Admin Area */}
+                    <Route path="/admin" element={<AdminLayout />}>
+                      <Route index element={<Navigate to="/admin/hero" replace />} />
+                      <Route path="login" element={<AdminLogin />} />
+                      <Route path="hero" element={<AdminHero />} />
+                      <Route path="stats" element={<AdminStats />} />
+                      <Route path="services" element={<AdminServices />} />
+                      <Route path="process" element={<AdminProcess />} />
+                      <Route path="tech-stack" element={<AdminTechStack />} />
+                      <Route path="why-us" element={<AdminWhyUs />} />
+                      <Route path="project" element={<AdminProjects />} />
+                      <Route path="leadership" element={<AdminLeadership />} />
+                      <Route path="reviews" element={<AdminReviews />} />
+                      <Route path="contact" element={<AdminContact />} />
+                      <Route path="footer" element={<AdminFooter />} />
+                      <Route path="chatbot" element={<AdminChatbot />} />
+                      <Route path="links" element={<AdminLinks />} />
+                      <Route path="navbar" element={<AdminNavbar />} />
+                      <Route path="seo" element={<AdminSEO />} />
+                      <Route path="leads" element={<AdminLeads />} />
+                      <Route path="backup" element={<AdminBackup />} />
+                      <Route path="legal" element={<AdminLegal />} />
+                      <Route path="notifications" element={<AdminNotifications />} />
+                      <Route path="profile" element={<AdminProfile />} />
+                    </Route>
+                  </Routes>
+                </Suspense>
+              </BrowserRouter>
+            </LanguageProvider>
+          </OrchestrationProvider>
         </ContentProvider>
       </QueryClientProvider>
     </>

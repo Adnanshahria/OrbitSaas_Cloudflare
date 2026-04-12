@@ -1,6 +1,7 @@
 import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
 import { useContent } from '@/contexts/ContentContext';
 import { useLang } from '@/contexts/LanguageContext';
+import { useOrchestration } from '@/App';
 import React, { useEffect, useRef, useCallback, useState, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RichText } from '@/components/ui/RichText';
@@ -246,10 +247,10 @@ const FlashyCard = React.memo(({ children, icon: Icon, title, delay, className =
       style={{ 
         transformStyle: "preserve-3d",
         boxShadow: isHovered 
-          ? '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 15px rgba(99, 102, 241, 0.2)' 
-          : '0 8px 32px 0 rgba(0, 0, 0, 0.37)' 
+          ? '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 10px rgba(99, 102, 241, 0.1)' 
+          : '0 4px 20px 0 rgba(0, 0, 0, 0.25)' 
       }}
-      className={`relative group bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl rounded-3xl p-6 overflow-hidden ${className}`}
+      className={`relative group bg-white/[0.02] border border-white/[0.04] backdrop-blur-lg rounded-3xl p-6 overflow-hidden ${className}`}
     >
       {/* Noise Texture */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150" />
@@ -364,6 +365,7 @@ export function Home() {
   const prefersReducedMotion = useReducedMotion();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isMobile = useIsMobile();
+  const { phase } = useOrchestration();
 
   const t = (content[lang] as any)?.hero;
   const stats = (content[lang] as any)?.stats?.items || [];
@@ -374,7 +376,7 @@ export function Home() {
   const cta = t?.cta || 'Get Started';
   const learnMore = t?.learnMore || 'Our Services';
 
-  // Typewriter effect state
+  // Typewriter effect state — only start after phase 1
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [phraseIndex, setPhraseIndex] = useState(0);
@@ -390,22 +392,22 @@ export function Home() {
   ];
 
   useEffect(() => {
+    // Don't start typewriter until phase 1 (title is visible)
+    if (phase < 1) return;
+
     const handleTyping = () => {
       const currentPhrase = phrases[phraseIndex];
       
       if (!isDeleting) {
-        // Typing
         setDisplayText(currentPhrase.substring(0, displayText.length + 1));
-        setTypingSpeed(100 + Math.random() * 50); // Natural typing variation
+        setTypingSpeed(100 + Math.random() * 50);
         
         if (displayText === currentPhrase) {
-          // Pause at the end
           setTimeout(() => setIsDeleting(true), 2000);
         }
       } else {
-        // Deleting
         setDisplayText(currentPhrase.substring(0, displayText.length - 1));
-        setTypingSpeed(50); // Deleting is usually faster
+        setTypingSpeed(50);
         
         if (displayText === "") {
           setIsDeleting(false);
@@ -416,30 +418,39 @@ export function Home() {
 
     const timer = setTimeout(handleTyping, typingSpeed);
     return () => clearTimeout(timer);
-  }, [displayText, isDeleting, phraseIndex, typingSpeed]);
+  }, [displayText, isDeleting, phraseIndex, typingSpeed, phase]);
 
   useThunderboltCanvas(canvasRef, prefersReducedMotion);
 
   const titleText = "Turning Ideas into";
 
   return (
-    <section id="home" className="relative min-h-[100svh] flex flex-col items-center pt-24 md:pt-32 lg:pt-36 pb-16 overflow-hidden noise-overlay border-none">
+    <section 
+      id="home" 
+      className="relative min-h-[100svh] flex flex-col items-center pt-24 md:pt-32 lg:pt-36 pb-16 overflow-hidden noise-overlay border-none"
+      style={{ 
+        // Prevent FOUC: entire section invisible until phase 1
+        opacity: phase >= 1 ? 1 : 0,
+        transition: 'opacity 0.1s ease'
+      }}
+    >
+      {/* Background effects — fade in at phase 2 */}
       <Suspense fallback={null}>
         <motion.div
            initial={{ opacity: 0 }}
-           animate={{ opacity: 1 }}
-           transition={{ delay: 1, duration: 1.2 }}
+           animate={{ opacity: phase >= 2 ? 1 : 0 }}
+           transition={{ duration: 1.5 }}
         >
           <BackgroundBlobs />
           <FloatingParticles />
         </motion.div>
       </Suspense>
       <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black pointer-events-none" />
-      {/* ── Canvas Background ── */}
+      {/* ── Canvas Background — fade in at phase 2 ── */}
       <motion.canvas
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.6 }}
-        transition={{ delay: 1.8, duration: 2 }}
+        animate={{ opacity: phase >= 2 ? 0.6 : 0 }}
+        transition={{ duration: 2 }}
         ref={canvasRef}
         data-idm-ignore="true"
         // @ts-ignore
@@ -457,9 +468,10 @@ export function Home() {
           
           {/* Left Side: Content */}
           <div className="lg:col-span-7 xl:col-span-8 space-y-8">
+            {/* Tagline badge — phase 1 */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              animate={phase >= 1 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ duration: 0.6 }}
             >
               <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 text-xs font-bold tracking-[0.2em] uppercase mb-10 md:mb-8">
@@ -476,15 +488,15 @@ export function Home() {
                   fontFamily: 'var(--font-display)'
                 }}
               >
-                {/* Line 1: Static Title */}
+                {/* Line 1: Static Title — phase 1, staggered words */}
                 <div className="text-[2rem] leading-[1.1] md:text-[5rem] lg:text-[4rem] xl:text-[5.2rem] flex flex-wrap lg:flex-nowrap lg:whitespace-nowrap items-center mb-1">
                   {titleText.split(' ').map((word, i) => (
                     <motion.span
                       key={i}
                       className="inline-block mr-[0.25em]"
                       initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.6 + (i * 0.15), duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                      animate={phase >= 1 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                      transition={{ delay: i * 0.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                       style={{ color: 'white' }}
                     >
                       {word}
@@ -492,7 +504,7 @@ export function Home() {
                   ))}
                 </div>
                 
-                {/* Line 2: Dynamic Phrases (Reduced Size) */}
+                {/* Line 2: Dynamic Phrases — visible with phase 1, typewriter starts at phase 1 */}
                 <div className="text-[2.2rem] md:text-[4rem] lg:text-[3.5rem] xl:text-[4.5rem] relative inline-flex items-center min-h-[1.1em] mt-1 lg:mt-2">
                   <span
                     className="leading-none"
@@ -516,10 +528,11 @@ export function Home() {
                 </div>
               </h1>
 
+              {/* Subtitle, stats bar, and CTA buttons — phase 2 */}
               <motion.div
-                initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.8, duration: 1 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={phase >= 2 ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               >
                   <p className="text-base md:text-xl text-white/50 max-w-xl leading-relaxed mb-8 md:mb-12">
                    <RichText text={subtitle} />
@@ -633,20 +646,20 @@ export function Home() {
             </motion.div>
           </div>
 
-          {/* Right Side: Flashy Cards — SKIP entirely on mobile to save ~200KB JS + GPU memory */}
-          {!isMobile && (
+          {/* Right Side: Flashy Cards — SKIP entirely on mobile & wait for phase 2 */}
+          {!isMobile && phase >= 2 && (
             <div className="lg:col-span-5 xl:col-span-4 hidden lg:block">
               <div className="relative h-[620px] w-full">
                 {/* Card 1: Agentic AI - Top Right */}
                 <div className="absolute top-[2%] right-0 z-10 transition-all duration-500">
-                  <FlashyCard icon={ICON_MAP[t?.feature1Icon] || Activity} title={t?.feature1Title || "Agentic AI nodes"} delay={1.2} className="w-[280px]">
+                  <FlashyCard icon={ICON_MAP[t?.feature1Icon] || Activity} title={t?.feature1Title || "Agentic AI nodes"} delay={0.2} className="w-[280px]">
                     <AIWorkflow steps={t?.feature1Steps} />
                   </FlashyCard>
                 </div>
 
                 {/* Card 2: Conversational AI - Shifted slightly down */}
                 <div className="absolute top-[35%] left-[-15%] z-20 transition-all duration-500">
-                  <FlashyCard icon={ICON_MAP[t?.feature2Icon] || Cpu} title={t?.feature2Title || "Conversational AI"} delay={1.4} className="w-[300px]">
+                  <FlashyCard icon={ICON_MAP[t?.feature2Icon] || Cpu} title={t?.feature2Title || "Conversational AI"} delay={0.4} className="w-[300px]">
                     <ChatBotVisual query={t?.feature2Query} response={t?.feature2Response} />
                     <div className="mt-4 flex justify-between items-center text-[10px] text-indigo-400 font-bold uppercase tracking-widest">
                        <span>{t?.feature2FooterLeft || "Custom Trained LLM"}</span>
@@ -657,7 +670,7 @@ export function Home() {
 
                 {/* Card 3: Enterprise Solutions - Pushed further down */}
                 <div className="absolute bottom-[-10%] right-[5%] z-10 transition-all duration-500">
-                  <FlashyCard icon={ICON_MAP[t?.feature3Icon] || Zap} title={t?.feature3Title || "Enterprise Solutions"} delay={1.6} className="w-[260px]">
+                  <FlashyCard icon={ICON_MAP[t?.feature3Icon] || Zap} title={t?.feature3Title || "Enterprise Solutions"} delay={0.6} className="w-[260px]">
                      <PerformanceMetric 
                        label={t?.feature3UptimeLabel} 
                        value={t?.feature3UptimeValue} 
@@ -672,14 +685,21 @@ export function Home() {
                 <div className="absolute top-[15%] right-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-[100px] -z-10" />
                 
                 {/* 3D Glass Objects Layer */}
-                <div className="absolute inset-[-10%] z-0 pointer-events-none" data-idm-ignore="true">
+                <div 
+                  className="absolute inset-[-20%] z-0 pointer-events-none" 
+                  data-idm-ignore="true"
+                  style={{
+                    maskImage: 'radial-gradient(ellipse 60% 60% at 60% 50%, black 30%, transparent 70%)',
+                    WebkitMaskImage: 'radial-gradient(ellipse 60% 60% at 60% 50%, black 30%, transparent 70%)',
+                  }}
+                >
                   <Suspense fallback={null}>
                     <Canvas 
                       camera={{ position: [0, 0, 7], fov: 45 }} 
-                      gl={{ antialias: true, alpha: true }}
+                      dpr={[1, 1.5]}
+                      gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
                       style={{ pointerEvents: 'none' }}
                       onCreated={({ gl }) => {
-                        // Tell IDM to ignore the internal canvas Three.js creates
                         gl.domElement.setAttribute('data-idm-ignore', 'true');
                         gl.domElement.setAttribute('idm-ignore', 'true');
                         gl.domElement.setAttribute('disable-idm', 'true');
