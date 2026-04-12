@@ -253,7 +253,7 @@ const FlashyCard = React.memo(({ children, icon: Icon, title, delay, className =
       className={`relative group bg-white/[0.02] border border-white/[0.04] backdrop-blur-lg rounded-3xl p-6 overflow-hidden ${className}`}
     >
       {/* Noise Texture */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150" />
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none brightness-100 contrast-150" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }} />
       
       {/* Dynamic Spotlight */}
       <div 

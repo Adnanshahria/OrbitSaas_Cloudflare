@@ -92,7 +92,7 @@ export function formatMessage(content: string): React.ReactNode {
       inSteps = true;
       const num = stepMatch[1];
       const rest = stepMatch[2].replace(/\*\*/g, '').trim();
-      const sepMatch = rest.match(/^(.+?)[\s]*[:–—-][\s]*(.+)$/);
+      const sepMatch = rest.match(/^(.+?)\s*(?::\s|(?:\s[–—]\s))\s*(.+)$/);
       
       let title = '';
       let desc = '';

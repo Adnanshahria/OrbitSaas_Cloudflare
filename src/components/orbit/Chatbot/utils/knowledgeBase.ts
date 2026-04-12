@@ -58,6 +58,13 @@ export function buildClientKnowledgeBase(activeContent: any, chatLang: Lang): { 
     knowledgeBase += "\n";
   }
 
+  const leadership = (activeContent.leadership as any)?.members || [];
+  if (leadership.length > 0) {
+    knowledgeBase += "LEADERSHIP TEAM:\n";
+    leadership.forEach((m: any) => { knowledgeBase += `- ${m.name}: ${m.role}\n`; });
+    knowledgeBase += "\n";
+  }
+
   knowledgeBase += `CORE LINKS: Home: ${siteBaseUrl}, Projects: ${siteBaseUrl}/project, Contact: ${siteBaseUrl}/#contact\n\n`;
 
   const qaContext = (activeT.chatbot.qaPairs || [])

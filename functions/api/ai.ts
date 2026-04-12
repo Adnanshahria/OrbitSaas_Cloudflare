@@ -129,7 +129,7 @@ async function generateGist(knowledgeBase: string, env: Env): Promise<string | n
             [
                 {
                     role: 'system',
-                    content: 'You are a technical documentator. Summarize the following company knowledge base into a SHORT factual reference (~150 words max). CRITICAL: All URLs and proper names (Project Titles, Service Names) must be preserved EXACTLY as in the source. NEVER synthesize new categories like "PROJECT SHOWCASE" or "AI SERVICES". NEVER abbreviate or abbreviate URLs. If the source says "LifeSolver: https://site.com/project/1", keep it exactly like that. NO marketing fluff. Output ONLY the summary.'
+                    content: 'You are a technical documentator. Summarize the following company knowledge base into a SHORT factual reference (~200 words max). CRITICAL: All URLs, proper names (Project Titles, Service Names), and TEAM MEMBERS (Name + Role) must be preserved EXACTLY as in the source. NEVER drop team/leadership info. NEVER synthesize new categories. NEVER abbreviate URLs. NO marketing fluff. Output ONLY the summary.'
                 },
                 { role: 'user', content: knowledgeBase }
             ], 
@@ -137,7 +137,7 @@ async function generateGist(knowledgeBase: string, env: Env): Promise<string | n
             {
                 model: 'llama-3.1-8b-instant',
                 temperature: 0.2,
-                max_tokens: 300,
+                max_tokens: 400,
             }
         );
         return content.trim() || null;
