@@ -59,9 +59,10 @@ export function Hero3DVisual() {
 
   return (
     <group position={[0.5, 0, 0]}>
-      {/* Environment map — this is what makes glass look REAL. 
-          Lightweight cubemap, huge visual impact. */}
-      <Environment preset="night" />
+      {/* Environment map for reflections only — background={false} 
+          prevents the cubemap from rendering as a visible sky, 
+          eliminating the hard rectangular edge */}
+      <Environment preset="night" background={false} />
 
       {/* Lighting — richer setup for glass refraction */}
       <ambientLight intensity={0.3} />

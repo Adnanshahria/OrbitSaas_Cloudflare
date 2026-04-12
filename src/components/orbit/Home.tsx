@@ -684,13 +684,14 @@ export function Home() {
                 <div className="absolute top-[45%] left-[-50%] w-96 h-96 bg-indigo-500/10 rounded-full blur-[160px] -z-10" />
                 <div className="absolute top-[15%] right-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-[100px] -z-10" />
                 
-                {/* 3D Glass Objects Layer */}
+                {/* 3D Glass Objects Layer — radial mask fades edges to prevent hard cutoff */}
                 <div 
-                  className="absolute inset-[-20%] z-0 pointer-events-none" 
+                  className="absolute z-0 pointer-events-none" 
                   data-idm-ignore="true"
                   style={{
-                    maskImage: 'radial-gradient(ellipse 60% 60% at 60% 50%, black 30%, transparent 70%)',
-                    WebkitMaskImage: 'radial-gradient(ellipse 60% 60% at 60% 50%, black 30%, transparent 70%)',
+                    top: '-10%', right: '-10%', bottom: '-10%', left: '-40%',
+                    maskImage: 'radial-gradient(ellipse 80% 80% at 60% 50%, black 40%, transparent 100%)',
+                    WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 60% 50%, black 40%, transparent 100%)',
                   }}
                 >
                   <Suspense fallback={null}>
