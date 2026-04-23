@@ -190,6 +190,7 @@ export default function ProjectsPage() {
     });
 
     const items = [...displayItems]
+        .filter(item => !item.hidden) // Exclude projects hidden from admin panel
         .sort((a, b) => (a.order ?? a._originalIndex) - (b.order ?? b._originalIndex))
         .filter(item => activeCategory === 'All' || (item.categories || [item.category]).includes(activeCategory));
 

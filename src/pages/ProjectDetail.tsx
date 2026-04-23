@@ -527,7 +527,7 @@ export default function ProjectDetail() {
     const hasBnContent = projectBn && projectBn.title && projectBn.title.trim() !== '';
     const project = (isBn && hasBnContent) ? projectBn : projectEn;
 
-    if (!project || idx < 0) {
+    if (!project || idx < 0 || projectEn?.hidden) {
         return (
             <div className="min-h-[100dvh] bg-background text-foreground">
                 <Navbar />
@@ -684,6 +684,7 @@ export default function ProjectDetail() {
                         let suggested = enItems
                             .map((enItem: any, i: number) => {
                                 if (i === idx) return null;
+                                if (enItem.hidden) return null; // Exclude hidden projects
                                 return buildItem(enItem, i);
                             })
                             .filter(Boolean)

@@ -212,6 +212,7 @@ interface UnifiedProject {
     link: string;
     categories: string[];
     featured: boolean;
+    hidden: boolean; // If true, project is hidden from public site
     videoPreview: string;
     tags: string[]; // Shared tags
     seo: SEOData; // Shared SEO
@@ -235,6 +236,7 @@ const DEFAULT_PROJECT: UnifiedProject = {
     link: '',
     categories: ['SaaS'],
     featured: false,
+    hidden: false,
     videoPreview: '',
     tags: [],
     seo: { title: '', description: '', keywords: [] },
@@ -329,6 +331,25 @@ function ProjectEditor({ item, update, categories: availableCategories, onSave }
                                 className="w-4 h-4 text-primary rounded"
                             />
                             <span className="text-sm">Active (Show at top)</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-foreground block mb-1.5">Visibility</label>
+                        <div className="flex items-center gap-3 bg-secondary rounded-lg px-4 py-2.5 border border-border">
+                            <button
+                                type="button"
+                                onClick={() => update({ ...item, hidden: !item.hidden })}
+                                className={`relative w-11 h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary/30 ${
+                                    item.hidden ? 'bg-red-500/80' : 'bg-emerald-500'
+                                }`}
+                            >
+                                <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${
+                                    item.hidden ? 'translate-x-0' : 'translate-x-5'
+                                }`} />
+                            </button>
+                            <span className={`text-sm font-medium ${item.hidden ? 'text-red-400' : 'text-emerald-500'}`}>
+                                {item.hidden ? '🔴 Hidden from users' : '🟢 Visible to users'}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -1069,6 +1090,7 @@ export default function AdminProjects() {
                 link: enItem.link || bnItem.link || '',
                 categories: sharedCategories,
                 featured: enItem.featured ?? bnItem.featured ?? false,
+                hidden: enItem.hidden ?? bnItem.hidden ?? false,
                 videoPreview: enItem.videoPreview || bnItem.videoPreview || '',
                 tags: sharedTags,
                 seo: sharedSeo,
@@ -1113,6 +1135,7 @@ export default function AdminProjects() {
                 categories: p.categories,
                 category: p.categories[0] || 'SaaS',
                 featured: p.featured,
+                hidden: p.hidden || false,
                 videoPreview: p.videoPreview
             }));
 
@@ -1131,6 +1154,7 @@ export default function AdminProjects() {
                 categories: p.categories,
                 category: p.categories[0] || 'SaaS',
                 featured: p.featured,
+                hidden: p.hidden || false,
                 videoPreview: p.videoPreview
             }));
 
@@ -1313,11 +1337,15 @@ export default function AdminProjects() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {projects.map((p, i) => (
-                        <div key={p.id || i} className="flex flex-col bg-secondary/50 rounded-lg overflow-hidden border border-border group">
+                        <div key={p.id || i} className={`flex flex-col rounded-lg overflow-hidden border group transition-all ${
+                            p.hidden 
+                                ? 'bg-red-500/5 border-red-500/20 opacity-60' 
+                                : 'bg-secondary/50 border-border'
+                        }`}>
                             <div className="flex items-center p-2 gap-3 pb-1">
                                 <span className="text-sm font-bold text-muted-foreground w-5 text-center flex-shrink-0">{i + 1}</span>
                                 {p.images && p.images[0] ? (
-                                    <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0 bg-background border border-border">
+                                    <div className={`w-10 h-10 rounded overflow-hidden flex-shrink-0 bg-background border ${p.hidden ? 'border-red-500/30 grayscale' : 'border-border'}`}>
                                         <img src={p.images[0]} alt="" className="w-full h-full object-cover" />
                                     </div>
                                 ) : (
@@ -1326,7 +1354,12 @@ export default function AdminProjects() {
                                     </div>
                                 )}
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="text-sm font-semibold text-foreground truncate">{p.en.title || p.bn.title || 'Untitled Project'}</h4>
+                                    <div className="flex items-center gap-1.5">
+                                        <h4 className={`text-sm font-semibold truncate ${p.hidden ? 'text-muted-foreground line-through' : 'text-foreground'}`}>{p.en.title || p.bn.title || 'Untitled Project'}</h4>
+                                        {p.hidden && (
+                                            <span className="flex-shrink-0 px-1.5 py-0.5 rounded bg-red-500/15 text-red-400 text-[9px] font-bold uppercase tracking-wider">Hidden</span>
+                                        )}
+                                    </div>
                                     <span className="text-[10px] text-muted-foreground bg-background px-1.5 py-0.5 rounded border border-border truncate max-w-full inline-block mt-0.5">
                                         {p.categories.join(', ')}
                                     </span>
@@ -1464,6 +1497,7 @@ export default function AdminProjects() {
                                 link: en.link || bn.link || '',
                                 categories: Array.isArray(importCats) ? importCats : [importCats],
                                 featured: en.featured ?? bn.featured ?? false,
+                                hidden: en.hidden ?? bn.hidden ?? false,
                                 videoPreview: en.videoPreview || bn.videoPreview || '',
                                 tags: en.tags || bn.tags || [],
                                 seo: en.seo || bn.seo || { title: '', description: '', keywords: [] },
