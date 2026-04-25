@@ -39,7 +39,7 @@ export function ReviewsSection() {
     const { content } = useContent();
     const { lang } = useLang();
     const reviewsData = (content[lang] as any)?.reviews || {};
-    const reviews = Array.isArray(reviewsData) ? reviewsData : (reviewsData.items || []);
+    const reviews = (Array.isArray(reviewsData) ? reviewsData : (reviewsData.items || [])).filter((r: any) => !r.hidden);
     const showSocials = reviewsData.showSocials !== false;
 
     return (

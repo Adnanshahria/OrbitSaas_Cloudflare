@@ -18,6 +18,7 @@ interface ReviewItem {
     projectId: string;
     projectName: string;
     badgeName: string;
+    hidden: boolean;
     social?: {
         google?: { url: string; enabled: boolean };
         whatsapp?: { url: string; enabled: boolean };
@@ -41,6 +42,7 @@ const emptyReview: ReviewItem = {
     projectId: '', 
     projectName: '', 
     badgeName: '', 
+    hidden: false,
     social: {} 
 };
 
@@ -72,6 +74,7 @@ export default function AdminReviews() {
                 projectId: item.projectId || '',
                 projectName: item.projectName || '',
                 badgeName: item.badgeName || '',
+                hidden: item.hidden ?? false,
                 social: item.social ? Object.fromEntries(
                     Object.entries(item.social).map(([k, v]) => [
                         k,
@@ -225,9 +228,28 @@ export default function AdminReviews() {
                             </div>
                         </div>
 
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <TextField label="Reviewer Name" value={item.name} onChange={(v) => updateItem(idx, 'name', v)} lang={lang} />
-                            <TextField label="Role / Company" value={item.role} onChange={(v) => updateItem(idx, 'role', v)} lang={lang} />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <TextField label="Reviewer Name" value={item.name} onChange={(v) => updateItem(idx, 'name', v)} lang={lang} />
+                                <TextField label="Role / Company" value={item.role} onChange={(v) => updateItem(idx, 'role', v)} lang={lang} />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-foreground block mb-1.5">Visibility</label>
+                                <div className="flex items-center gap-3 bg-secondary rounded-lg px-4 py-2.5 border border-border h-[42px]">
+                                    <button
+                                        type="button"
+                                        onClick={() => updateItem(idx, 'hidden', !item.hidden)}
+                                        className={`relative w-11 h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary/30 ${item.hidden ? 'bg-red-500/80' : 'bg-emerald-500'
+                                            }`}
+                                    >
+                                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${item.hidden ? 'translate-x-0' : 'translate-x-5'
+                                            }`} />
+                                    </button>
+                                    <span className={`text-sm font-medium ${item.hidden ? 'text-red-400' : 'text-emerald-500'}`}>
+                                        {item.hidden ? '🔴 Hidden' : '🟢 Visible'}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                         <TextField label="Avatar URL" value={item.avatar} onChange={(v) => updateItem(idx, 'avatar', v)} />
 

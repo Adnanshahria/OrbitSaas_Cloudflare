@@ -705,7 +705,7 @@ export default function ProjectDetail() {
                                         const reviewsData = (content.en as any).reviews;
                                         const reviewItems: any[] = reviewsData?.items || [];
                                         const projectSlug = projectEn?.id || String(idx);
-                                        const projectReviews = reviewItems.filter((r: any) => r.projectId === projectSlug);
+                                        const projectReviews = reviewItems.filter((r: any) => r.projectId === projectSlug && !r.hidden);
                                         if (projectReviews.length === 0) return null;
                                         return (
                                             <div className="mb-2">
